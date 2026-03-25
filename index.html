@@ -4,206 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a" />
-    <title>Pokoco - Simple Hosting</title>
+    <title>Pokoco</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        .bg-custom-gray { background-color: #1e293b; }
-        .upload-card { background-color: #1e293b; border: 1px solid #334155; }
-        
-        /* Thumbnail Style */
-        .thumb-preview { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; background: #0f172a; }
-        #history-panel { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
-        #history-panel.open { transform: translateX(0); }
+        .upload-box { background-color: #1e293b; border: 2px dashed #334155; }
+        .btn-main { background-color: #1e293b; border: 1px solid #334155; }
+        #history-sidebar { transform: translateX(100%); transition: 0.3s; }
+        #history-sidebar.open { transform: translateX(0); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-x-hidden">
 
-    <!-- Header (Videy Style) -->
-    <header class="pt-4 pb-3 lg:pt-5 lg:pb-4 z-40 relative">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-            <a href="/" class="flex items-center">
-                <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
-            </a>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleHistory()" class="bg-custom-gray text-white px-4 py-1.5 rounded-full text-xs font-semibold border border-slate-700">History</button>
-                <button id="auth-btn" onclick="openAuthModal()" class="bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-semibold">Login</button>
-            </div>
+    <header class="py-4 lg:py-5 px-6 flex justify-between items-center max-w-6xl mx-auto w-full">
+        <a href="/" class="font-semibold text-[26px] tracking-[-2px]">pokoco</a>
+        <div class="flex gap-3">
+            <button onclick="toggleHistory()" class="text-[13px] font-semibold text-slate-400">History</button>
+            <button onclick="openAuth()" class="btn-main px-4 py-1.5 rounded-full text-[13px] font-semibold">Login</button>
         </div>
     </header>
 
-    <!-- Sidebar History -->
-    <div id="history-panel" class="fixed top-0 right-0 h-full w-full max-w-sm bg-[#1e293b] border-l border-slate-700 z-50 p-6 shadow-2xl overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-xl font-bold">Recent Uploads</h2>
-            <button onclick="toggleHistory()" class="text-slate-400 text-2xl">&times;</button>
-        </div>
-        <div id="history-list" class="space-y-4">
-            <!-- Items akan diisi JS -->
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-center px-6 py-20">
-        <div class="w-full max-w-[500px] text-center">
-            
-            <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload File</h1>
-            <p class="text-slate-400 text-sm mb-10">Private and secure. Max 200 MB.</p>
-
-            <!-- Upload Box -->
-            <div id="drop-area" class="upload-card rounded-2xl p-8 border-dashed border-2 border-slate-700 cursor-pointer hover:border-slate-500 transition-all relative">
+    <main class="flex-grow flex flex-col items-center justify-center px-6">
+        <div class="w-full max-w-[500px]">
+            <div id="upload-container" class="upload-box rounded-2xl p-10 text-center cursor-pointer hover:border-slate-400 transition-all">
                 <input type="file" id="file-input" class="hidden" accept="video/*,image/*">
                 
-                <!-- State 1: Empty -->
-                <div id="state-empty" class="flex flex-col items-center py-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                    <p class="text-white font-medium">Click or drag & drop</p>
+                <!-- Tampilan Awal -->
+                <div id="view-empty">
+                    <div class="text-slate-500 mb-4 text-4xl"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                    <p class="font-semibold text-white">Select Video or Image</p>
+                    <p class="text-[11px] text-slate-500 mt-1 uppercase tracking-widest">Max 200MB</p>
                 </div>
 
-                <!-- State 2: Selected (Preview) -->
-                <div id="state-selected" class="hidden flex flex-col items-center">
-                    <div id="preview-container" class="w-full aspect-video bg-black rounded-lg mb-4 overflow-hidden flex items-center justify-center">
-                        <!-- Preview Video/Image di sini -->
-                    </div>
-                    <p id="selected-file-name" class="text-xs text-slate-400 mb-6 truncate w-full px-4"></p>
-                    <div class="flex gap-3 w-full">
-                        <button onclick="resetUpload()" class="flex-1 py-2 rounded-full bg-slate-700 text-xs font-semibold">Cancel</button>
-                        <button onclick="startUpload()" class="flex-1 py-2 rounded-full bg-blue-600 text-xs font-semibold">Upload Now</button>
+                <!-- Tampilan Preview -->
+                <div id="view-preview" class="hidden">
+                    <div id="preview-box" class="w-full aspect-video bg-black/20 rounded-lg mb-4 flex items-center justify-center overflow-hidden"></div>
+                    <p id="file-name" class="text-[10px] text-slate-500 truncate mb-4"></p>
+                    <div class="flex gap-2">
+                        <button onclick="resetUpload()" class="flex-1 py-2 bg-slate-700 rounded-full text-[12px]">Cancel</button>
+                        <button onclick="doUpload()" class="flex-1 py-2 bg-blue-600 rounded-full text-[12px] font-bold">Upload Now</button>
                     </div>
                 </div>
 
-                <!-- State 3: Progress -->
-                <div id="state-progress" class="hidden py-10 w-full">
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden">
-                        <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                <!-- Tampilan Progress -->
+                <div id="view-progress" class="hidden py-6">
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-2">
+                        <div id="bar" class="bg-blue-500 h-full w-0 transition-all"></div>
                     </div>
-                    <p id="progress-text" class="text-xs text-slate-400 font-semibold tracking-widest uppercase text-center">0%</p>
+                    <p id="percent" class="text-[10px] text-slate-500 uppercase">0% Uploading...</p>
                 </div>
             </div>
-
         </div>
     </main>
 
-<!-- Modal Login/Register -->
-<div id="auth-modal" class="fixed inset-0 bg-black/80 hidden z-[60] flex items-center justify-center p-6 backdrop-blur-sm">
-    <div class="bg-[#1e293b] w-full max-w-sm rounded-2xl p-8 border border-slate-700">
+    <!-- Sidebar History -->
+    <div id="history-sidebar" class="fixed top-0 right-0 h-full w-80 bg-[#1e293b] z-50 p-6 shadow-2xl border-l border-slate-700">
         <div class="flex justify-between items-center mb-6">
-            <h2 id="modal-title" class="text-xl font-bold">Login to Pokoco</h2>
-            <button onclick="closeAuthModal()" class="text-slate-400">&times;</button>
+            <h3 class="font-bold">Recent</h3>
+            <button onclick="toggleHistory()" class="text-xl">&times;</button>
         </div>
-        <div class="space-y-4">
-            <input type="email" id="auth-email" placeholder="Gmail Address" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-            <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-            <button onclick="handleAuth()" id="auth-submit-btn" class="w-full bg-blue-600 py-3 rounded-xl font-semibold text-sm">Login</button>
-            <p class="text-center text-xs text-slate-500">
-                Don't have an account? <button onclick="toggleAuthMode()" class="text-blue-400 hover:underline" id="toggle-link">Register</button>
-            </p>
+        <div id="list" class="space-y-3 overflow-y-auto h-[80%]"></div>
+    </div>
+
+    <!-- Login Modal Sederhana -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/70 hidden z-[60] flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-[#1e293b] w-full max-w-xs p-6 rounded-2xl border border-slate-700">
+            <h2 class="font-bold mb-4">Login</h2>
+            <input type="email" id="email" placeholder="Email" class="w-full bg-[#0f172a] p-3 rounded-xl mb-3 text-sm border border-slate-700">
+            <input type="password" id="pass" placeholder="Password" class="w-full bg-[#0f172a] p-3 rounded-xl mb-4 text-sm border border-slate-700">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 py-3 rounded-xl font-bold text-sm">Sign In</button>
+            <button onclick="closeAuth()" class="w-full mt-2 text-xs text-slate-500">Cancel</button>
         </div>
     </div>
-</div>
-    
+
     <script>
-        const fileInput = document.getElementById('file-input');
-        const dropArea = document.getElementById('drop-area');
-        const stateEmpty = document.getElementById('state-empty');
-        const stateSelected = document.getElementById('state-selected');
-        const stateProgress = document.getElementById('state-progress');
-        const previewContainer = document.getElementById('preview-container');
-        const selectedFileName = document.getElementById('selected-file-name');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        
+        const fInput = document.getElementById('file-input');
+        const container = document.getElementById('upload-container');
         let selectedFile = null;
 
-        // -- LOGIKA SELEKSI FILE --
-        dropArea.onclick = () => { if(!selectedFile) fileInput.click(); };
-        fileInput.onchange = (e) => { if(e.target.files[0]) handleSelect(e.target.files[0]); };
-
-        function handleSelect(file) {
-            if (file.size > 200 * 1024 * 1024) return alert("Max 200MB!");
-            selectedFile = file;
-            selectedFileName.innerText = file.name;
-
-            // Buat Preview
-            const fileURL = URL.createObjectURL(file);
-            if (file.type.startsWith('image/')) {
-                previewContainer.innerHTML = `<img src="${fileURL}" class="w-full h-full object-contain">`;
-            } else {
-                previewContainer.innerHTML = `<video src="${fileURL}" class="w-full h-full object-contain" muted autoplay loop></video>`;
-            }
-
-            stateEmpty.classList.add('hidden');
-            stateSelected.classList.remove('hidden');
-        }
-
-        function resetUpload() {
-            selectedFile = null;
-            fileInput.value = '';
-            stateSelected.classList.add('hidden');
-            stateEmpty.classList.remove('hidden');
-        }
-
-        // -- LOGIKA UPLOAD & REDIRECT --
-        async function startUpload() {
-            stateSelected.classList.add('hidden');
-            stateProgress.classList.remove('hidden');
-
-            try {
-                const response = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&name=${encodeURIComponent(selectedFile.name)}`);
-                const data = await response.json();
-
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', selectedFile.type);
-
-                xhr.upload.onprogress = (e) => {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percent + '%';
-                    progressText.innerText = percent + '%';
-                };
-
-                xhr.onload = () => {
-                    if (xhr.status === 200) {
-                        // SIMPAN KE HISTORY LOKAL (Sambil nunggu fitur akun)
-                        saveLocalHistory(data.videoId, selectedFile.name, selectedFile.type);
-                        // REDIRECT OTOMATIS (Sesuai Minta)
-                        window.location.href = '/v?id=' + data.videoId;
-                    } else { alert("Upload Failed"); location.reload(); }
-                };
-                xhr.send(selectedFile);
-            } catch (err) { alert(err.message); }
-        }
-
-        // -- LOGIKA HISTORY (Local Storage) --
-        function saveLocalHistory(id, name, type) {
-            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            history.unshift({ id, name, type, date: new Date().toLocaleDateString() });
-            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 10)));
-        }
-
-        function toggleHistory() {
-            document.getElementById('history-panel').classList.toggle('open');
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            if (history.length === 0) return list.innerHTML = '<p class="text-center text-slate-500 py-10">Empty</p>';
+        container.onclick = (e) => { if(e.target === container || container.contains(e.target)) if(!selectedFile) fInput.click(); };
+        fInput.onchange = (e) => {
+            selectedFile = e.target.files[0];
+            if(!selectedFile) return;
+            document.getElementById('view-empty').classList.add('hidden');
+            document.getElementById('view-preview').classList.remove('hidden');
+            document.getElementById('file-name').innerText = selectedFile.name;
             
-            list.innerHTML = history.map(item => `
-                <a href="/v?id=${item.id}" class="flex items-center gap-3 bg-slate-900/50 p-2 rounded-xl border border-slate-700">
-                    <div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] uppercase font-bold text-slate-500">
-                        ${item.type.includes('image') ? 'IMG' : 'VID'}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-medium truncate">${item.name}</p>
-                        <p class="text-[9px] text-slate-500">${item.date}</p>
-                    </div>
-                </a>
-            `).join('');
+            const url = URL.createObjectURL(selectedFile);
+            const box = document.getElementById('preview-box');
+            box.innerHTML = selectedFile.type.startsWith('image') ? `<img src="${url}" class="h-full object-contain">` : `<video src="${url}" muted autoplay loop class="h-full object-contain"></video>`;
+        };
+
+        function resetUpload() { location.reload(); }
+
+        async function doUpload() {
+            document.getElementById('view-preview').classList.add('hidden');
+            document.getElementById('view-progress').classList.remove('hidden');
+
+            const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&name=${encodeURIComponent(selectedFile.name)}`);
+            const data = await res.json();
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', data.uploadUrl);
+            xhr.upload.onprogress = (e) => {
+                const p = Math.round((e.loaded / e.total) * 100);
+                document.getElementById('bar').style.width = p + '%';
+                document.getElementById('percent').innerText = p + '% Uploading...';
+            };
+            xhr.onload = () => {
+                if(xhr.status === 200) window.location.href = '/v?id=' + data.videoId;
+            };
+            xhr.send(selectedFile);
         }
+
+        function toggleHistory() { document.getElementById('history-sidebar').classList.toggle('open'); }
+        function openAuth() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        function closeAuth() { document.getElementById('auth-modal').classList.add('hidden'); }
     </script>
 </body>
 </html>
