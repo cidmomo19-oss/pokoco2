@@ -8,39 +8,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #0f172a; 
-            color: #f8fafc;
-            margin: 0; 
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
+        .bg-custom-gray { background-color: #1e293b; }
         .upload-card { background-color: #1e293b; border: 1px solid #334155; }
-        .btn-custom { background-color: #1e293b; border: 1px solid #334155; transition: all 0.2s; }
-        .btn-custom:hover { background-color: #334155; border-color: #475569; }
         
-        /* Panel History Style */
-        #history-panel {
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-            max-width: 90vw; /* Responsif untuk HP */
-        }
+        /* Thumbnail Style */
+        .thumb-preview { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; background: #0f172a; }
+        #history-panel { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
         #history-panel.open { transform: translateX(0); }
-        #overlay { opacity: 0; transition: opacity 0.3s ease-in-out; }
-        #overlay.open { opacity: 1; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-x-hidden">
 
-    <!-- Header -->
+    <!-- Header (Videy Style) -->
     <header class="pt-4 pb-3 lg:pt-5 lg:pb-4 z-40 relative">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
             <a href="/" class="flex items-center">
                 <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
             </a>
-            <button onclick="toggleHistory()" class="btn-custom text-white px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                Your Uploads
-            </button>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleHistory()" class="bg-custom-gray text-white px-4 py-1.5 rounded-full text-xs font-semibold border border-slate-700">History</button>
+                <button id="auth-btn" onclick="openAuthModal()" class="bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-semibold">Login</button>
+            </div>
         </div>
     </header>
 
@@ -48,211 +37,154 @@
     <div id="history-panel" class="fixed top-0 right-0 h-full w-full max-w-sm bg-[#1e293b] border-l border-slate-700 z-50 p-6 shadow-2xl overflow-y-auto">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-xl font-bold">Recent Uploads</h2>
-            <button onclick="toggleHistory()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            <button onclick="toggleHistory()" class="text-slate-400 text-2xl">&times;</button>
         </div>
-        <div id="history-list" class="space-y-4 text-sm">
-            <p class="text-slate-500 text-center py-10">No uploads yet.</p>
+        <div id="history-list" class="space-y-4">
+            <!-- Items akan diisi JS -->
         </div>
-        <button onclick="clearHistory()" class="w-full mt-10 text-[10px] text-slate-500 hover:text-red-400 uppercase tracking-widest transition-colors">Clear History</button>
     </div>
-
-    <!-- Overlay saat History dibuka -->
-    <div id="overlay" onclick="toggleHistory()" class="fixed inset-0 bg-black/50 hidden z-40 transition-opacity"></div>
 
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center justify-center px-6 py-20">
         <div class="w-full max-w-[500px] text-center">
             
-            <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Video or Image</h1>
-            <p class="text-slate-400 text-sm mb-10">Private, fast, and secure. Max 200 MB.</p>
+            <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload File</h1>
+            <p class="text-slate-400 text-sm mb-10">Private and secure. Max 200 MB.</p>
 
-            <!-- Upload Area -->
-            <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer hover:border-slate-500 transition-all group">
+            <!-- Upload Box -->
+            <div id="drop-area" class="upload-card rounded-2xl p-8 border-dashed border-2 border-slate-700 cursor-pointer hover:border-slate-500 transition-all relative">
                 <input type="file" id="file-input" class="hidden" accept="video/*,image/*">
-                <div class="flex flex-col items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-500 group-hover:text-white transition-colors mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <p class="text-white font-medium">Click to upload or drag & drop</p>
-                    <p class="text-slate-500 text-xs mt-1">MP4, JPG, PNG, etc.</p>
+                
+                <!-- State 1: Empty -->
+                <div id="state-empty" class="flex flex-col items-center py-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    <p class="text-white font-medium">Click or drag & drop</p>
                 </div>
-            </div>
 
-            <!-- Progress Section -->
-            <div id="progress-section" class="hidden w-full mt-6">
-                <div class="flex justify-between text-xs mb-2 text-slate-400">
-                    <span id="file-name-display" class="truncate max-w-[200px]">file_name</span>
-                    <span id="progress-text">0%</span>
+                <!-- State 2: Selected (Preview) -->
+                <div id="state-selected" class="hidden flex flex-col items-center">
+                    <div id="preview-container" class="w-full aspect-video bg-black rounded-lg mb-4 overflow-hidden flex items-center justify-center">
+                        <!-- Preview Video/Image di sini -->
+                    </div>
+                    <p id="selected-file-name" class="text-xs text-slate-400 mb-6 truncate w-full px-4"></p>
+                    <div class="flex gap-3 w-full">
+                        <button onclick="resetUpload()" class="flex-1 py-2 rounded-full bg-slate-700 text-xs font-semibold">Cancel</button>
+                        <button onclick="startUpload()" class="flex-1 py-2 rounded-full bg-blue-600 text-xs font-semibold">Upload Now</button>
+                    </div>
                 </div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                    <div id="progress-bar" class="bg-white h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
 
-            <!-- Result Section -->
-            <div id="result-section" class="hidden mt-8 w-full animate-in fade-in zoom-in duration-300">
-                <p class="text-left text-xs text-slate-500 mb-2 uppercase tracking-widest font-bold">Success! Your Link:</p>
-                <div class="flex gap-2">
-                    <input type="text" id="video-link" readonly class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-slate-600">
-                    <button onclick="copyLink()" class="btn-custom text-white px-6 py-2 rounded-xl text-sm font-semibold">Copy</button>
+                <!-- State 3: Progress -->
+                <div id="state-progress" class="hidden py-10 w-full">
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden">
+                        <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p id="progress-text" class="text-xs text-slate-400 font-semibold tracking-widest uppercase text-center">0%</p>
                 </div>
-                <button onclick="location.reload()" class="mt-6 text-xs text-blue-400 hover:underline">Upload another file</button>
             </div>
 
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="py-10">
-        <div class="max-w-6xl mx-auto px-6 flex justify-center space-x-8">
-            <a href="#" class="text-[11px] text-slate-600 hover:text-white uppercase tracking-tighter transition-colors">Terms</a>
-            <a href="#" class="text-[11px] text-slate-600 hover:text-white uppercase tracking-tighter transition-colors">Privacy</a>
-        </div>
-    </footer>
-
     <script>
-        const dropArea = document.getElementById('drop-area');
         const fileInput = document.getElementById('file-input');
-        const progressSection = document.getElementById('progress-section');
+        const dropArea = document.getElementById('drop-area');
+        const stateEmpty = document.getElementById('state-empty');
+        const stateSelected = document.getElementById('state-selected');
+        const stateProgress = document.getElementById('state-progress');
+        const previewContainer = document.getElementById('preview-container');
+        const selectedFileName = document.getElementById('selected-file-name');
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
-        const fileNameDisplay = document.getElementById('file-name-display');
-        const resultSection = document.getElementById('result-section');
-        const videoLinkInput = document.getElementById('video-link');
-        const historyPanel = document.getElementById('history-panel');
-        const overlay = document.getElementById('overlay');
-        const historyList = document.getElementById('history-list');
+        
+        let selectedFile = null;
 
-        const MAX_FILE_SIZE = 200 * 1024 * 1024; 
+        // -- LOGIKA SELEKSI FILE --
+        dropArea.onclick = () => { if(!selectedFile) fileInput.click(); };
+        fileInput.onchange = (e) => { if(e.target.files[0]) handleSelect(e.target.files[0]); };
 
-        // -- LOGIKA HISTORY BROWSER --
-        function toggleHistory() {
-            historyPanel.classList.toggle('open');
-            overlay.classList.toggle('hidden');
-            overlay.classList.toggle('open'); // Toggle opacity for smooth transition
-            renderHistory();
-        }
+        function handleSelect(file) {
+            if (file.size > 200 * 1024 * 1024) return alert("Max 200MB!");
+            selectedFile = file;
+            selectedFileName.innerText = file.name;
 
-        function saveToHistory(id, name) {
-            const url = window.location.origin + '/v?id=' + id;
-            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            history.unshift({ id, name, url, date: new Date().toLocaleDateString() });
-            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20))); // Simpan 20 terakhir
-        }
-
-        function renderHistory() {
-            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            if (history.length === 0) {
-                historyList.innerHTML = '<p class="text-slate-500 text-center py-10 text-xs">No uploads yet.</p>';
-                return;
-            }
-            historyList.innerHTML = history.map(item => `
-                <div class="p-3 bg-slate-900/50 border border-slate-700 rounded-xl group transition-all">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[10px] text-slate-500 uppercase tracking-widest">${item.date}</span>
-                        <button onclick="navigator.clipboard.writeText('${item.url}'); alert('Copied!')" class="text-blue-400 hover:text-blue-300 text-[10px]">COPY LINK</button>
-                    </div>
-                    <a href="${item.url}" class="text-slate-200 block truncate font-medium hover:text-white" target="_blank" rel="noopener noreferrer">${item.name}</a>
-                </div>
-            `).join('');
-        }
-
-        function clearHistory() {
-            if(confirm('Clear all your upload history?')) {
-                localStorage.removeItem('pokoco_history');
-                renderHistory();
-            }
-        }
-
-        // -- LOGIKA UPLOAD --
-        dropArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => {
-            if(e.target.files.length > 0) handleFile(e.target.files[0]);
-        });
-
-        // Event listener untuk drag & drop
-        dropArea.addEventListener('dragover', (e) => { 
-            e.preventDefault(); 
-            dropArea.classList.add('border-slate-500'); // Efek hover saat drag
-        });
-        dropArea.addEventListener('dragleave', () => { 
-            dropArea.classList.remove('border-slate-500'); 
-        });
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('border-slate-500');
-            if(e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-        });
-
-
-        async function handleFile(file) {
-            if (file.size > MAX_FILE_SIZE) {
-                alert('File too large (Max 200MB)');
-                return;
-            }
-            
-            // Validasi tipe file
-            if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
-                alert('Only videos and images allowed');
-                return;
+            // Buat Preview
+            const fileURL = URL.createObjectURL(file);
+            if (file.type.startsWith('image/')) {
+                previewContainer.innerHTML = `<img src="${fileURL}" class="w-full h-full object-contain">`;
+            } else {
+                previewContainer.innerHTML = `<video src="${fileURL}" class="w-full h-full object-contain" muted autoplay loop></video>`;
             }
 
-            dropArea.classList.add('hidden');
-            progressSection.classList.remove('hidden');
-            fileNameDisplay.innerText = file.name;
+            stateEmpty.classList.add('hidden');
+            stateSelected.classList.remove('hidden');
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            fileInput.value = '';
+            stateSelected.classList.add('hidden');
+            stateEmpty.classList.remove('hidden');
+        }
+
+        // -- LOGIKA UPLOAD & REDIRECT --
+        async function startUpload() {
+            stateSelected.classList.add('hidden');
+            stateProgress.classList.remove('hidden');
 
             try {
-                // Minta Pre-signed URL ke backend, kirim juga tipe kontennya
-                const response = await fetch(`/api/get-upload-url?type=${encodeURIComponent(file.type)}`);
+                const response = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&name=${encodeURIComponent(selectedFile.name)}`);
                 const data = await response.json();
 
-                if (!data.success) throw new Error("API Error: " + data.message);
-
-                // Langsung upload ke R2 menggunakan URL yang diterima
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', file.type);
+                xhr.setRequestHeader('Content-Type', selectedFile.type);
 
                 xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        progressBar.style.width = percent + '%';
-                        progressText.innerText = percent + '%';
-                    }
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    progressText.innerText = percent + '%';
                 };
 
                 xhr.onload = () => {
                     if (xhr.status === 200) {
-                        const finalUrl = window.location.origin + '/v?id=' + data.videoId;
-                        progressSection.classList.add('hidden');
-                        resultSection.classList.remove('hidden');
-                        videoLinkInput.value = finalUrl;
-                        
-                        // Simpan ke history browser
-                        saveToHistory(data.videoId, file.name);
-                    } else { 
-                        alert('Upload failed. Status: ' + xhr.status); 
-                        location.reload(); 
-                    }
+                        // SIMPAN KE HISTORY LOKAL (Sambil nunggu fitur akun)
+                        saveLocalHistory(data.videoId, selectedFile.name, selectedFile.type);
+                        // REDIRECT OTOMATIS (Sesuai Minta)
+                        window.location.href = '/v?id=' + data.videoId;
+                    } else { alert("Upload Failed"); location.reload(); }
                 };
-
-                xhr.onerror = () => {
-                    alert('Network error during upload.');
-                    location.reload();
-                };
-
-                xhr.send(file);
-
-            } catch (error) {
-                alert('System Error: ' + error.message);
-                location.reload();
-            }
+                xhr.send(selectedFile);
+            } catch (err) { alert(err.message); }
         }
 
-        function copyLink() {
-            videoLinkInput.select();
-            document.execCommand('copy');
-            alert('Link copied!');
+        // -- LOGIKA HISTORY (Local Storage) --
+        function saveLocalHistory(id, name, type) {
+            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
+            history.unshift({ id, name, type, date: new Date().toLocaleDateString() });
+            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 10)));
+        }
+
+        function toggleHistory() {
+            document.getElementById('history-panel').classList.toggle('open');
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
+            if (history.length === 0) return list.innerHTML = '<p class="text-center text-slate-500 py-10">Empty</p>';
+            
+            list.innerHTML = history.map(item => `
+                <a href="/v?id=${item.id}" class="flex items-center gap-3 bg-slate-900/50 p-2 rounded-xl border border-slate-700">
+                    <div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center text-[10px] uppercase font-bold text-slate-500">
+                        ${item.type.includes('image') ? 'IMG' : 'VID'}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium truncate">${item.name}</p>
+                        <p class="text-[9px] text-slate-500">${item.date}</p>
+                    </div>
+                </a>
+            `).join('');
         }
     </script>
 </body>
