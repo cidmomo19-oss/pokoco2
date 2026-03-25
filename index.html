@@ -17,7 +17,7 @@
         #history-panel.open { transform: translateX(0); }
         .preview-box { background-color: #0f172a; border: 1px solid #334155; }
         
-        /* Untuk preview video agar rapi di dalam kotak */
+        /* Untuk preview video/gambar agar rapi di dalam kotak */
         #file-preview-content video, #file-preview-content img {
             max-height: 180px;
             width: 100%;
@@ -34,8 +34,8 @@
             <a href="/" class="flex items-center">
                 <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
             </a>
+            <!-- Tombol Your Uploads (Ikon Dihapus) -->
             <button onclick="toggleHistory()" class="btn-custom text-white px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                 Your Uploads
             </button>
         </div>
@@ -133,8 +133,9 @@
 
         function saveToHistory(id, name, type) {
             let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            history.unshift({ id, name, type, date: new Date().toLocaleDateString() });
-            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20)));
+            history.unshift({ id, name, type, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) });
+            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20))); // Simpan 20 terakhir
+            console.log("History saved:", localStorage.getItem('pokoco_history')); // Debugging
         }
 
         function renderHistory() {
@@ -146,9 +147,11 @@
             historyList.innerHTML = history.map(item => `
                 <div class="p-3 bg-[#0f172a] border border-slate-700 rounded-xl flex items-center gap-3 hover:border-slate-500 transition-colors">
                     <div class="w-10 h-10 bg-[#1e293b] rounded flex items-center justify-center shrink-0">
-                        ${item.type.startsWith('image/') ? 
-                            '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' : 
-                            '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'}
+                        ${item.type && item.type.startsWith('image/') ? 
+                            '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' : 
+                        item.type && item.type.startsWith('video/') ?
+                            '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>' :
+                            '<svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'}
                     </div>
                     <div class="min-w-0 flex-grow">
                         <a href="/v?id=${item.id}" target="_blank" class="text-[13px] text-slate-200 block truncate font-medium hover:text-white">${item.name}</a>
@@ -168,11 +171,10 @@
             } 
         }
 
-        // --- STEP 1: LOGIKA PILIH FILE ---
+        // -- LOGIKA PILIH FILE & PREVIEW --
         dropArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
         
-        // Drag & Drop
         dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-slate-400'); });
         dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-slate-400'));
         dropArea.addEventListener('drop', (e) => {
@@ -187,35 +189,30 @@
 
             selectedFile = file;
             
-            // Ganti tampilan ke Step 2 (Preview)
             step1.classList.add('hidden');
             step2.classList.remove('hidden');
             
             document.getElementById('file-name-display').innerText = file.name;
             document.getElementById('file-size-display').innerText = (file.size / (1024*1024)).toFixed(2) + " MB";
             
-            // FITUR PREVIEW VIDEO/GAMBAR SUPER PRO
             const previewContent = document.getElementById('file-preview-content');
-            const fileUrl = URL.createObjectURL(file); // Buat URL sementara di browser
+            const fileUrl = URL.createObjectURL(file);
 
             if (file.type.startsWith('image/')) {
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Gambar">`;
             } else if (file.type.startsWith('video/')) {
-                // Tampilkan player video (bisa diplay/pause sebelum diupload)
                 previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
             }
         }
 
-        // --- STEP 2: LOGIKA MULAI UPLOAD ---
+        // --- LOGIKA MULAI UPLOAD ---
         async function startUpload() {
             if (!selectedFile) return;
             
-            // Sembunyikan tombol, tampilkan progress bar
             document.getElementById('upload-action').classList.add('hidden');
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                // Minta Pre-signed URL ke R2
                 const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}`);
                 const data = await res.json();
                 
@@ -225,7 +222,6 @@
                 xhr.open('PUT', data.uploadUrl, true);
                 xhr.setRequestHeader('Content-Type', selectedFile.type);
 
-                // Update Progress Bar
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) {
                         const percent = Math.round((e.loaded / e.total) * 100);
@@ -234,18 +230,16 @@
                     }
                 };
 
-                // Saat Upload Selesai
                 xhr.onload = () => {
                     if (xhr.status === 200) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
-                        // 1. Simpan ke History LocalStorage (PENTING: dilakukan sebelum redirect)
                         saveToHistory(data.videoId, selectedFile.name, selectedFile.type);
                         
-                        // 2. Beri jeda 0.5 detik biar browser sempat nulis data, lalu Redirect Otomatis
+                        // Jeda 1 detik sebelum redirect
                         setTimeout(() => {
                             window.location.href = '/v?id=' + data.videoId;
-                        }, 500);
+                        }, 1000); // Tunggu 1 detik
 
                     } else { 
                         alert("Upload Gagal. Status code: " + xhr.status); 
@@ -258,7 +252,7 @@
                     location.reload();
                 };
 
-                xhr.send(selectedFile); // Mulai kirim file
+                xhr.send(selectedFile);
             } catch (err) { 
                 alert(err.message); 
                 location.reload(); 
