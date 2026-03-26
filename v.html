@@ -21,6 +21,11 @@
         }
 
         .text-gray-pokoco { color: #64748b; }
+        .loading-text { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -44,20 +49,19 @@
                 <div class="w-full" id="media-wrapper">
                     <!-- Loading state -->
                     <div class="flex items-center justify-center w-full" style="height: 250px;">
-                        <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
+                        <span class="text-gray-pokoco text-sm loading-text" id="loading-text">Loading media...</span>
                     </div>
                 </div>
             </div>
 
             <!-- Share Button (Teks Dinamis) -->
             <div class="w-full flex flex-col items-center mt-6 mb-0">
-                <button onclick="shareVideo()" class="inline-flex items-center justify-center text-sm transition-colors text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800 shadow-sm">
+                <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm transition-colors text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share w-[18px] h-[18px]">
                         <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                         <polyline points="16 6 12 2 8 6"></polyline>
                         <line x1="12" x2="12" y1="2" y2="15"></line>
                     </svg>
-                    <!-- Teks ini yang akan berubah otomatis -->
                     <span id="share-label">Share link</span>
                 </button>
             </div>
@@ -72,43 +76,78 @@
     </div>
 
     <script>
-        window.onload = async function() {
-            const wrapper = document.getElementById('media-wrapper');
-            const shareLabel = document.getElementById('share-label');
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const shareLabel = document.getElementById('share-label');
+        const loadingText = document.getElementById('loading-text');
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        let currentMediaType = 'link'; // Default untuk share
+        let mediaUrl = null; // Simpan URL untuk direfresh
+        let reFetchInterval = null; // Variable untuk setInterval
 
+        // Fungsi untuk mengambil dan memuat media
+        async function loadMedia() {
             if (!id) {
-                wrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
+                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
                 return;
             }
+
+            loadingText.innerText = "Loading media...";
+            mediaWrapper.innerHTML = `
+                <div class="flex items-center justify-center w-full" style="height: 250px;">
+                    <span class="text-gray-pokoco text-sm loading-text">Loading media...</span>
+                </div>
+            `;
 
             try {
                 const response = await fetch(`/api/get-video-url?id=${id}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    // LOGIKA PENENTUAN TIPE FILE & PERUBAHAN TEKS TOMBOL
+                    mediaUrl = data.playUrl; // Simpan URL untuk direfresh
+                    // LOGIKA PENENTUAN TIPE FILE & PERUBAHAN TAMPILAN
                     if (data.contentType.startsWith('image/')) {
-                        // Jika Gambar
-                        wrapper.innerHTML = `<img src="${data.playUrl}" class="md:rounded-[8px]" alt="Image content">`;
-                        shareLabel.innerText = 'Share image'; // Ganti teks tombol
-                        document.title = 'Pokoco - Share Image';
-                    } else {
-                        // Jika Video
-                        wrapper.innerHTML = `
-                            <video class="w-full md:rounded-[8px]" controls playsinline autoplay src="${data.playUrl}"></video>
+                        mediaWrapper.innerHTML = `<img src="${data.playUrl}" class="md:rounded-[8px]" alt="Image content">`;
+                        shareLabel.innerText = 'Share image';
+                        currentMediaType = 'image';
+                        document.title = 'Pokoco - Image';
+                    } else if (data.contentType.startsWith('video/')) {
+                        mediaWrapper.innerHTML = `
+                            <video id="main-player" class="w-full md:rounded-[8px]" controls playsinline autoplay src="${data.playUrl}"></video>
                         `;
-                        shareLabel.innerText = 'Share video'; // Ganti teks tombol
-                        document.title = 'Pokoco - Share Video';
+                        shareLabel.innerText = 'Share video';
+                        currentMediaType = 'video';
+                        document.title = 'Pokoco - Video';
+                    } else {
+                        mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Unsupported media type.</div>`;
+                        shareLabel.innerText = 'Share link';
+                        currentMediaType = 'link';
                     }
-                } else { throw new Error(); }
+                } else {
+                    throw new Error(data.message || "Unknown error");
+                }
             } catch (e) {
                 wrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found.</div>`;
             }
-        };
+        }
 
-        function shareVideo() {
+        // Jalankan saat halaman dimuat pertama kali
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMedia();
+            
+            // SET INTERVAL (Re-fetch URL setiap 2.5 jam)
+            reFetchInterval = setInterval(() => {
+                console.log("Re-fetching media URL...");
+                loadMedia();
+            }, 9000000); // 2.5 jam dalam milidetik
+
+            // Tangani event sebelum halaman ditutup
+            window.addEventListener('beforeunload', () => {
+                clearInterval(reFetchInterval); // Hentikan interval saat halaman ditutup
+            });
+        });
+
+        function shareMedia() {
             const shareLabel = document.getElementById('share-label').innerText;
             if (navigator.share) {
                 navigator.share({ title: 'Pokoco - ' + shareLabel, url: window.location.href });
