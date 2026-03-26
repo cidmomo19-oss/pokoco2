@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   // PASSWORD DITANAM DI SINI 
   // Ganti "KopiHitamKupuKupu" dengan password rahasia abang
   // =========================================================
-  const HARDCODED_PASSWORD = "123";
+  const HARDCODED_PASSWORD = "KopiHitamKupuKupu";
 
   // Cek apakah password yang diketik di web sama dengan yang ditanam di atas
   if (password !== HARDCODED_PASSWORD) {
