@@ -10,23 +10,23 @@ function generateVideoId(length = 9) {
   return result;
 }
 
+// ==========================================
+// 1. INI UNTUK BOT (METHOD POST) - Fungsi Asli
+// ==========================================
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
-    // Ambil data dari body JSON yang dikirim bot
     const body = await request.json();
     const contentType = body.type || "application/octet-stream";
     const adLink = body.ad_link || null;
 
     const videoId = generateVideoId();
 
-    // 1. Simpan data awal ke D1 Database
     await env.DB.prepare(
       "INSERT INTO videos (id, views, content_type, ad_link, created_at, last_viewed_at) VALUES (?, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
     ).bind(videoId, contentType, adLink).run();
 
-    // 2. Inisialisasi S3Client
     const S3 = new S3Client({
       region: "auto",
       endpoint: `https://${env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -36,7 +36,6 @@ export async function onRequestPost(context) {
       },
     });
 
-    // 3. Buat Pre-signed URL untuk Upload (berlaku 3 jam)
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
       Key: videoId,
@@ -44,26 +43,33 @@ export async function onRequestPost(context) {
     });
 
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 });
-
     const domain = new URL(request.url).origin;
 
-    // 4. Kembalikan URL tersebut ke Bot
     return new Response(JSON.stringify({
       success: true,
       message: "Gunakan 'uploadUrl' ini untuk melakukan PUT request file mentah.",
       videoId: videoId,
       uploadUrl: signedUrl,
       viewUrl: `${domain}/v?id=${videoId}`
-    }), { 
-      status: 200, 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    console.error("Bot API Upload Error:", error);
     return new Response(JSON.stringify({ 
-      success: false, 
-      message: "Invalid request. Make sure to send a JSON body with 'type'." 
+      success: false, message: "Invalid request. Send JSON body with 'type'." 
     }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
+}
+
+// ==========================================
+// 2. INI UNTUK BROWSER (METHOD GET) - Tambahan Baru
+// ==========================================
+export async function onRequestGet(context) {
+  // Kalau ada yang iseng buka link ini di browser, kasih pesan ini:
+  return new Response(JSON.stringify({
+    success: false,
+    message: "Halo! API Upload Bot aktif. Tapi kamu tidak bisa membukanya lewat browser (GET). Gunakan metode POST dengan body JSON untuk mendapatkan Pre-signed URL."
+  }), { 
+    status: 405, // 405 artinya Method Not Allowed
+    headers: { 'Content-Type': 'application/json' } 
+  });
 }
