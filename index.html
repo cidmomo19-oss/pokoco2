@@ -4,55 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a" />
+    <meta name="referrer" content="no-referrer" />
+    
     <title>Pokoco - File Hosting</title>
+
+    <meta name="description" content="Upload and share your media securely on Pokoco. Free, fast, and private file hosting up to 200MB." />
+    <meta property="og:title" content="Pokoco - File Hosting" />
+    <meta property="og:description" content="Private, fast, and secure media uploading. Share your files easily." />
+    <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="800" />
+    <meta property="og:type" content="website" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pokoco - File Hosting" />
+    <meta name="twitter:description" content="Private, fast, and secure media uploading. Share your files easily." />
+    <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+
+    <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        .upload-card { 
-            background-color: #1e293b; 
-            border: 1px solid #334155; 
-            transition: all 0.2s ease-in-out; 
-        }
-        .upload-card:hover { 
-            border-color: #60a5fa; /* A bit more vibrant on hover */
-            background-color: #2a3a4c;
-        }
-        .upload-card.drag-over { /* Visual cue when file is dragged over */
-            border-color: #60a5fa; /* Blue color */
-            background-color: #2e435a;
-        }
+        .upload-card { background-color: #1e293b; border: 1px solid #334155; transition: all 0.2s ease-in-out; }
+        .upload-card:hover { border-color: #60a5fa; background-color: #2a3a4c; }
+        .upload-card.drag-over { border-color: #60a5fa; background-color: #2e435a; }
         .btn-custom { background-color: #1e293b; border: 1px solid #334155; transition: all 0.2s; }
         .btn-custom:hover { background-color: #334155; border-color: #475569; }
-        
         #history-panel { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
         #history-panel.open { transform: translateX(0); }
         .preview-box { background-color: #0f172a; border: 1px solid #334155; }
-        
-        /* Untuk preview media agar rapi di dalam kotak */
-        #file-preview-content video, 
-        #file-preview-content img,
-        #file-preview-content audio {
-            max-height: 180px;
-            width: 100%;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        #file-preview-content video, #file-preview-content img, #file-preview-content audio {
+            max-height: 180px; width: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
-        #file-preview-content audio {
-            padding: 10px;
-        }
-
-        /* CUSTOM NOTIFICATION STYLES */
-        #notification-message {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        #notification-message.show {
-            opacity: 1;
-        }
-        /* Keyframes for simple slide down/up animation */
+        #file-preview-content audio { padding: 10px; }
+        #notification-message { opacity: 0; transition: opacity 0.3s ease-in-out; }
+        #notification-message.show { opacity: 1; }
         @keyframes slideInDown {
             from { transform: translateY(-100%) translateX(-50%); opacity: 0; }
             to { transform: translateY(0) translateX(-50%); opacity: 1; }
@@ -61,20 +52,13 @@
             from { transform: translateY(0) translateX(-50%); opacity: 1; }
             to { transform: translateY(-100%) translateX(-50%); opacity: 0; }
         }
-        .animate-slide-in-down {
-            animation: slideInDown 0.3s ease-out forwards;
-        }
-        .animate-slide-out-up {
-            animation: slideOutUp 0.3s ease-in forwards;
-        }
+        .animate-slide-in-down { animation: slideInDown 0.3s ease-out forwards; }
+        .animate-slide-out-up { animation: slideOutUp 0.3s ease-in forwards; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-x-hidden">
 
-    <!-- CUSTOM NOTIFICATION CONTAINER -->
-    <div id="notification-message" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-lg shadow-lg text-white font-medium hidden">
-        <!-- Message will be inserted here -->
-    </div>
+    <div id="notification-message" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-lg shadow-lg text-white font-medium hidden"></div>
 
     <header class="pt-4 pb-3 lg:pt-5 lg:pb-4 z-40 relative">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -87,7 +71,6 @@
         </div>
     </header>
 
-    <!-- Sidebar History -->
     <div id="history-panel" class="fixed top-0 right-0 h-full w-full max-w-sm bg-[#1e293b] border-l border-slate-700 z-50 p-6 shadow-2xl overflow-y-auto">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-xl font-bold">Recent Uploads</h2>
@@ -104,13 +87,11 @@
     <main class="flex-grow flex flex-col items-center justify-center px-6 py-10">
         <div class="w-full max-w-[500px] text-center">
             
-            <!-- Step 1: Select File -->
             <div id="upload-step-1">
                 <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Your Media Files</h1>
                 <p class="text-slate-400 text-sm mb-10">Private, fast, and secure. Up to 200 MB.</p>
 
                 <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer group">
-                    <!-- Updated 'accept' attribute for more file types -->
                     <input type="file" id="file-input" class="hidden" 
                            accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/x-flv,video/x-matroska,
                                    image/jpeg,image/png,image/gif,image/webp,image/avif,
@@ -120,13 +101,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                         <p class="text-white font-medium">Drag & drop your files here, or click to browse</p>
-                        <!-- Updated descriptive text for file types -->
                         <p class="text-slate-500 text-xs mt-1">Videos (MP4, MOV, MKV, AVI), Images (JPG, PNG, GIF, WebP, AVIF), Audio (MP3, WAV, FLAC).</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 2: Preview & Confirm -->
             <div id="upload-step-2" class="hidden animate-in fade-in duration-300 w-full">
                 <h2 class="text-xl font-semibold mb-6">Ready to upload?</h2>
                 
@@ -136,7 +115,6 @@
                     </div>
                 </div>
 
-                <!-- Ad Link Input -->
                 <input type="text" id="ad-link-input" placeholder="Your ad link (Optional: Direct Link / Smartlink)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4">
                 
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
@@ -147,7 +125,6 @@
                     <button onclick="location.reload()" class="text-sm text-slate-500 hover:text-white transition">Cancel / Select another file</button>
                 </div>
 
-                <!-- Progress Bar -->
                 <div id="progress-container" class="hidden mt-6">
                     <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
                         <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
@@ -177,19 +154,17 @@
         const historyPanel = document.getElementById('history-panel');
         const overlay = document.getElementById('overlay');
         const adLinkInput = document.getElementById('ad-link-input');
-        const notificationMessage = document.getElementById('notification-message'); // Custom notification element
+        const notificationMessage = document.getElementById('notification-message');
 
-        // --- CUSTOM NOTIFICATION FUNCTION ---
         function showNotification(message, type = 'info', duration = 4000) {
             notificationMessage.textContent = message;
             notificationMessage.className = `fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-lg shadow-lg text-white font-medium animate-slide-in-down`;
             
-            // Set background color based on type
             if (type === 'success') {
                 notificationMessage.classList.add('bg-green-600');
             } else if (type === 'error') {
                 notificationMessage.classList.add('bg-red-600');
-            } else { // default to info
+            } else {
                 notificationMessage.classList.add('bg-blue-600');
             }
             notificationMessage.classList.remove('hidden');
@@ -199,13 +174,11 @@
                 notificationMessage.classList.add('animate-slide-out-up');
                 notificationMessage.addEventListener('animationend', () => {
                     notificationMessage.classList.add('hidden');
-                    // Remove color classes to reset for next notification
                     notificationMessage.classList.remove('bg-green-600', 'bg-red-600', 'bg-blue-600');
                 }, { once: true });
             }, duration);
         }
 
-        // --- HISTORY MANAGEMENT ---
         function toggleHistory() {
             historyPanel.classList.toggle('open');
             overlay.classList.toggle('hidden');
@@ -247,18 +220,16 @@
         }
 
         function clearHistory() { 
-            if(confirm('Are you sure you want to clear all your upload history? This action cannot be undone.')) { // Confirmation still uses native alert
+            if(confirm('Are you sure you want to clear all your upload history? This action cannot be undone.')) {
                 localStorage.removeItem('pokoco_history'); 
                 renderHistory(); 
                 showNotification('Upload history cleared!', 'info');
             } 
         }
 
-        // --- STEP 1: FILE SELECTION LOGIC ---
         dropArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
         
-        // Drag and drop visual feedback
         dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('drag-over'); });
         dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
         dropArea.addEventListener('drop', (e) => {
@@ -291,19 +262,17 @@
             const previewContent = document.getElementById('file-preview-content');
             const fileUrl = URL.createObjectURL(file);
 
-            // Periksa ulang jenis file secara lebih spesifik untuk preview
             if (file.type.startsWith('image/')) {
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Image">`;
             } else if (file.type.startsWith('video/')) {
                 previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
             } else if (file.type.startsWith('audio/')) {
                 previewContent.innerHTML = `<audio src="${fileUrl}" controls></audio>`;
-            } else { // Fallback, seharusnya tidak terjadi jika validasi sudah benar
+            } else {
                 previewContent.innerHTML = `<span class="text-xs text-slate-500">No preview available for this file type.</span>`;
             }
         }
 
-        // --- STEP 2: START UPLOAD LOGIC ---
         async function startUpload() {
             if (!selectedFile) {
                 showNotification('Please select a file to upload first.', 'error');
@@ -316,9 +285,6 @@
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                // Ensure correct content type is sent to server
-                // Sometimes browser provides generic 'application/octet-stream' for some audio/video types
-                // We'll use selectedFile.type as is, but if issues persist, a mapping might be needed.
                 const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&ad_link=${encodeURIComponent(adLink)}`);
                 const data = await res.json();
                 
@@ -328,7 +294,7 @@
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', selectedFile.type); // Send the actual content type
+                xhr.setRequestHeader('Content-Type', selectedFile.type);
 
                 xhr.upload.onprogress = (e) => {
                     const percent = Math.round((e.loaded / e.total) * 100);
@@ -337,7 +303,7 @@
                 };
 
                 xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) { // Check for success status codes (2xx)
+                    if (xhr.status >= 200 && xhr.status < 300) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
                         saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink);
@@ -348,7 +314,6 @@
                         }, 1000);
                     } else { 
                         showNotification(`Upload failed. Server responded with status: ${xhr.status}. Please try again.`, 'error');
-                        // No reload here, let user see error message, they can click cancel/select another
                         document.getElementById('upload-action').classList.remove('hidden');
                         document.getElementById('progress-container').classList.add('hidden');
                     }
@@ -356,7 +321,6 @@
                 
                 xhr.onerror = () => {
                     showNotification('Network error or internet connection lost. Please check your connection and try again.', 'error');
-                    // No reload here
                     document.getElementById('upload-action').classList.remove('hidden');
                     document.getElementById('progress-container').classList.add('hidden');
                 };
