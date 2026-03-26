@@ -86,7 +86,7 @@
                 </div>
 
                 <!-- Input Link Iklan -->
-                <input type="text" id="ad-link-input" placeholder="Your ad link (Direct Link/Smartlink)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4">
+                <input type="text" id="ad-link-input" placeholder="Your ad link (Direct Link/Smartlink, optional)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4">
                 
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
@@ -125,7 +125,7 @@
         const historyList = document.getElementById('history-list');
         const historyPanel = document.getElementById('history-panel');
         const overlay = document.getElementById('overlay');
-        const adLinkInput = document.getElementById('ad-link-input'); // New
+        const adLinkInput = document.getElementById('ad-link-input'); // Ini input untuk ad_link
 
         // --- MANAJEMEN HISTORY BROWSER ---
         function toggleHistory() {
@@ -206,12 +206,13 @@
         async function startUpload() {
             if (!selectedFile) return;
             
-            const adLink = adLinkInput.value; // Dapatkan link iklan dari input
+            const adLink = adLinkInput.value.trim(); // Dapatkan link iklan dari input, hapus spasi
             
             document.getElementById('upload-action').classList.add('hidden');
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
+                // Kirim ad_link ke API get-upload-url
                 const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&ad_link=${encodeURIComponent(adLink)}`);
                 const data = await res.json();
                 
@@ -233,7 +234,7 @@
                         
                         saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink);
                         
-                        // Redirect setelah selesai
+                        // Redirect setelah selesai ke halaman V.HTML
                         setTimeout(() => {
                             window.location.href = '/v?id=' + data.videoId;
                         }, 1000);
