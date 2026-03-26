@@ -1,13 +1,17 @@
+// functions/api/admin/videos.js
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const password = url.searchParams.get("pw");
 
-  // Mengambil password dari Environment Variables Cloudflare. 
-  // Jika belum diset di Cloudflare, defaultnya "admin123"
-  const expectedPassword = env.ADMIN_PASSWORD || "admin123";
+  // =========================================================
+  // PASSWORD DITANAM DI SINI 
+  // Ganti "KopiHitamKupuKupu" dengan password rahasia abang
+  // =========================================================
+  const HARDCODED_PASSWORD = "123";
 
-  if (password !== expectedPassword) {
+  // Cek apakah password yang diketik di web sama dengan yang ditanam di atas
+  if (password !== HARDCODED_PASSWORD) {
     return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { 
       status: 401, 
       headers: { 'Content-Type': 'application/json' } 
