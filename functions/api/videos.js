@@ -1,4 +1,3 @@
-// functions/api/admin/videos.js
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
