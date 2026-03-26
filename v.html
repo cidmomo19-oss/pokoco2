@@ -1,40 +1,41 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
+    
+    <!-- MAGIC TAG: Blocks all referrer data from leaking to external websites -->
     <meta name="referrer" content="no-referrer" />
     
-    <!-- SEO & SHARE TAGS (WhatsApp, Google, Facebook, dll) -->
-    <meta name="title" content="Pokoco">
-    <meta name="description" content="Watch and share media on Pokoco">
+    <title>Pokoco - Preview</title>
+
+    <!-- SEO & OPEN GRAPH (For WhatsApp, Facebook, Google, etc.) -->
+    <meta name="description" content="Watch and share media on Pokoco." />
+    <meta property="og:title" content="Pokoco - Media Preview" />
+    <meta property="og:description" content="Watch and share media securely." />
+    <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="800" />
+    <meta property="og:type" content="website" />
     
-    <!-- Open Graph / WhatsApp -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Pokoco">
-    <meta property="og:description" content="Watch and share media on Pokoco">
-    <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="500">
-    <meta property="og:image:height" content="500">
+    <!-- TWITTER CARD -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pokoco - Media Preview" />
+    <meta name="twitter:description" content="Watch and share media securely." />
+    <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Pokoco">
-    <meta name="twitter:description" content="Watch and share media on Pokoco">
-    <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png">
+    <!-- FAVICON & NOTIFICATION / HOMESCREEN ICONS -->
+    <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
-    <!-- FAVICON & NOTIFICATION ICONS -->
-    <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png">
-    <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png">
-    <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png">
-
-    <title>Pokoco</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
+        
+        /* Set border-radius to 0 for sharp/square corners */
         video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
         audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
         .media-container { background-color: transparent; } 
@@ -43,6 +44,7 @@
 </head>
 <body>
 
+    <!-- ROBOT VERIFICATION GIMMICK PAGE -->
     <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
         <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center">
@@ -51,7 +53,7 @@
         </header>
 
         <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10">
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-8 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
               <rect width="16" height="12" x="4" y="8" rx="2" ry="2"/>
               <path d="M2 14h2"/>
               <path d="M20 14h2"/>
@@ -59,15 +61,19 @@
               <path d="M9 13v2"/>
               <path d="M12 8V4H8"/>
             </svg>
+            <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
+            <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
             <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 I am not a robot
             </button>
+            <p class="text-[#475569] text-[12px] mt-8">This verification helps ensure secure access to the video.</p>
         </div>
     </div>
 
+    <!-- MAIN CONTENT PAGE -->
     <div id="root" class="min-h-screen flex flex-col hidden">
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -85,6 +91,7 @@
                 <div class="w-full" id="media-wrapper">
                     <div id="loading-state" class="flex flex-col items-center justify-center w-full h-[250px]">
                         <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                        <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
                     </div>
                 </div>
             </div>
@@ -104,6 +111,7 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
+        // --- STEALTH REDIRECT FUNCTION (NO REFERRER) ---
         function redirectSafe(url) {
             const a = document.createElement('a');
             a.href = url;
@@ -113,6 +121,7 @@
             document.body.removeChild(a); 
         }
 
+        // --- STEALTH PREFETCH FUNCTION ---
         function prefetchSafe(url) {
             const prefetch = document.createElement('link');
             prefetch.rel = 'prefetch';
@@ -121,9 +130,11 @@
             document.head.appendChild(prefetch);
         }
 
+        // --- ROBOT GIMMICK LOGIC ---
         const robotAdUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         const robotScreen = document.getElementById('robot-screen');
         const rootScreen = document.getElementById('root');
+
         const isVerified = sessionStorage.getItem(`robot_verified_${id}`);
 
         window.onload = function() {
@@ -141,10 +152,13 @@
             window.open(window.location.href, '_blank');
             redirectSafe(robotAdUrl);
         }
+        // -----------------------------------------
 
+        // --- PLAYER ADS (SERVER + OMG10) ---
         const extraAdUrl = "https://omg10.com/4/10390860"; 
 
         function handleMediaError() {
+            console.error("Media error detected. Requesting a new link...");
             fetchAndUpdateMedia(); 
         }
 
@@ -162,6 +176,7 @@
                     const { playUrl, contentType, adLink } = data;
                     
                     if (contentType.startsWith('image/')) {
+                        // Removed rounded class for square edges
                         mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
                         shareLabel.innerText = 'Share image';
                         document.title = 'Pokoco - Image';
@@ -180,7 +195,7 @@
                             
                             existingPlayer.addEventListener('loadedmetadata', () => {
                                 existingPlayer.currentTime = currentTime;
-                                if (wasPlaying) existingPlayer.play().catch(e => console.warn(e));
+                                if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
                             }, { once: true });
 
                         } else { 
@@ -192,6 +207,7 @@
 
                             const needsOverlay = (adLink && !isServerAdDone) || !isExtraAdDone;
 
+                            // Removed rounded class from video wrapper for square edges
                             mediaWrapper.innerHTML = `
                                 <div class="relative w-full overflow-hidden media-container"> 
                                     <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
@@ -207,19 +223,23 @@
 
                              if(overlay) {
                                  overlay.addEventListener('click', function() {
-                                     player.play().catch(e => console.warn(e));
+                                     player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      
                                      const currentServerAdDone = sessionStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
                                      const currentExtraAdDone = sessionStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
 
                                      if (adLink && !currentServerAdDone) {
                                          sessionStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
-                                         setTimeout(() => { redirectSafe(adLink); }, 800); 
+                                         setTimeout(() => {
+                                             redirectSafe(adLink); 
+                                         }, 800); 
                                      } 
                                      else if (!currentExtraAdDone) {
                                          sessionStorage.setItem(`extraAdTriggeredForVideo_${id}`, 'true'); 
                                          overlay.remove(); 
-                                         setTimeout(() => { redirectSafe(extraAdUrl); }, 800); 
+                                         setTimeout(() => {
+                                             redirectSafe(extraAdUrl); 
+                                         }, 800); 
                                      } 
                                      else {
                                          overlay.remove();
@@ -235,10 +255,11 @@
                         player.addEventListener('error', handleMediaError); 
                     }
                 } else {
-                    throw new Error("Failed");
+                    throw new Error("Failed to load media.");
                 }
             } catch (e) {
-                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found</div>`;
+                console.error("Error in fetch:", e);
+                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
             }
         }
 
