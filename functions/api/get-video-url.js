@@ -14,7 +14,7 @@ export async function onRequestGet(context) {
     region: "auto",
     endpoint: `https://${env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: env.R2_ACCESS_key_ID,
+      accessKeyId: env.R2_ACCESS_KEY_ID,
       secretAccessKey: env.R2_SECRET_ACCESS_KEY,
     },
   });
@@ -26,7 +26,7 @@ export async function onRequestGet(context) {
     ).bind(videoId).first();
     
     if (!videoData) {
-      // Jika video tidak ditemukan di DB, mungkin sudah dihapus oleh worker cleanup
+      // Jika video tidak ditemukan di DB, kemungkinan sudah dihapus oleh worker cleanup
       throw new Error("File not found in database or has been deleted.");
     }
 
@@ -43,7 +43,7 @@ export async function onRequestGet(context) {
       Bucket: env.R2_BUCKET_NAME,
       Key: videoId,
     });
-    const signedUrl = await getSignedUrl(S3, getCommand, { expiresIn: 10800 }); // 3 jam
+    const signedUrl = await getSignedUrl(S3, getCommand, { expiresIn: 10800 }); // URL playback berlaku 3 jam
 
     return new Response(JSON.stringify({
       success: true,
