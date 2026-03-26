@@ -14,13 +14,14 @@
     </style>
 </head>
 <body>
+
     <div id="root" class="min-h-screen flex flex-col">
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
                 <a href="/" class="flex items-center">
                     <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
                 </a>
-                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full text-[15px] border border-slate-800">
+                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800">
                     <span>Upload</span>
                 </a>
             </div>
@@ -29,12 +30,13 @@
         <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-4">
             <div class="w-full flex justify-center">
                 <div class="w-full" id="media-wrapper">
-                    <div id="loading-state" class="flex flex-col items-center justify-center w-full" style="height: 250px;">
+                    <div id="loading-state" class="flex flex-col items-center justify-center w-full h-[250px]">
                         <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
                         <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
                     </div>
                 </div>
             </div>
+
             <div class="w-full flex flex-col items-center mt-6 mb-0">
                 <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
@@ -68,8 +70,8 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    const { playUrl, contentType, adLink } = data; // Ambil adLink dari API
-
+                    const { playUrl, contentType, adLink } = data;
+                    
                     if (contentType.startsWith('image/')) {
                         mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
                         shareLabel.innerText = 'Share image';
@@ -78,48 +80,25 @@
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
 
-                        if (adLink && adLink.trim() !== '') {
-                            mediaWrapper.innerHTML = `
-                                <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
-                                    <video id="main-player" class="w-full" playsinline src="${playUrl}"></video>
-                                    <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center bg-black/50 cursor-pointer" onclick="handleAdClick('${adLink}')">
-                                        <div id="ad-btn" class="bg-blue-600 text-white px-8 py-4 rounded-full font-bold flex items-center gap-2 hover:bg-blue-700 transition shadow-xl hover:scale-105 transform">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
-                                            <span class="text-lg">Play Video</span>
-                                        </div>
+                        // Tambahkan Overlay Transparan + Fungsi Iklan
+                        mediaWrapper.innerHTML = `
+                            <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
+                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
+
+                                <!-- Overlay Transparan Langsung Buka Iklan -->
+                                <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);" onclick="window.open('${adLink}', '_blank'); document.getElementById('main-player').play()">
                                     </div>
-                                </div>`;
-                        } else {
-                            mediaWrapper.innerHTML = `<video id="main-player" class="w-full md:rounded-[8px]" controls playsinline autoplay src="${playUrl}"></video>`;
-                        }
+                            </div>`;
+                         const player = document.getElementById('main-player');
+                         player.play();
                     }
-                } else { throw new Error("Failed"); }
+                } else {
+                    throw new Error("Failed to load media.");
+                }
             } catch (e) {
                 mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
             }
         };
-
-        function handleAdClick(adUrl) {
-            const overlay = document.getElementById('ad-overlay');
-            const adBtn = document.getElementById('ad-btn');
-            const video = document.getElementById('main-player');
-            overlay.onclick = null;
-            let timeLeft = 5;
-            adBtn.innerHTML = `<span class="animate-pulse text-lg">Loading in ${timeLeft}...</span>`;
-
-            const timer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    adBtn.innerHTML = `<span class="animate-pulse text-lg">Loading in ${timeLeft}...</span>`;
-                } else {
-                    clearInterval(timer);
-                    overlay.remove();
-                    video.controls = true;
-                    video.play();
-                    window.open(adUrl, '_blank');
-                }
-            }, 1000);
-        }
 
         function shareMedia() {
             const label = document.getElementById('share-label').innerText;
