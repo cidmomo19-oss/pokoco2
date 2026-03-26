@@ -12,7 +12,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 8px; }
+        /* border-radius diubah jadi 0 agar siku/kotak */
+        video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
         audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
         .media-container { background-color: transparent; } 
         .text-gray-pokoco { color: #64748b; }
@@ -152,7 +153,8 @@
                     const { playUrl, contentType, adLink } = data;
                     
                     if (contentType.startsWith('image/')) {
-                        mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
+                        // Class rounded dihapus agar kotak
+                        mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
                         shareLabel.innerText = 'Share image';
                         document.title = 'Pokoco - Image';
 
@@ -174,7 +176,6 @@
                             }, { once: true });
 
                         } else { 
-                            // UBAH JADI sessionStorage: Iklan bakal direset tiap user buka link/tab baru
                             const isServerAdDone = sessionStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
                             const isExtraAdDone = sessionStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
 
@@ -183,8 +184,9 @@
 
                             const needsOverlay = (adLink && !isServerAdDone) || !isExtraAdDone;
 
+                            // Class rounded dihapus dari pembungkus video agar kotak
                             mediaWrapper.innerHTML = `
-                                <div class="relative w-full md:rounded-[8px] overflow-hidden media-container"> 
+                                <div class="relative w-full overflow-hidden media-container"> 
                                     <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
                                     ${needsOverlay ? 
                                         `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
@@ -200,7 +202,6 @@
                                  overlay.addEventListener('click', function() {
                                      player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      
-                                     // UBAH JADI sessionStorage: Cek status per sesi tab
                                      const currentServerAdDone = sessionStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
                                      const currentExtraAdDone = sessionStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
 
