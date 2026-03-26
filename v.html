@@ -37,6 +37,7 @@
                 </div>
             </div>
 
+            <!-- Share Button -->
             <div class="w-full flex flex-col items-center mt-6 mb-0">
                 <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
@@ -58,6 +59,7 @@
         const shareLabel = document.getElementById('share-label');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
+        let adOverlayClicked = false; // Flag iklannya sudah di-klik atau belum
 
         window.onload = async function() {
             if (!id) {
@@ -71,7 +73,7 @@
 
                 if (data.success) {
                     const { playUrl, contentType, adLink } = data;
-                    
+
                     if (contentType.startsWith('image/')) {
                         mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
                         shareLabel.innerText = 'Share image';
@@ -80,25 +82,31 @@
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
 
-                        // Tambahkan Overlay Transparan + Fungsi Iklan
+                        // Tambahkan Overlay Transparan + Logika Sekali Klik
                         mediaWrapper.innerHTML = `
                             <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
                                 <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-
-                                <!-- Overlay Transparan Langsung Buka Iklan -->
-                                <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);" onclick="window.open('${adLink}', '_blank'); document.getElementById('main-player').play()">
-                                    </div>
+                                <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);" onclick="handleAdClick('${adLink}')">
+                                </div>
                             </div>`;
-                         const player = document.getElementById('main-player');
-                         player.play();
+                        const player = document.getElementById('main-player');
+                        
                     }
-                } else {
-                    throw new Error("Failed to load media.");
-                }
+                } else { throw new Error("Failed"); }
             } catch (e) {
                 mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
             }
         };
+
+        // Fungsi Khusus Buka Iklan Sekali Saja + Muter Video
+        function handleAdClick(adUrl) {
+            const video = document.getElementById('main-player');
+            if (!adOverlayClicked) {
+                window.open(adUrl, '_under'); // Iklan di Tab Belakang
+                adOverlayClicked = true; // Set flag jadi "sudah diklik"
+            }
+            video.play(); // Tetap putar video
+        }
 
         function shareMedia() {
             const label = document.getElementById('share-label').innerText;
