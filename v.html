@@ -58,17 +58,22 @@
         const shareLabel = document.getElementById('share-label');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        let refreshInterval; // Variabel untuk menyimpan interval timer
 
-        // FUNGSI UTAMA: Mengambil link dan mengupdate tampilan
+        // SOLUSI MASALAH IKLAN: Penanda bahwa iklan sudah pernah dipicu
+        let adHasBeenTriggered = false;
+
+        // FUNGSI INI AKAN DIPANGGIL KETIKA VIDEO GAGAL DIPUTAR (KADALUARSA)
+        function handleVideoError() {
+            console.error("Video error terdeteksi (kemungkinan link kadaluarsa). Meminta link baru...");
+            fetchAndUpdateMedia(); // Panggil fungsi untuk mengambil link baru
+        }
+
         async function fetchAndUpdateMedia() {
             if (!id) {
                 mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
                 return;
             }
             
-            console.log("Meminta link media baru pada " + new Date().toLocaleTimeString());
-
             try {
                 const response = await fetch(`/api/get-video-url?id=${id}`);
                 const data = await response.json();
@@ -77,65 +82,62 @@
                     const { playUrl, contentType, adLink } = data;
                     
                     if (contentType.startsWith('image/')) {
-                        // Jika gambar, hentikan timer refresh karena tidak perlu
-                        if (refreshInterval) clearInterval(refreshInterval);
                         mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
                         shareLabel.innerText = 'Share image';
                         document.title = 'Pokoco - Image';
-
                     } else if (contentType.startsWith('video/')) {
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
                         
                         const existingPlayer = document.getElementById('main-player');
 
-                        // LOGIKA REFRESH: Jika player sudah ada, cukup ganti link-nya
+                        // Jika player sudah ada (berarti ini proses refresh karena error)
                         if (existingPlayer) {
-                            const currentTime = existingPlayer.currentTime; // Simpan posisi video
-                            const wasPlaying = !existingPlayer.paused; // Simpan status play/pause
-
-                            existingPlayer.src = playUrl; // Ganti dengan link baru
-
-                            // Setelah link baru termuat, kembalikan ke posisi semula
+                            const currentTime = existingPlayer.currentTime;
+                            const wasPlaying = !existingPlayer.paused;
+                            existingPlayer.src = playUrl;
+                            existingPlayer.load(); // Perintahkan player untuk memuat link baru
+                            
                             existingPlayer.addEventListener('loadedmetadata', () => {
                                 existingPlayer.currentTime = currentTime;
-                                if (wasPlaying) {
-                                    existingPlayer.play().catch(e => console.error("Auto-play gagal setelah refresh:", e));
-                                }
+                                if (wasPlaying) existingPlayer.play();
                             }, { once: true });
-                            
-                        // LOGIKA AWAL: Jika player belum ada, buat dari awal
+
+                        // Jika player belum ada (ini pemuatan pertama kali)
                         } else {
-                            if(adLink) {
+                            if(adLink && !adHasBeenTriggered) {
                                 const prefetch = document.createElement('link');
                                 prefetch.rel = 'prefetch'; 
                                 prefetch.href = adLink;
                                 document.head.appendChild(prefetch);
                             }
 
+                            // Buat HTML player dengan overlay iklan HANYA JIKA adHasBeenTriggered = false
                             mediaWrapper.innerHTML = `
                                 <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
                                     <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                    <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>
+                                    ${!adHasBeenTriggered ? 
+                                        `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
+                                    }
                                 </div>`;
                             
                              const player = document.getElementById('main-player');
                              const overlay = document.getElementById('ad-overlay');
 
+                             // SOLUSI MASALAH REFRESH LINK: Pasang pendeteksi error di video
+                             player.addEventListener('error', handleVideoError);
+
+                             // Logika iklan hanya dipasang jika overlay ada
                              if(overlay && adLink) {
                                  overlay.addEventListener('click', function() {
                                      player.play();
                                      overlay.remove();
+                                     adHasBeenTriggered = true; // Tandai bahwa iklan sudah pernah diklik
                                      setTimeout(() => {
                                          window.location.href = adLink;
                                      }, 800); 
                                  });
                              }
-                             
-                             // SETELAH SUKSES MUAT PERTAMA KALI, MULAI TIMER REFRESH OTOMATIS
-                             // 2 jam = 7,200,000 milidetik
-                             if (refreshInterval) clearInterval(refreshInterval); // Hapus timer lama jika ada
-                             refreshInterval = setInterval(fetchAndUpdateMedia, 2 * 60 * 60 * 1000); 
                         }
                     }
                 } else {
@@ -146,9 +148,8 @@
             }
         }
 
-        // JALANKAN SAAT AWAL BUKA HALAMAN
         window.onload = function() {
-            fetchAndUpdateMedia();
+            fetchAndUpdateMedia(); // Panggil sekali saat halaman dibuka
         };
 
         function shareMedia() {
