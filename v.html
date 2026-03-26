@@ -33,8 +33,8 @@
 
         <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10">
             
-            <!-- Icon Robot SVG -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(6,182,212,0.7)]">
+            <!-- Icon Robot SVG (Warna Putih Glowing) -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
               <rect width="16" height="12" x="4" y="8" rx="2" ry="2"/>
               <path d="M2 14h2"/>
               <path d="M20 14h2"/>
@@ -47,8 +47,8 @@
             <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
             <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
 
-            <!-- Tombol I am not a robot (NEON GLOWING) -->
-            <button onclick="triggerVerification()" class="flex items-center gap-3 bg-[#06b6d4] text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_#06b6d4,0_0_30px_rgba(6,182,212,0.5)] hover:shadow-[0_0_25px_#06b6d4,0_0_50px_rgba(6,182,212,0.8)] transition-all duration-300 transform hover:-translate-y-1">
+            <!-- Tombol I am not a robot (NEON PUTIH MENYALA) -->
+            <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
@@ -136,13 +136,12 @@
         }
         // -----------------------------------------
 
-        // PENTING: Inisialisasi status iklan dari localStorage, spesifik untuk ID video ini.
+        // --- LOGIKA BAWAAN ASLI (IKLAN SERVER TIDAK DIHAPUS) ---
         let adHasBeenTriggered = localStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
 
-        // FUNGSI INI AKAN DIPANGGIL KETIKA MEDIA GAGAL DIMUAT (kadaluarsa/error lain)
         function handleMediaError() {
             console.error("Media error terdeteksi (kemungkinan link kadaluarsa). Meminta link baru...");
-            fetchAndUpdateMedia(); // Panggil fungsi untuk mengambil link baru
+            fetchAndUpdateMedia(); 
         }
 
         async function fetchAndUpdateMedia() {
@@ -158,20 +157,18 @@
                 if (data.success) {
                     const { playUrl, contentType, adLink } = data;
                     
-                    // --- Tampilan untuk Gambar ---
                     if (contentType.startsWith('image/')) {
                         mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
                         shareLabel.innerText = 'Share image';
                         document.title = 'Pokoco - Image';
 
-                    // --- Tampilan untuk Video ---
                     } else if (contentType.startsWith('video/')) {
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
                         
                         const existingPlayer = document.getElementById('main-player');
 
-                        if (existingPlayer) { // Jika player sudah ada (proses refresh karena error)
+                        if (existingPlayer) { 
                             const currentTime = existingPlayer.currentTime;
                             const wasPlaying = !existingPlayer.paused;
                             existingPlayer.src = playUrl;
@@ -179,12 +176,10 @@
                             
                             existingPlayer.addEventListener('loadedmetadata', () => {
                                 existingPlayer.currentTime = currentTime;
-                                // Autoplay bisa diblokir browser, jadi pakai catch
                                 if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay after refresh blocked:", e));
                             }, { once: true });
 
-                        } else { // Jika player belum ada (pemuatan pertama kali)
-                            // Prefetch adLink HANYA jika adHasBeenTriggered masih false dan ada adLink
+                        } else { 
                             if(adLink && !adHasBeenTriggered) {
                                 const prefetch = document.createElement('link');
                                 prefetch.rel = 'prefetch'; 
@@ -192,8 +187,7 @@
                                 document.head.appendChild(prefetch);
                             }
 
-                            // Buat HTML player dengan overlay iklan HANYA JIKA adHasBeenTriggered = false DAN ada adLink
-                            // Menghilangkan 'bg-black' dari div utama video untuk transparansi.
+                            // IKLAN OVERLAY DARI SERVER (TETAP ADA, TIDAK DIUBAH SAMA SEKALI)
                             mediaWrapper.innerHTML = `
                                 <div class="relative w-full md:rounded-[8px] overflow-hidden media-container"> 
                                     <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
@@ -205,28 +199,25 @@
                              const player = document.getElementById('main-player');
                              const overlay = document.getElementById('ad-overlay');
 
-                             player.addEventListener('error', handleMediaError); // Pasang pendeteksi error di video
+                             player.addEventListener('error', handleMediaError); 
 
-                             // Logika iklan hanya dipasang jika overlay ada (artinya adHasBeenTriggered = false DAN adLink tersedia)
                              if(overlay && adLink) {
                                  overlay.addEventListener('click', function() {
                                      player.play().catch(e => console.warn("Autoplay on click blocked:", e));
                                      overlay.remove();
-                                     // Set status iklan di localStorage setelah diklik
                                      localStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
                                      setTimeout(() => {
-                                         window.location.href = adLink; // Redirect ke iklan
+                                         window.location.href = adLink; 
                                      }, 800); 
                                  });
                              }
                         }
-                    // --- Tampilan untuk Audio ---
                     } else if (contentType.startsWith('audio/')) {
                         mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
                         shareLabel.innerText = 'Share audio';
                         document.title = 'Pokoco - Audio';
                         const player = document.getElementById('main-player');
-                        player.addEventListener('error', handleMediaError); // Pasang pendeteksi error untuk audio juga
+                        player.addEventListener('error', handleMediaError); 
                     }
                 } else {
                     throw new Error("Failed to load media.");
