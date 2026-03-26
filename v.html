@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
-    <title>Pokoco - Preview</title>
+    <title>Pokoco - Verify</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -29,15 +29,14 @@
 
         <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-4">
             <div class="w-full flex justify-center">
+                <!-- WADAH UTAMA KONTEN -->
                 <div class="w-full" id="media-wrapper">
-                    <div id="loading-state" class="flex flex-col items-center justify-center w-full h-[250px]">
-                        <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
-                        <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
-                    </div>
+                    <!-- Tampilan ini akan diisi lewat JavaScript -->
                 </div>
             </div>
 
-            <div class="w-full flex flex-col items-center mt-6 mb-0">
+            <!-- Tombol Share disembunyikan di awal, baru muncul saat video siap -->
+            <div id="share-container" class="w-full flex flex-col items-center mt-6 mb-0 hidden">
                 <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
                     <span id="share-label">Share link</span>
@@ -55,22 +54,66 @@
 
     <script>
         const mediaWrapper = document.getElementById('media-wrapper');
+        const shareContainer = document.getElementById('share-container');
         const shareLabel = document.getElementById('share-label');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
 
-        window.onload = async function() {
+        // 1. FUNGSI PERTAMA KALI JALAN SAAT WEB DIBUKA
+        window.onload = function() {
             if (!id) {
                 mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
                 return;
             }
 
+            // Tampilkan Gimmick Halaman Verifikasi (Player belum dimuat sama sekali)
+            mediaWrapper.innerHTML = `
+                <div class="flex flex-col items-center justify-center w-full h-[300px] md:h-[400px] bg-[#1e293b] rounded-[8px] border border-slate-700 shadow-lg">
+                    <button id="verify-btn" onclick="startVerification()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-transform transform active:scale-95 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>I am not a robot</span>
+                    </button>
+                    <p class="mt-4 text-xs text-slate-400">Click to verify and load media</p>
+                </div>
+            `;
+        };
+
+        // 2. FUNGSI KETIKA TOMBOL "I AM NOT A ROBOT" DIKLIK
+        function startVerification() {
+            const btn = document.getElementById('verify-btn');
+            
+            // Ubah tombol jadi efek loading sesaat (Gimmick verifikasi)
+            btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> <span>Verifying...</span>`;
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            btn.classList.add('bg-slate-600', 'cursor-not-allowed');
+            btn.disabled = true;
+
+            // Beri jeda 1 detik seolah-olah sistem sedang ngecek, lalu panggil Video
+            setTimeout(() => {
+                fetchAndLoadMedia();
+            }, 1000); // 1000 milidetik = 1 detik
+        }
+
+        // 3. FUNGSI UNTUK MEMUAT VIDEO & IKLAN REDIRECT (Berjalan sesudah verifikasi)
+        async function fetchAndLoadMedia() {
+            // Tampilkan tulisan Loading Media sungguhan
+            mediaWrapper.innerHTML = `
+                <div class="flex flex-col items-center justify-center w-full h-[250px]">
+                    <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                    <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
+                </div>
+            `;
+
             try {
+                // Proses ambil data dari API
                 const response = await fetch(`/api/get-video-url?id=${id}`);
                 const data = await response.json();
 
                 if (data.success) {
                     const { playUrl, contentType, adLink } = data;
+                    
+                    // Munculkan kembali tombol share
+                    shareContainer.classList.remove('hidden');
                     
                     if (contentType.startsWith('image/')) {
                         mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
@@ -80,7 +123,7 @@
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
 
-                        // 1. PREFETCH: Memuat data iklan di background agar saat redirect jadi instan/cepat
+                        // PREFETCH: Memuat data iklan di background agar saat redirect jadi instan/cepat
                         if(adLink) {
                             const prefetch = document.createElement('link');
                             prefetch.rel = 'prefetch'; 
@@ -88,7 +131,7 @@
                             document.head.appendChild(prefetch);
                         }
 
-                        // 2. RENDER: Hapus onclick dari div dan pindahkan ke script
+                        // RENDER VIDEO + OVERLAY IKLAN
                         mediaWrapper.innerHTML = `
                             <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
                                 <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
@@ -100,7 +143,7 @@
                          const player = document.getElementById('main-player');
                          const overlay = document.getElementById('ad-overlay');
 
-                         // 3. LOGIKA IKLAN
+                         // LOGIKA IKLAN 1 KALI KLIK
                          if(overlay && adLink) {
                              overlay.addEventListener('click', function() {
                                  // Putar video ketika di klik
@@ -127,12 +170,13 @@
                     throw new Error("Failed to load media.");
                 }
             } catch (e) {
+                shareContainer.classList.add('hidden');
                 mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
             }
-        };
+        }
 
         function shareMedia() {
-            const label = document.getElementById('share-label').innerText;
+            const label = shareLabel.innerText;
             if (navigator.share) {
                 navigator.share({ title: `Pokoco - ${label}`, url: window.location.href });
             } else {
