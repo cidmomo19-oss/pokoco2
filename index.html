@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
+    <!-- FIX: Cache Busting untuk Update Kode Terbaru -->
+    <link rel="stylesheet" href="style.css?v=1"> 
     <title>Pokoco - Simple Hosting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -27,7 +29,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col overflow-x-hidden">
+<body class="min-h-screen flex flex-col overflow-x-hidden" onload="renderHistory()"> <!-- FIX: Panggil renderHistory() Saat Load -->
 
     <header class="pt-4 pb-3 lg:pt-5 lg:pb-4 z-40 relative">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -130,9 +132,9 @@
             renderHistory();
         }
 
-        function saveToHistory(id, name, type, preview) { // Tambah parameter preview
+        function saveToHistory(id, name, type, preview) {
             let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            history.unshift({ id, name, type, preview, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }); // Simpan preview
+            history.unshift({ id, name, type, preview, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) });
             localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20)));
             console.log("History saved:", localStorage.getItem('pokoco_history')); // Debugging
         }
@@ -145,11 +147,11 @@
             }
             historyList.innerHTML = history.map(item => `
                 <div class="p-3 bg-[#0f172a] border border-slate-700 rounded-xl flex items-center gap-3 hover:border-slate-500 transition-colors">
-                    <!-- NEW: Thumbnail Preview -->
+                    <!-- NEW: Thumbnail Preview (Langsung dari LocalStorage) -->
                     <div class="w-10 h-10 bg-[#1e293b] rounded flex items-center justify-center shrink-0 overflow-hidden">
-                        ${item.type.startsWith('image/') ? 
+                        ${item.type && item.type.startsWith('image/') ? 
                             `<img src="${item.preview}" class="object-cover w-full h-full" alt="Image Preview">` : 
-                            item.type.startsWith('video/') ? 
+                            item.type && item.type.startsWith('video/') ? 
                             `<video src="${item.preview}" muted loop autoplay class="object-cover w-full h-full"></video>` : 
                             `<svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`}
                     </div>
@@ -194,10 +196,8 @@
             const fileUrl = URL.createObjectURL(file);
 
             if (file.type.startsWith('image/')) {
-                // NEW: Preview Gambar
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Gambar">`;
             } else if (file.type.startsWith('video/')) {
-                // NEW: Preview Video (diputar otomatis tanpa suara)
                 previewContent.innerHTML = `<video src="${fileUrl}" controls muted loop autoplay></video>`;
             }
         }
@@ -229,8 +229,9 @@
                     if (xhr.status === 200) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
-                        // NEW: Simpan ke History (dengan URL Preview) & Beri Jeda
-                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, URL.createObjectURL(selectedFile));
+                        // FIX: SIMPAN KE HISTORY (dengan URL Preview) & Beri Jeda, lalu Redirect
+                        const previewURL = URL.createObjectURL(selectedFile);
+                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, previewURL);
                         
                         setTimeout(() => {
                             window.location.href = '/v?id=' + data.videoId;
@@ -254,7 +255,7 @@
             }
         }
 
-        // Panggil renderHistory saat halaman pertama dimuat
+        // FIX: Panggil renderHistory saat halaman pertama dimuat
         document.addEventListener('DOMContentLoaded', renderHistory);
     </script>
 </body>
