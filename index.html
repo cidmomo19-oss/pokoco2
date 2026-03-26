@@ -212,7 +212,7 @@
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}`);
+                const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&ad_link=${encodeURIComponent(adLink)}`);
                 const data = await res.json();
                 
                 if (!data.success) throw new Error("Gagal terhubung ke server (API Error)");
