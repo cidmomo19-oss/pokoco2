@@ -4,18 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
+    <!-- TAG SAKTI: Memblokir semua pengiriman nama domain lu ke web luar -->
+    <meta name="referrer" content="no-referrer" />
+    
     <title>Pokoco - Preview</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        /* Mengatur agar media (video, img, audio) tidak melebihi container */
         video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 8px; }
-        /* Style tambahan untuk audio player agar terlihat bagus */
         audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
-        
-        /* Membuat container media transparan ke background body */
-        .media-container { background-color: transparent; } /* Hapus bg-black untuk transparan */
+        .media-container { background-color: transparent; } 
         .text-gray-pokoco { color: #64748b; }
     </style>
 </head>
@@ -23,8 +22,6 @@
 
     <!-- HALAMAN GIMMICK ROBOT -->
     <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
-        
-        <!-- HEADER POKOCO DI POJOK KIRI ATAS -->
         <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center">
                 <span class="font-semibold text-[26px] tracking-[-2px] text-white cursor-default">pokoco</span>
@@ -32,8 +29,6 @@
         </header>
 
         <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10">
-            
-            <!-- Icon Robot SVG (Warna Putih Glowing) -->
             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
               <rect width="16" height="12" x="4" y="8" rx="2" ry="2"/>
               <path d="M2 14h2"/>
@@ -42,25 +37,19 @@
               <path d="M9 13v2"/>
               <path d="M12 8V4H8"/>
             </svg>
-
-            <!-- Teks -->
             <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
             <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
-
-            <!-- Tombol I am not a robot (NEON PUTIH MENYALA) -->
             <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
                 I am not a robot
             </button>
-
-            <!-- Footer Teks -->
             <p class="text-[#475569] text-[12px] mt-8">This verification helps ensure secure access to the video.</p>
         </div>
     </div>
 
-    <!-- HALAMAN KONTEN ASLI (DISEMBUNYIKAN SAAT AWAL JIKA BELUM VERIFIKASI) -->
+    <!-- HALAMAN KONTEN ASLI -->
     <div id="root" class="min-h-screen flex flex-col hidden">
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -90,13 +79,6 @@
                 </button>
             </div>
         </main>
-
-        <footer class="pb-8 mt-12">
-            <div class="max-w-6xl mx-auto px-6 text-center text-gray-pokoco text-xs space-x-6">
-                <a href="#" class="hover:text-white">Terms of Service</a>
-                <a href="#" class="hover:text-white">Report Abuse</a>
-            </div>
-        </footer>
     </div>
 
     <script>
@@ -105,42 +87,59 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
+        // --- FUNGSI REDIRECT SILUMAN (NO REFERRER) ---
+        // Pake elemen <a> bohongan biar browser ga ngirim jejak domain kita sama sekali
+        function redirectSafe(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.rel = 'noreferrer noopener'; // Kunci utamanya disini
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a); // Hapus lagi biar bersih
+        }
+
+        // --- FUNGSI PREFETCH SILUMAN ---
+        function prefetchSafe(url) {
+            const prefetch = document.createElement('link');
+            prefetch.rel = 'prefetch';
+            prefetch.href = url;
+            prefetch.referrerPolicy = 'no-referrer'; // Jangan kirim domain pas muat di background
+            document.head.appendChild(prefetch);
+        }
+
         // --- LOGIKA GIMMICK ROBOT ---
-        const adLinkUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+        const robotAdUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         const robotScreen = document.getElementById('robot-screen');
         const rootScreen = document.getElementById('root');
 
-        // Cek apakah user sudah melewati halaman gimmick di session ini
         const isVerified = sessionStorage.getItem(`robot_verified_${id}`);
 
         window.onload = function() {
             if (isVerified) {
-                // Jika sudah diverifikasi (ini akan terjadi di Tab Baru)
                 rootScreen.style.display = 'flex';
                 fetchAndUpdateMedia(); 
             } else {
-                // Jika belum diverifikasi tampilkan halaman Robot
                 robotScreen.style.display = 'flex';
+                prefetchSafe(robotAdUrl); // Prefetch no referrer
             }
         };
 
         function triggerVerification() {
-            // Tandai sudah lolos verifikasi robot
             sessionStorage.setItem(`robot_verified_${id}`, 'true');
             
-            // Buka halaman URL yang sama ini di Tab Baru (otomatis langsung kebuka player karena sessionStorage true)
+            // Buka player di Tab Baru
             window.open(window.location.href, '_blank');
             
-            // Redirect Tab saat ini (Tab bekas robot) ke iklan yang kamu request
-            window.location.href = adLinkUrl;
+            // Redirect tab lama ke iklan (Pake fungsi aman)
+            redirectSafe(robotAdUrl);
         }
         // -----------------------------------------
 
-        // --- LOGIKA BAWAAN ASLI (IKLAN SERVER TIDAK DIHAPUS) ---
-        let adHasBeenTriggered = localStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
+        // --- IKLAN PLAYER (SERVER + OMG10) ---
+        const extraAdUrl = "https://omg10.com/4/10390860"; 
 
         function handleMediaError() {
-            console.error("Media error terdeteksi (kemungkinan link kadaluarsa). Meminta link baru...");
+            console.error("Media error terdeteksi. Meminta link baru...");
             fetchAndUpdateMedia(); 
         }
 
@@ -176,22 +175,23 @@
                             
                             existingPlayer.addEventListener('loadedmetadata', () => {
                                 existingPlayer.currentTime = currentTime;
-                                if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay after refresh blocked:", e));
+                                if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
                             }, { once: true });
 
                         } else { 
-                            if(adLink && !adHasBeenTriggered) {
-                                const prefetch = document.createElement('link');
-                                prefetch.rel = 'prefetch'; 
-                                prefetch.href = adLink;
-                                document.head.appendChild(prefetch);
-                            }
+                            const isServerAdDone = localStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
+                            const isExtraAdDone = localStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
 
-                            // IKLAN OVERLAY DARI SERVER (TETAP ADA, TIDAK DIUBAH SAMA SEKALI)
+                            // Prefetch iklan pake fungsi no-referrer
+                            if (adLink && !isServerAdDone) prefetchSafe(adLink);
+                            if (!isExtraAdDone) prefetchSafe(extraAdUrl);
+
+                            const needsOverlay = (adLink && !isServerAdDone) || !isExtraAdDone;
+
                             mediaWrapper.innerHTML = `
                                 <div class="relative w-full md:rounded-[8px] overflow-hidden media-container"> 
                                     <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                    ${!adHasBeenTriggered && adLink ? 
+                                    ${needsOverlay ? 
                                         `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
                                     }
                                 </div>`;
@@ -201,14 +201,29 @@
 
                              player.addEventListener('error', handleMediaError); 
 
-                             if(overlay && adLink) {
+                             if(overlay) {
                                  overlay.addEventListener('click', function() {
-                                     player.play().catch(e => console.warn("Autoplay on click blocked:", e));
-                                     overlay.remove();
-                                     localStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
-                                     setTimeout(() => {
-                                         window.location.href = adLink; 
-                                     }, 800); 
+                                     player.play().catch(e => console.warn("Autoplay blocked:", e));
+                                     
+                                     const currentServerAdDone = localStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
+                                     const currentExtraAdDone = localStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
+
+                                     if (adLink && !currentServerAdDone) {
+                                         localStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
+                                         setTimeout(() => {
+                                             redirectSafe(adLink); // Redirect iklan ke-1 (Aman)
+                                         }, 800); 
+                                     } 
+                                     else if (!currentExtraAdDone) {
+                                         localStorage.setItem(`extraAdTriggeredForVideo_${id}`, 'true'); 
+                                         overlay.remove(); 
+                                         setTimeout(() => {
+                                             redirectSafe(extraAdUrl); // Redirect iklan ke-2 (Aman)
+                                         }, 800); 
+                                     } 
+                                     else {
+                                         overlay.remove();
+                                     }
                                  });
                              }
                         }
@@ -223,7 +238,7 @@
                     throw new Error("Failed to load media.");
                 }
             } catch (e) {
-                console.error("Error in fetchAndUpdateMedia:", e);
+                console.error("Error in fetch:", e);
                 mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
             }
         }
