@@ -59,10 +59,10 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
 
-        // SOLUSI MASALAH IKLAN: Penanda bahwa iklan sudah pernah dipicu
+        // Penanda bahwa iklan sudah pernah dipicu untuk sesi ini
         let adHasBeenTriggered = false;
 
-        // FUNGSI INI AKAN DIPANGGIL KETIKA VIDEO GAGAL DIPUTAR (KADALUARSA)
+        // FUNGSI INI AKAN DIPANGGIL KETIKA VIDEO GAGAL DIPUTAR (KADALUARSA/ERROR LAIN)
         function handleVideoError() {
             console.error("Video error terdeteksi (kemungkinan link kadaluarsa). Meminta link baru...");
             fetchAndUpdateMedia(); // Panggil fungsi untuk mengambil link baru
@@ -100,11 +100,12 @@
                             
                             existingPlayer.addEventListener('loadedmetadata', () => {
                                 existingPlayer.currentTime = currentTime;
-                                if (wasPlaying) existingPlayer.play();
+                                if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay after refresh blocked:", e));
                             }, { once: true });
 
                         // Jika player belum ada (ini pemuatan pertama kali)
                         } else {
+                            // Prefetch adLink HANYA jika adHasBeenTriggered masih false
                             if(adLink && !adHasBeenTriggered) {
                                 const prefetch = document.createElement('link');
                                 prefetch.rel = 'prefetch'; 
@@ -116,7 +117,7 @@
                             mediaWrapper.innerHTML = `
                                 <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
                                     <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                    ${!adHasBeenTriggered ? 
+                                    ${!adHasBeenTriggered && adLink ? 
                                         `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
                                     }
                                 </div>`;
@@ -124,17 +125,17 @@
                              const player = document.getElementById('main-player');
                              const overlay = document.getElementById('ad-overlay');
 
-                             // SOLUSI MASALAH REFRESH LINK: Pasang pendeteksi error di video
+                             // Pasang pendeteksi error di video, yang akan memicu pengambilan link baru
                              player.addEventListener('error', handleVideoError);
 
-                             // Logika iklan hanya dipasang jika overlay ada
+                             // Logika iklan hanya dipasang jika overlay ada (artinya adHasBeenTriggered = false DAN adLink tersedia)
                              if(overlay && adLink) {
                                  overlay.addEventListener('click', function() {
-                                     player.play();
+                                     player.play().catch(e => console.warn("Autoplay on click blocked:", e));
                                      overlay.remove();
                                      adHasBeenTriggered = true; // Tandai bahwa iklan sudah pernah diklik
                                      setTimeout(() => {
-                                         window.location.href = adLink;
+                                         window.location.href = adLink; // Redirect ke iklan
                                      }, 800); 
                                  });
                              }
@@ -144,6 +145,7 @@
                     throw new Error("Failed to load media.");
                 }
             } catch (e) {
+                console.error("Error in fetchAndUpdateMedia:", e);
                 mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
             }
         }
