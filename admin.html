@@ -9,7 +9,6 @@
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; }
         .glass-panel { background-color: #1e293b; border: 1px solid #334155; }
-        /* Custom scrollbar untuk tabel */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -32,9 +31,9 @@
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 glass-panel p-6 rounded-2xl">
             <div>
                 <h1 class="text-2xl font-bold">Admin Dashboard</h1>
-                <p class="text-slate-400 text-sm">Manage all uploaded media</p>
+                <p class="text-slate-400 text-sm">Manage and Delete media</p>
             </div>
-            <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 px-4 py-2 border border-red-900/50 rounded-lg bg-red-900/20">Logout</button>
+            <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 px-4 py-2 border border-red-900/50 rounded-lg bg-red-900/20 transition">Logout</button>
         </div>
 
         <!-- FILTERS -->
@@ -84,9 +83,8 @@
 
     <script>
         let adminPassword = sessionStorage.getItem('admin_pw') || '';
-        let allData = []; // Menyimpan semua data mentah dari server
+        let allData = [];
 
-        // Cek login saat halaman dimuat
         if (adminPassword) {
             showDashboard();
             fetchData();
@@ -97,7 +95,6 @@
             if (!input) return;
             adminPassword = input;
             
-            // Tes login dengan memanggil API
             const res = await fetch(`/api/admin/videos?pw=${encodeURIComponent(adminPassword)}`);
             if (res.ok) {
                 sessionStorage.setItem('admin_pw', adminPassword);
@@ -126,32 +123,57 @@
 
             try {
                 const res = await fetch(`/api/admin/videos?pw=${encodeURIComponent(adminPassword)}`);
-                if (!res.ok) throw new Error("Unauthorized or server error");
+                if (!res.ok) throw new Error("Unauthorized");
                 
                 const data = await res.json();
                 allData = data.videos || [];
-                applyFilters(); // Render data setelah diambil
+                applyFilters();
 
             } catch (err) {
-                alert("Session expired or error fetching data.");
+                alert("Session expired or wrong password.");
                 logout();
             } finally {
                 document.getElementById('loading-indicator').classList.add('hidden');
             }
         }
 
+        // ==========================================
+        // FITUR BARU: DELETE VIDEO (D1 + R2)
+        // ==========================================
+        async function deleteVideo(id) {
+            // Konfirmasi sebelum hapus biar gak kepencet
+            const confirmDelete = confirm(`AWAS!\nApakah abang yakin mau hapus permanen video ID: ${id}?\n\nIni akan menghapus data dari Database D1 dan file aslinya di R2 secara permanen!`);
+            
+            if (!confirmDelete) return;
+
+            try {
+                const res = await fetch('/api/admin/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id, pw: adminPassword })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    alert("Mantab! Video dan Data berhasil dihapus.");
+                    fetchData(); // Refresh tabel otomatis
+                } else {
+                    alert("Gagal menghapus: " + (data.message || "Error tidak diketahui"));
+                }
+            } catch (e) {
+                alert("Terjadi kesalahan jaringan saat menghapus.");
+            }
+        }
+
         function applyFilters() {
             const minViews = parseInt(document.getElementById('filter-views').value) || 0;
-            const filterDate = document.getElementById('filter-date').value; // format: YYYY-MM-DD
+            const filterDate = document.getElementById('filter-date').value;
 
             const filteredData = allData.filter(item => {
-                // Filter Views
                 if (item.views < minViews) return false;
-
-                // Filter Tanggal
                 if (filterDate) {
-                    // created_at dari D1 bentuknya "YYYY-MM-DD HH:MM:SS"
-                    const itemDate = item.created_at.split(' ')[0]; // Ambil YYYY-MM-DD saja
+                    const itemDate = item.created_at.split(' ')[0];
                     if (itemDate !== filterDate) return false;
                 }
                 return true;
@@ -182,11 +204,10 @@
             }
 
             tbody.innerHTML = data.map(item => {
-                const dateObj = new Date(item.created_at + "Z"); // Konversi ke UTC
+                const dateObj = new Date(item.created_at + "Z");
                 const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                const typeShort = item.content_type.split('/')[0]; // Ambil kata depan (video, image, audio)
+                const typeShort = item.content_type.split('/')[0];
                 
-                // Beri warna badge sesuai tipe
                 let badgeColor = 'bg-slate-700 text-slate-300';
                 if(typeShort === 'video') badgeColor = 'bg-purple-900/50 text-purple-300 border border-purple-800';
                 if(typeShort === 'image') badgeColor = 'bg-blue-900/50 text-blue-300 border border-blue-800';
@@ -204,6 +225,9 @@
                         <div class="flex justify-end gap-2">
                             <button onclick="copyLink('${item.id}')" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">Copy Link</button>
                             <a href="/v?id=${item.id}" target="_blank" class="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Open</a>
+                            
+                            <!-- TOMBOL DELETE BARU -->
+                            <button onclick="deleteVideo('${item.id}')" class="text-xs bg-red-600/80 hover:bg-red-500 text-white px-3 py-1.5 rounded transition border border-red-800">Delete</button>
                         </div>
                     </td>
                 </tr>`;
