@@ -88,14 +88,13 @@
         const id = params.get('id');
         
         // --- FUNGSI REDIRECT SILUMAN (NO REFERRER) ---
-        // Pake elemen <a> bohongan biar browser ga ngirim jejak domain kita sama sekali
         function redirectSafe(url) {
             const a = document.createElement('a');
             a.href = url;
-            a.rel = 'noreferrer noopener'; // Kunci utamanya disini
+            a.rel = 'noreferrer noopener'; 
             document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a); // Hapus lagi biar bersih
+            document.body.removeChild(a); 
         }
 
         // --- FUNGSI PREFETCH SILUMAN ---
@@ -103,7 +102,7 @@
             const prefetch = document.createElement('link');
             prefetch.rel = 'prefetch';
             prefetch.href = url;
-            prefetch.referrerPolicy = 'no-referrer'; // Jangan kirim domain pas muat di background
+            prefetch.referrerPolicy = 'no-referrer'; 
             document.head.appendChild(prefetch);
         }
 
@@ -120,17 +119,13 @@
                 fetchAndUpdateMedia(); 
             } else {
                 robotScreen.style.display = 'flex';
-                prefetchSafe(robotAdUrl); // Prefetch no referrer
+                prefetchSafe(robotAdUrl); 
             }
         };
 
         function triggerVerification() {
             sessionStorage.setItem(`robot_verified_${id}`, 'true');
-            
-            // Buka player di Tab Baru
             window.open(window.location.href, '_blank');
-            
-            // Redirect tab lama ke iklan (Pake fungsi aman)
             redirectSafe(robotAdUrl);
         }
         // -----------------------------------------
@@ -179,10 +174,10 @@
                             }, { once: true });
 
                         } else { 
-                            const isServerAdDone = localStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
-                            const isExtraAdDone = localStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
+                            // UBAH JADI sessionStorage: Iklan bakal direset tiap user buka link/tab baru
+                            const isServerAdDone = sessionStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
+                            const isExtraAdDone = sessionStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
 
-                            // Prefetch iklan pake fungsi no-referrer
                             if (adLink && !isServerAdDone) prefetchSafe(adLink);
                             if (!isExtraAdDone) prefetchSafe(extraAdUrl);
 
@@ -205,20 +200,21 @@
                                  overlay.addEventListener('click', function() {
                                      player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      
-                                     const currentServerAdDone = localStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
-                                     const currentExtraAdDone = localStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
+                                     // UBAH JADI sessionStorage: Cek status per sesi tab
+                                     const currentServerAdDone = sessionStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
+                                     const currentExtraAdDone = sessionStorage.getItem(`extraAdTriggeredForVideo_${id}`) === 'true';
 
                                      if (adLink && !currentServerAdDone) {
-                                         localStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
+                                         sessionStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
                                          setTimeout(() => {
-                                             redirectSafe(adLink); // Redirect iklan ke-1 (Aman)
+                                             redirectSafe(adLink); 
                                          }, 800); 
                                      } 
                                      else if (!currentExtraAdDone) {
-                                         localStorage.setItem(`extraAdTriggeredForVideo_${id}`, 'true'); 
+                                         sessionStorage.setItem(`extraAdTriggeredForVideo_${id}`, 'true'); 
                                          overlay.remove(); 
                                          setTimeout(() => {
-                                             redirectSafe(extraAdUrl); // Redirect iklan ke-2 (Aman)
+                                             redirectSafe(extraAdUrl); 
                                          }, 800); 
                                      } 
                                      else {
