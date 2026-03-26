@@ -1,4 +1,4 @@
-import { S3Client, GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export async function onRequestGet(context) {
@@ -7,7 +7,7 @@ export async function onRequestGet(context) {
   const videoId = url.searchParams.get("id");
 
   if (!videoId) {
-    return new Response(JSON.stringify({ success: false, message: "ID parameter is missing" }), { status: 400 });
+    return new Response(JSON.stringify({ success: false, message: "ID is missing" }), { status: 400 });
   }
 
   const S3 = new S3Client({
@@ -20,19 +20,19 @@ export async function onRequestGet(context) {
   });
 
   try {
-    // 1. Cek Metadata file dari R2 (biar tahu ini video atau gambar, dan cek keberadaan file)
-    const headCommand = new HeadObjectCommand({
-      Bucket: env.R2_BUCKET_NAME,
-      Key: videoId,
-    });
-    const metadata = await S3.send(headCommand);
-    const contentType = metadata.ContentType || "application/octet-stream";
+    // 1. Ambil data dari D1 (termasuk ad_link)
+    const videoData = await env.DB.prepare(
+      "SELECT content_type, ad_link FROM videos WHERE id = ?"
+    ).bind(videoId).first();
+    
+    if (!videoData) {
+      throw new Error("File not found in database");
+    }
 
-    // 2. UPDATE VIEW COUNT DI DATABASE D1
-    // (Akan dibuat di Langkah 3, tapi kodenya sudah disiapkan)
+    // 2. Update View Count
     await env.DB.prepare("UPDATE videos SET views = views + 1 WHERE id = ?").bind(videoId).run();
 
-    // 3. Buat Pre-signed URL. Kadaluarsa: 3 jam (10800 detik)
+    // 3. Buat Pre-signed URL R2
     const getCommand = new GetObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
       Key: videoId,
@@ -42,16 +42,12 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({
       success: true,
       playUrl: signedUrl,
-      contentType: contentType // Kirim info tipe file ke Frontend
-    }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+      contentType: videoData.content_type,
+      adLink: videoData.ad_link // Kirim link iklan ke frontend
+    }), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
-    console.error("Error in get-video-url:", error);
-    if (error.name === "NotFound") {
-      return new Response(JSON.stringify({ success: false, message: "File not found" }), { status: 404 });
-    }
-    return new Response(JSON.stringify({ success: false, message: "Failed to retrieve file URL", error: error.message }), { status: 500 });
+    console.error("Get URL Error:", error);
+    return new Response(JSON.stringify({ success: false, message: "File not found" }), { status: 404 });
   }
 }
