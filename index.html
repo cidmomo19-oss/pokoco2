@@ -1,257 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
-    <title>Pokoco - Simple Hosting</title>
+    <title>Pokoco - Preview</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        .upload-card { background-color: #1e293b; border: 1px solid #334155; }
-        .btn-custom { background-color: #1e293b; border: 1px solid #334155; transition: all 0.2s; }
-        .btn-custom:hover { background-color: #334155; border-color: #475569; }
-        
-        #history-panel { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
-        #history-panel.open { transform: translateX(0); }
-        .preview-box { background-color: #0f172a; border: 1px solid #334155; }
-        
-        /* Untuk preview video/gambar agar rapi di dalam kotak */
-        #file-preview-content video, #file-preview-content img {
-            max-height: 180px;
-            width: 100%;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-        }
+        video, img { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 8px; }
+        .text-gray-pokoco { color: #64748b; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col overflow-x-hidden">
+<body>
 
-    <header class="pt-4 pb-3 lg:pt-5 lg:pb-4 z-40 relative">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-            <a href="/" class="flex items-center">
-                <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
-            </a>
-            <button onclick="toggleHistory()" class="btn-custom text-white px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm flex items-center gap-2">
-                Your Uploads
-            </button>
-        </div>
-    </header>
+    <div id="root" class="min-h-screen flex flex-col">
+        <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
+            <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
+                <a href="/" class="flex items-center">
+                    <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
+                </a>
+                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800">
+                    <span>Upload</span>
+                </a>
+            </div>
+        </header>
 
-    <!-- Sidebar History -->
-    <div id="history-panel" class="fixed top-0 right-0 h-full w-full max-w-sm bg-[#1e293b] border-l border-slate-700 z-50 p-6 shadow-2xl overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-xl font-bold">Recent Uploads</h2>
-            <button onclick="toggleHistory()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
-        </div>
-        <div id="history-list" class="space-y-4">
-            <p class="text-slate-500 text-center py-10 text-sm">No uploads yet.</p>
-        </div>
-        <button onclick="clearHistory()" class="w-full mt-10 text-[10px] text-slate-500 hover:text-red-400 uppercase tracking-widest transition-colors">Clear History</button>
+        <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-4">
+            <div class="w-full flex justify-center">
+                <div class="w-full" id="media-wrapper">
+                    <div id="loading-state" class="flex flex-col items-center justify-center w-full h-[250px]">
+                        <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                        <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full flex flex-col items-center mt-6 mb-0">
+                <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+                    <span id="share-label">Share link</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="pb-8 mt-12">
+            <div class="max-w-6xl mx-auto px-6 text-center text-gray-pokoco text-xs space-x-6">
+                <a href="#" class="hover:text-white">Terms of Service</a>
+                <a href="#" class="hover:text-white">Report Abuse</a>
+            </div>
+        </footer>
     </div>
 
-    <div id="overlay" onclick="toggleHistory()" class="fixed inset-0 bg-black/50 hidden z-40 transition-opacity"></div>
-
-    <main class="flex-grow flex flex-col items-center justify-center px-6 py-10">
-        <div class="w-full max-w-[500px] text-center">
-            
-            <!-- Step 1: Pilih File -->
-            <div id="upload-step-1">
-                <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Video or Image</h1>
-                <p class="text-slate-400 text-sm mb-10">Private, fast, and secure. Max 200 MB.</p>
-
-                <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer hover:border-slate-500 transition-all group">
-                    <input type="file" id="file-input" class="hidden" accept="video/*,image/*">
-                    <div class="flex flex-col items-center pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-500 group-hover:text-white transition-colors mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <p class="text-white font-medium">Click to upload or drag & drop</p>
-                        <p class="text-slate-500 text-xs mt-1">MP4, JPG, PNG, etc.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 2: Preview & Konfirmasi -->
-            <div id="upload-step-2" class="hidden animate-in fade-in duration-300 w-full">
-                <h2 class="text-xl font-semibold mb-6">Ready to upload?</h2>
-                
-                <div class="preview-box rounded-2xl p-4 mb-4">
-                    <!-- Preview Foto atau Video akan muncul di sini -->
-                    <div id="file-preview-content" class="flex items-center justify-center w-full bg-black/20 rounded-lg overflow-hidden min-h-[120px]">
-                        <span class="text-xs text-slate-500 animate-pulse">Memuat preview...</span>
-                    </div>
-                </div>
-
-                <!-- Input Link Iklan -->
-                <input type="text" id="ad-link-input" placeholder="Your ad link (Direct Link/Smartlink)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4">
-                
-                <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
-                <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
-                
-                <div id="upload-action" class="flex flex-col gap-3">
-                    <button onclick="startUpload()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg">Upload Now</button>
-                    <button onclick="location.reload()" class="text-sm text-slate-500 hover:text-white transition">Cancel / Select another file</button>
-                </div>
-
-                <!-- Progress Bar -->
-                <div id="progress-container" class="hidden mt-6">
-                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden mb-2">
-                        <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <p id="progress-text" class="text-xs text-blue-400 tracking-widest font-bold uppercase">0% Uploading...</p>
-                    <p class="text-[10px] text-slate-500 mt-2">Please wait, do not close this page.</p>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <footer class="py-10">
-        <div class="max-w-6xl mx-auto px-6 flex justify-center space-x-8 text-[11px] text-slate-600 uppercase tracking-tighter">
-            <a href="#" class="hover:text-white transition-colors">Terms</a>
-            <a href="#" class="hover:text-white transition-colors">Privacy</a>
-        </div>
-    </footer>
-
     <script>
-        let selectedFile = null;
-        const dropArea = document.getElementById('drop-area');
-        const fileInput = document.getElementById('file-input');
-        const step1 = document.getElementById('upload-step-1');
-        const step2 = document.getElementById('upload-step-2');
-        const historyList = document.getElementById('history-list');
-        const historyPanel = document.getElementById('history-panel');
-        const overlay = document.getElementById('overlay');
-        const adLinkInput = document.getElementById('ad-link-input'); // New
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const shareLabel = document.getElementById('share-label');
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
 
-        // --- MANAJEMEN HISTORY BROWSER ---
-        function toggleHistory() {
-            historyPanel.classList.toggle('open');
-            overlay.classList.toggle('hidden');
-            renderHistory();
-        }
-
-        function saveToHistory(id, name, type, adLink) {
-            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            history.unshift({ id, name, type, adLink, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) });
-            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20)));
-        }
-
-        function renderHistory() {
-            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            if (history.length === 0) {
-                historyList.innerHTML = '<p class="text-slate-500 text-center py-10 text-xs tracking-widest">NO UPLOADS YET</p>';
+        window.onload = async function() {
+            if (!id) {
+                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
                 return;
             }
-            historyList.innerHTML = history.map(item => `
-                <div class="p-3 bg-[#0f172a] border border-slate-700 rounded-xl flex items-center gap-3 hover:border-slate-500 transition-colors">
-                    <div class="w-10 h-10 bg-[#1e293b] rounded flex items-center justify-center shrink-0">
-                        ${item.type && item.type.startsWith('image/') ? 
-                            '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' : 
-                        item.type && item.type.startsWith('video/') ?
-                            '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>' :
-                            '<svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'}
-                    </div>
-                    <div class="min-w-0 flex-grow">
-                        <a href="/v?id=${item.id}" target="_blank" class="text-[13px] text-slate-200 block truncate font-medium hover:text-white">${item.name}</a>
-                        <span class="text-[10px] text-slate-500 uppercase">${item.date}</span>
-                    </div>
-                    <button onclick="navigator.clipboard.writeText(window.location.origin + '/v?id=${item.id}'); alert('Link copied!');" class="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-lg" title="Copy Link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function clearHistory() { if(confirm('Clear all your upload history?')) { localStorage.removeItem('pokoco_history'); renderHistory(); } }
-
-        // --- STEP 1: LOGIKA PILIH FILE ---
-        dropArea.onclick = () => fileInput.click();
-        fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
-        
-        dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-slate-400'); });
-        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-slate-400'));
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('border-slate-400');
-            if(e.dataTransfer.files[0]) handleFileSelection(e.dataTransfer.files[0]);
-        });
-
-        function handleFileSelection(file) {
-            if (file.size > 200 * 1024 * 1024) return alert("File kebesaran bang! Maksimal 200MB.");
-            if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) return alert("Cuma boleh upload Video atau Gambar bang!");
-
-            selectedFile = file;
-            
-            step1.classList.add('hidden');
-            step2.classList.remove('hidden');
-            
-            document.getElementById('file-name-display').innerText = file.name;
-            document.getElementById('file-size-display').innerText = (file.size / (1024*1024)).toFixed(2) + " MB";
-            
-            const previewContent = document.getElementById('file-preview-content');
-            const fileUrl = URL.createObjectURL(file);
-
-            if (file.type.startsWith('image/')) {
-                previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Gambar">`;
-            } else if (file.type.startsWith('video/')) {
-                previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
-            }
-        }
-
-        // --- STEP 2: LOGIKA MULAI UPLOAD ---
-        async function startUpload() {
-            if (!selectedFile) return;
-            
-            const adLink = adLinkInput.value; // Dapatkan link iklan dari input
-            
-            document.getElementById('upload-action').classList.add('hidden');
-            document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&ad_link=${encodeURIComponent(adLink)}`);
-                const data = await res.json();
-                
-                if (!data.success) throw new Error("Gagal terhubung ke server (API Error)");
+                const response = await fetch(`/api/get-video-url?id=${id}`);
+                const data = await response.json();
 
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', selectedFile.type);
+                if (data.success) {
+                    const { playUrl, contentType, adLink } = data;
+                    
+                    if (contentType.startsWith('image/')) {
+                        mediaWrapper.innerHTML = `<img src="${playUrl}" class="md:rounded-[8px]" alt="Image content">`;
+                        shareLabel.innerText = 'Share image';
+                        document.title = 'Pokoco - Image';
+                    } else if (contentType.startsWith('video/')) {
+                        shareLabel.innerText = 'Share video';
+                        document.title = 'Pokoco - Video';
 
-                xhr.upload.onprogress = (e) => {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('progress-bar').style.width = percent + '%';
-                    document.getElementById('progress-text').innerText = percent + '% Uploading...';
-                };
+                        // Tambahkan Overlay Transparan + Fungsi Iklan
+                        mediaWrapper.innerHTML = `
+                            <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black">
+                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
 
-                xhr.onload = () => {
-                    if (xhr.status === 200) {
-                        document.getElementById('progress-text').innerText = "Finishing up...";
-                        
-                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink);
-                        
-                        // Redirect setelah selesai
-                        setTimeout(() => {
-                            window.location.href = '/v?id=' + data.videoId;
-                        }, 1000);
-                    } else { 
-                        alert("Upload Gagal. Status code: " + xhr.status); 
-                        location.reload(); 
+                                <!-- Overlay Transparan Langsung Buka Iklan -->
+                                <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);" onclick="window.open('${adLink}', '_blank'); document.getElementById('main-player').play()">
+                                    </div>
+                            </div>`;
+                         const player = document.getElementById('main-player');
+                         player.play();
                     }
-                };
-                
-                xhr.onerror = () => {
-                    alert("Koneksi internet terputus atau error jaringan.");
-                    location.reload();
-                };
+                } else {
+                    throw new Error("Failed to load media.");
+                }
+            } catch (e) {
+                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
+            }
+        };
 
-                xhr.send(selectedFile);
-            } catch (err) { 
-                alert(err.message); 
-                location.reload(); 
+        function shareMedia() {
+            const label = document.getElementById('share-label').innerText;
+            if (navigator.share) {
+                navigator.share({ title: `Pokoco - ${label}`, url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Link copied!");
             }
         }
     </script>
