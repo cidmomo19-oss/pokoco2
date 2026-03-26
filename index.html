@@ -34,7 +34,6 @@
             <a href="/" class="flex items-center">
                 <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
             </a>
-            <!-- Tombol Your Uploads (Ikon Dihapus) -->
             <button onclick="toggleHistory()" class="btn-custom text-white px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm flex items-center gap-2">
                 Your Uploads
             </button>
@@ -131,10 +130,10 @@
             renderHistory();
         }
 
-        function saveToHistory(id, name, type) {
+        function saveToHistory(id, name, type, preview) { // Tambah parameter preview
             let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
-            history.unshift({ id, name, type, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) });
-            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20))); // Simpan 20 terakhir
+            history.unshift({ id, name, type, preview, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) }); // Simpan preview
+            localStorage.setItem('pokoco_history', JSON.stringify(history.slice(0, 20)));
             console.log("History saved:", localStorage.getItem('pokoco_history')); // Debugging
         }
 
@@ -146,12 +145,13 @@
             }
             historyList.innerHTML = history.map(item => `
                 <div class="p-3 bg-[#0f172a] border border-slate-700 rounded-xl flex items-center gap-3 hover:border-slate-500 transition-colors">
-                    <div class="w-10 h-10 bg-[#1e293b] rounded flex items-center justify-center shrink-0">
-                        ${item.type && item.type.startsWith('image/') ? 
-                            '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>' : 
-                        item.type && item.type.startsWith('video/') ?
-                            '<svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>' :
-                            '<svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'}
+                    <!-- NEW: Thumbnail Preview -->
+                    <div class="w-10 h-10 bg-[#1e293b] rounded flex items-center justify-center shrink-0 overflow-hidden">
+                        ${item.type.startsWith('image/') ? 
+                            `<img src="${item.preview}" class="object-cover w-full h-full" alt="Image Preview">` : 
+                            item.type.startsWith('video/') ? 
+                            `<video src="${item.preview}" muted loop autoplay class="object-cover w-full h-full"></video>` : 
+                            `<svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`}
                     </div>
                     <div class="min-w-0 flex-grow">
                         <a href="/v?id=${item.id}" target="_blank" class="text-[13px] text-slate-200 block truncate font-medium hover:text-white">${item.name}</a>
@@ -164,14 +164,9 @@
             `).join('');
         }
 
-        function clearHistory() { 
-            if(confirm('Clear all your upload history?')) { 
-                localStorage.removeItem('pokoco_history'); 
-                renderHistory(); 
-            } 
-        }
+        function clearHistory() { if(confirm('Clear all your upload history?')) { localStorage.removeItem('pokoco_history'); renderHistory(); } }
 
-        // -- LOGIKA PILIH FILE & PREVIEW --
+        // --- STEP 1: LOGIKA PILIH FILE & PREVIEW ---
         dropArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
         
@@ -199,13 +194,15 @@
             const fileUrl = URL.createObjectURL(file);
 
             if (file.type.startsWith('image/')) {
+                // NEW: Preview Gambar
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Gambar">`;
             } else if (file.type.startsWith('video/')) {
-                previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
+                // NEW: Preview Video (diputar otomatis tanpa suara)
+                previewContent.innerHTML = `<video src="${fileUrl}" controls muted loop autoplay></video>`;
             }
         }
 
-        // --- LOGIKA MULAI UPLOAD ---
+        // --- STEP 2: LOGIKA MULAI UPLOAD ---
         async function startUpload() {
             if (!selectedFile) return;
             
@@ -223,23 +220,21 @@
                 xhr.setRequestHeader('Content-Type', selectedFile.type);
 
                 xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        document.getElementById('progress-bar').style.width = percent + '%';
-                        document.getElementById('progress-text').innerText = percent + '% Uploading...';
-                    }
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('progress-bar').style.width = percent + '%';
+                    document.getElementById('progress-text').innerText = percent + '% Uploading...';
                 };
 
                 xhr.onload = () => {
                     if (xhr.status === 200) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
-                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type);
+                        // NEW: Simpan ke History (dengan URL Preview) & Beri Jeda
+                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, URL.createObjectURL(selectedFile));
                         
-                        // Jeda 1 detik sebelum redirect
                         setTimeout(() => {
                             window.location.href = '/v?id=' + data.videoId;
-                        }, 1000); // Tunggu 1 detik
+                        }, 1000);
 
                     } else { 
                         alert("Upload Gagal. Status code: " + xhr.status); 
@@ -258,6 +253,9 @@
                 location.reload(); 
             }
         }
+
+        // Panggil renderHistory saat halaman pertama dimuat
+        document.addEventListener('DOMContentLoaded', renderHistory);
     </script>
 </body>
 </html>
