@@ -7,24 +7,7 @@
     <title>Pokoco - Preview</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .title = 'Pokoco - Image';
-                    } else if (data.contentType.startsWith('video/')) {
-                        mediaWrapper.innerHTML = `
-                            <video id="main-player" class="w-full md:rounded-[8px]" controls playsinline autoplay src="${data.playUrl}"></video>
-                        `;
-                        shareLabel.innerText = 'Share video';
-                        currentMediaType = 'video';
-                        document.title = 'Pokoco - Video';
-                    } else {
-                        mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Unsupported media type.</div>`;
-                        shareLabel.innerText = 'Share link';
-                        currentMediaType = 'link';
-                    }
-
-                    // Panggil fungsi iklan setelah media selesai diload
-                    handleAd();
-
-                } else { throw new Error(data.message || "Unknown error"); }@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
         
         /* Logika Sizing Videy */
@@ -38,62 +21,12 @@
         }
 
         .text-gray-pokoco { color: #64748b; }
-        .loading-text { animation: pulse 2s cubic-bezier(0.4, 0, 0.6
-            } catch (e) {
-                wrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found.</div>`;
-            }
-        }
-
-        // LOGIKA IKLAN (Muncul sebelum konten)
-        function handleAd() {
-            const adOverlay = document.getElementById('ad-overlay');
-
-            if (adLink) {
-                adOverlay.classList.remove('hidden');
-                let countdown = 5;
-                document.getElementById('countdown').innerText = countdown;
-
-                const countdownInterval = setInterval(() => {
-                    , 1) infinite; }
+        .loading-text { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse {
             0%, 100% { opacity: 0.5; }
             50% { opacity: 1; }
         }
-        
-        /* Tampilan Overlay Iklan */
-        #ad-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem;
-            backdrop-filter: blur(5px);
-        }
-    </countdown--;
-                    document.getElementById('countdown').innerText = countdown;
-                    if (countdown <= 0) {
-                        clearInterval(countdownInterval);
-                        window.location.href = adLink;
-                    }
-                }, 1000);
-            }
-        }
-
-        // Jalankan saat halaman dimuat pertama kali
-        window.addEventListener('DOMContentLoaded', loadMedia);
-
-        function shareMedia() {
-            const shareLabel = document.getElementById('share-label').innerText;
-            if (navigator.share) {
-                navigator.share({ title: 'Pokoco - ' +style>
+    </style>
 </head>
 <body>
 
@@ -102,7 +35,169 @@
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
                 <a href="/" class="flex items-center">
-                    <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span> shareLabel, url: window.location.href });
+                    <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
+                </a>
+                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800 shadow-sm">
+                    <span>Upload</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md-mt-4">
+            <div class="w-full flex justify-center">
+                <div class="w-full" id="media-wrapper">
+                    <!-- Loading state -->
+                    <div id="loading-screen" class="flex items-center justify-center w-full h-[250px]">
+                        <span class="text-gray-pokoco text-sm loading-text">Loading media...</span>
+                    </div>
+                    <!-- Loading Iklan -->
+                    <div id="ad-loading-screen" class="hidden flex flex-col items-center justify-center w-full h-[250px]">
+                        <p class="text-white text-xl font-semibold mb-4">Redirecting in <span id="countdown">5</span>...</p>
+                        <p class="text-gray-pokoco text-sm">Please wait, this helps support Pokoco.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Share Button (Teks Dinamis) -->
+            <div class="w-full flex flex-col items-center mt-6 mb-0">
+                <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm transition-colors text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share w-[18px] h-[18px]">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                        <polyline points="16 6 12 2 8 6"></polyline>
+                        <line x1="12" x2="12" y1="2" y2="15"></line>
+                    </svg>
+                    <span id="share-label">Share link</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="pb-8 mt-12">
+            <div class="max-w-6xl mx-auto px-6 lg:px-8 text-center text-gray-pokoco text-xs space-x-6">
+                <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-white transition-colors">Report Abuse</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const shareLabel = document.getElementById('share-label');
+        const loadingText = document.getElementById('loading-text');
+        const adLoadingScreen = document.getElementById('ad-loading-screen');
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        let currentMediaType = 'link';
+        let adLink = null;
+        let mediaUrl = null;
+        let reFetchInterval = null;
+
+        async function loadMedia() {
+            if (!id) {
+                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
+                return;
+            }
+
+            loadingText.innerText = "Loading media...";
+            mediaWrapper.innerHTML = `
+                <div class="flex items-center justify-center w-full h-[250px]">
+                    <span class="text-gray-pokoco text-sm loading-text">Loading media...</span>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`/api/get-video-url?id=${id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    mediaUrl = data.playUrl;
+                    adLink = getAdLinkFromHistory(id); // Ambil link iklan dari localStorage
+
+                    // LOGIKA TAMPILAN IKAN (Kalau Ada Link Iklan)
+                    if(adLink) {
+                        // Tampilkan loading iklan
+                        showAdThenRedirect(adLink);
+                    } else {
+                        // Langsung tampilkan media
+                        showMedia(data);
+                    }
+                } else {
+                    throw new Error(data.message || "Unknown error");
+                }
+            } catch (e) {
+                console.error("Media load error:", e);
+                mediaWrapper.innerHTML = `<div class="text-center py-20 text-white font-semibold">Media not found.</div>`;
+            }
+        }
+
+        // Fungsi untuk menampilkan iklan lalu redirect
+        function showAdThenRedirect(adUrl) {
+            loadingText.style.display = 'none'; // Sembunyikan loading media
+            adLoadingScreen.classList.remove('hidden');
+            let countdownValue = 5;
+            document.getElementById('countdown').innerText = countdownValue;
+            
+            // Fungsi untuk update countdown
+            const countdownInterval = setInterval(() => {
+                countdownValue--;
+                document.getElementById('countdown').innerText = countdownValue;
+
+                if (countdownValue <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = adUrl; // Redirect ke link iklan
+                }
+            }, 1000); // Update tiap detik
+        }
+
+        // Fungsi untuk menampilkan media (video/gambar)
+        function showMedia(data) {
+            loadingText.style.display = 'none'; // Hide loading text
+
+            if (data.contentType.startsWith('image/')) {
+                mediaWrapper.innerHTML = `<img src="${data.playUrl}" class="md:rounded-[8px]" alt="Image content">`;
+                shareLabel.innerText = 'Share image';
+                currentMediaType = 'image';
+                document.title = 'Pokoco - Image';
+            } else if (data.contentType.startsWith('video/')) {
+                mediaWrapper.innerHTML = `
+                    <video id="main-player" class="w-full md:rounded-[8px]" controls playsinline autoplay src="${data.playUrl}"></video>
+                `;
+                shareLabel.innerText = 'Share video';
+                currentMediaType = 'video';
+                document.title = 'Pokoco - Video';
+            } else {
+                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Unsupported media type.</div>`;
+                shareLabel.innerText = 'Share link';
+                currentMediaType = 'link';
+            }
+        }
+
+        // Dapatkan Iklan dari History
+        function getAdLinkFromHistory(id) {
+            let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
+            const item = history.find(item => item.id === id);
+            return item ? item.adLink : null;
+        }
+        
+        // Load Saat Awal
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMedia();
+            //Re-Fetch URL 2.5 jam
+            reFetchInterval = setInterval(() => {
+                console.log("Refetching media URL...");
+                loadMedia();
+            }, 9000000);
+
+             //Clear saat di tutup
+            window.addEventListener('beforeunload', () => {
+                clearInterval(reFetchInterval);
+            });
+        });
+
+        function shareMedia() {
+            const shareLabelText = document.getElementById('share-label').innerText;
+            if (navigator.share) {
+                navigator.share({ title: `Pokoco - ${shareLabelText}`, url: window.location.href });
             } else {
                 navigator.clipboard.writeText(window.location.href);
                 alert("Link copied!");
