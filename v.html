@@ -4,7 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
-    <title>Pokoco - Verify</title>
+    
+    <!-- Meta Title & SEO Umum -->
+    <title>Pokoco - Watch Media</title>
+    <meta name="description" content="Click to verify and watch the video securely on Pokoco." />
+
+    <!-- LOGO UNTUK BROWSER (FAVICON) -->
+    <link rel="icon" href="https://i.ibb.co.com/chp7mRCY/Picsart-26-03-26-09-59-08-531.png" type="image/png" />
+
+    <!-- LOGO & PREVIEW UNTUK WHATSAPP / FACEBOOK / GOOGLE -->
+    <meta property="og:title" content="Pokoco - Secure Video Player" />
+    <meta property="og:description" content="Verify your connection to watch this media securely." />
+    <meta property="og:image" content="https://i.ibb.co.com/chp7mRCY/Picsart-26-03-26-09-59-08-531.png" />
+    <meta property="og:image:width" content="500" />
+    <meta property="og:image:height" content="500" />
+    <meta property="og:type" content="website" />
+
+    <!-- LOGO & PREVIEW UNTUK TWITTER / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pokoco - Secure Video Player" />
+    <meta name="twitter:description" content="Verify your connection to watch this media securely." />
+    <meta name="twitter:image" content="https://i.ibb.co.com/chp7mRCY/Picsart-26-03-26-09-59-08-531.png" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
@@ -12,42 +33,56 @@
         video, img { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 8px; }
         .text-gray-pokoco { color: #64748b; }
         
-        /* Animasi Kapsul Modern */
+        /* TOMBOL KAPSUL MENCOLOK DENGAN EFEK PULSE (BERDETAK) */
         .capsule-btn {
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6); /* Gradasi Biru ke Ungu Terang */
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            animation: pulse-glow 2s infinite;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .capsule-btn:hover {
-            box-shadow: 0 10px 40px -5px rgba(59, 130, 246, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+            animation: none; /* Matikan pulse saat di-hover */
+        }
+        
+        /* Animasi Efek Menyala / Detak Jantung */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
     </style>
 </head>
 <body>
 
     <!-- ========================================== -->
-    <!-- HALAMAN 1: VERIFIKASI (Tampil di Awal)      -->
+    <!-- HALAMAN 1: VERIFIKASI LAYAR PENUH          -->
     <!-- ========================================== -->
     <div id="verify-page" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0f172a] transition-opacity duration-500">
         
-        <div class="mb-10 text-center">
-            <h1 class="font-semibold text-[32px] tracking-[-2px] text-white mb-2">pokoco</h1>
-            <p class="text-gray-pokoco text-sm">Please verify to continue</p>
+        <!-- Tambahan Logo Pokoco di Halaman Verifikasi -->
+        <div class="mb-8 text-center flex flex-col items-center">
+            <img src="https://i.ibb.co.com/chp7mRCY/Picsart-26-03-26-09-59-08-531.png" alt="Pokoco Logo" class="w-20 h-20 mb-3 object-contain rounded-full shadow-lg shadow-blue-500/20">
+            <h1 class="font-semibold text-[28px] tracking-[-1px] text-white mb-1">Secure Check</h1>
+            <p class="text-slate-400 text-sm">Please verify to access media</p>
         </div>
 
-        <!-- Tombol Kapsul Modern -->
-        <button id="capsule-btn" onclick="startVerification()" class="capsule-btn relative flex items-center gap-4 px-8 py-4 rounded-full border border-slate-700/50 transition-all duration-300 transform active:scale-95 group overflow-hidden cursor-pointer">
-            <!-- Icon Fingerprint / Shield -->
-            <div id="btn-icon" class="text-blue-400 group-hover:text-blue-300 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Tombol Kapsul Mencolok -->
+        <button id="capsule-btn" onclick="startVerification()" class="capsule-btn relative flex items-center gap-4 px-8 py-4 rounded-full transition-all duration-300 transform active:scale-95 group overflow-hidden cursor-pointer">
+            <!-- Icon -->
+            <div id="btn-icon" class="text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     <path d="M9 12l2 2 4-4"/>
                 </svg>
             </div>
             
-            <span id="btn-text" class="text-slate-200 font-medium tracking-wide text-[16px]">I am not a robot</span>
+            <span id="btn-text" class="text-white font-semibold tracking-wide text-[16px] drop-shadow-md">I am not a robot</span>
             
-            <!-- Efek Kilap (Glow Sweep) di Kapsul -->
-            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
+            <!-- Efek Kilap (Glow Sweep) di dalam Tombol -->
+            <div class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
         </button>
 
         <div id="verify-error" class="mt-8 text-red-400 text-sm hidden">Invalid ID provided.</div>
@@ -55,15 +90,32 @@
 
 
     <!-- ========================================== -->
-    <!-- HALAMAN 2: PLAYER VIDEO (Sembunyi di Awal) -->
+    <!-- NOTIFIKASI SAAT NONTON (MELAYANG)          -->
+    <!-- ========================================== -->
+    <div id="watch-toast" class="fixed top-6 right-6 z-[200] flex items-center gap-3 bg-[#1e293b]/95 backdrop-blur-sm border border-slate-700 p-3 pr-4 rounded-2xl shadow-2xl transform translate-x-[150%] transition-transform duration-700 ease-out">
+        <img src="https://i.ibb.co.com/chp7mRCY/Picsart-26-03-26-09-59-08-531.png" class="w-10 h-10 rounded-full object-cover border border-slate-600">
+        <div class="flex flex-col">
+            <span class="text-white text-[13px] font-semibold leading-tight">Pokoco Secure</span>
+            <span class="text-blue-400 text-[11px] font-medium mt-0.5">Media siap diputar!</span>
+        </div>
+        <!-- Tombol Close (X) -->
+        <button onclick="document.getElementById('watch-toast').style.transform = 'translate-x-[150%]'" class="ml-3 text-slate-500 hover:text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- HALAMAN 2: PLAYER VIDEO (Asli)             -->
     <!-- ========================================== -->
     <div id="main-page" class="min-h-screen flex flex-col hidden opacity-0 transition-opacity duration-500">
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-                <a href="/" class="flex items-center">
+                <a href="/" class="flex items-center gap-3">
+                    <img src="https://i.ibb.co.com/chp7mRCY/Picsart-26-03-26-09-59-08-531.png" alt="Logo" class="w-8 h-8 rounded-full">
                     <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
                 </a>
-                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800">
+                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800 shadow-sm">
                     <span>Upload</span>
                 </a>
             </div>
@@ -72,7 +124,6 @@
         <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-4">
             <div class="w-full flex justify-center">
                 <div class="w-full" id="media-wrapper">
-                    <!-- Loading saat fetching video -->
                     <div class="flex flex-col items-center justify-center w-full h-[250px]">
                         <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
                         <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
@@ -98,7 +149,7 @@
 
 
     <!-- ========================================== -->
-    <!-- SCRIPT LOGIKA                              -->
+    <!-- SCRIPT LOGIKA UTAMA                        -->
     <!-- ========================================== -->
     <script>
         const verifyPage = document.getElementById('verify-page');
@@ -110,7 +161,6 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
 
-        // Cek awal: apakah ID ada?
         window.onload = function() {
             if (!id) {
                 document.getElementById('capsule-btn').classList.add('hidden');
@@ -118,37 +168,31 @@
             }
         };
 
-        // FUNGSI SAAT KAPSUL DI KLIK
         function startVerification() {
             const btn = document.getElementById('capsule-btn');
             const btnIcon = document.getElementById('btn-icon');
             const btnText = document.getElementById('btn-text');
 
-            // 1. Ubah Kapsul jadi Mode Loading
-            btn.classList.add('pointer-events-none', 'opacity-90');
-            btnIcon.innerHTML = `<div class="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>`;
-            btnText.innerText = "Verifying connection...";
+            // Ubah Tampilan Kapsul (Loading)
+            btn.classList.add('pointer-events-none');
+            btn.style.animation = 'none'; // matikan pulse
+            btn.style.opacity = '0.9';
+            btnIcon.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>`;
+            btnText.innerText = "Verifying...";
 
-            // 2. Jeda Gimmick 1.2 Detik, lalu Pindah Halaman
+            // Jeda Gimmick, Pindah Halaman
             setTimeout(() => {
-                // Sembunyikan Halaman Verifikasi
                 verifyPage.style.opacity = '0';
-                
                 setTimeout(() => {
                     verifyPage.classList.add('hidden');
-                    
-                    // Munculkan Halaman Utama Pokoco
                     mainPage.classList.remove('hidden');
-                    // Pakai sedikit timeout agar efek fade-in CSS berjalan mulus
                     setTimeout(() => { mainPage.style.opacity = '1'; }, 50);
 
-                    // Mulai memuat video
                     fetchAndLoadMedia();
-                }, 500); // Waktu animasi fade out
-            }, 1200); // Lama gimmick loading kapsul
+                }, 500); 
+            }, 1200); 
         }
 
-        // FUNGSI MEMUAT VIDEO & IKLAN REDIRECT 1 KALI KLIK
         async function fetchAndLoadMedia() {
             try {
                 const response = await fetch(`/api/get-video-url?id=${id}`);
@@ -166,7 +210,17 @@
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
 
-                        // PREFETCH Iklan
+                        // MUNCULKAN NOTIFIKASI PAS NONTON (Delay 1.5 detik)
+                        setTimeout(() => {
+                            const toast = document.getElementById('watch-toast');
+                            toast.style.transform = 'translate-x-0'; // Slide In
+                            // Otomatis hilang setelah 5 detik
+                            setTimeout(() => {
+                                toast.style.transform = 'translate-x-[150%]';
+                            }, 5000);
+                        }, 1500);
+
+                        // LOGIKA PREFETCH IKLAN
                         if(adLink) {
                             const prefetch = document.createElement('link');
                             prefetch.rel = 'prefetch'; 
@@ -174,26 +228,23 @@
                             document.head.appendChild(prefetch);
                         }
 
-                        // RENDER Player + Overlay Iklan
+                        // RENDER PLAYER & IKLAN REDIRECT 1 KLIK
                         mediaWrapper.innerHTML = `
                             <div class="relative w-full md:rounded-[8px] overflow-hidden bg-black shadow-2xl">
                                 <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                <!-- Overlay Transparan -->
                                 <div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>
                             </div>`;
                          
                          const player = document.getElementById('main-player');
                          const overlay = document.getElementById('ad-overlay');
 
-                         // LOGIKA IKLAN REDIRECT CEPAT (1x KLIK)
                          if(overlay && adLink) {
                              overlay.addEventListener('click', function() {
                                  player.play();
-                                 overlay.remove(); // Hancurkan overlay biar cuma 1x klik
+                                 overlay.remove(); // Hancurkan overlay (1x klik)
 
-                                 // Delay memuat isi sesaat, lalu Redirect!
                                  setTimeout(() => {
-                                     window.location.href = adLink; 
+                                     window.location.href = adLink; // Redirect Instan
                                  }, 800); 
                              });
                          } else if (overlay) {
