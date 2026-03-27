@@ -1,33 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> <!-- [DIUBAH] Bahasa menjadi English -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a" />
     <meta name="referrer" content="no-referrer" />
     
-    <title>Pokoco - File Hosting</title>
+    <!-- [DIUBAH] TITLE TAG untuk SEO Google -->
+    <title>Pokoco - Free & Secure Media Hosting | Upload Videos, Images, Audio</title>
 
-    <meta name="description" content="Upload and share your media securely on Pokoco. Free, fast, and private file hosting up to 200MB." />
-    <meta property="og:title" content="Pokoco - File Hosting" />
-    <meta property="og:description" content="Private, fast, and secure media uploading. Share your files easily." />
+    <!-- [DIUBAH] META DESCRIPTION untuk SEO Google -->
+    <meta name="description" content="Pokoco offers free, fast, and secure media hosting. Upload and privately share videos, images, and audio files. Supports direct link / smartlink ads." />
+    
+    <!-- [DIUBAH] OPEN GRAPH untuk WhatsApp, Facebook, Google, dll. -->
+    <meta property="og:title" content="Pokoco - Free Media Hosting" />
+    <meta property="og:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
     <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="800" />
     <meta property="og:type" content="website" />
     
+    <!-- [DIUBAH] TWITTER CARD untuk Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Pokoco - File Hosting" />
-    <meta name="twitter:description" content="Private, fast, and secure media uploading. Share your files easily." />
+    <meta name="twitter:title" content="Pokoco - Free Media Hosting" />
+    <meta name="twitter:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
     <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
+    <!-- FAVICON & NOTIFICATION / HOMESCREEN ICONS (Tidak berubah) -->
     <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <!-- [BARU] SCRIPT CLOUDFLARE TURNSTILE DITAMBAHKAN DI SINI -->
+    <!-- SCRIPT CLOUDFLARE TURNSTILE -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <style>
@@ -45,14 +51,13 @@
             max-height: 180px; width: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
         #file-preview-content audio { padding: 10px; }
-        /* [DIUBAH] Notification styles untuk konsistensi dengan halaman viewer */
+        /* Notifikasi custom */
         #notification-message { opacity: 0; transform: translateY(-100%) translateX(-50%); transition: all 0.3s ease-in-out; }
         #notification-message.show { opacity: 1; transform: translateY(0) translateX(-50%); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col overflow-x-hidden">
 
-    <!-- [DIUBAH] KOTAK NOTIFIKASI CUSTOM -->
     <div id="notification-message" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-lg shadow-lg text-white font-medium hidden"></div>
 
     <header class="pt-4 pb-3 lg:pt-5 lg:pb-4 z-40 relative">
@@ -116,14 +121,14 @@
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
                 
+                <!-- [DIUBAH] WIDGET CLOUDFLARE TURNSTILE DITARUH DI SINI -->
+                <div id="upload-turnstile-container" class="mt-4 mb-4 flex justify-center w-full">
+                    <div class="cf-turnstile" data-sitekey="0x4AAAAAACwgqhT8gR0kdo64" data-theme="dark" data-callback="captchaUploadSuccess"></div>
+                </div>
+
                 <div id="upload-action" class="flex flex-col gap-3">
                     <button onclick="startUpload()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg">Upload Now</button>
                     <button onclick="location.reload()" class="text-sm text-slate-500 hover:text-white transition">Cancel / Select another file</button>
-                </div>
-
-                <!-- [DIUBAH] WIDGET CLOUDFLARE TURNSTILE DITARUH DI BAWAH TOMBOL UPLOAD NOW -->
-                <div id="upload-turnstile-container" class="mt-4 mb-4 flex justify-center w-full">
-                    <div class="cf-turnstile" data-sitekey="0x4AAAAAACwgqhT8gR0kdo64" data-theme="dark" data-callback="captchaUploadSuccess"></div>
                 </div>
 
                 <div id="progress-container" class="hidden mt-6">
@@ -151,17 +156,15 @@
         const fileInput = document.getElementById('file-input');
         const step1 = document.getElementById('upload-step-1');
         const step2 = document.getElementById('upload-step-2');
-        // [PERBAIKAN] Pastikan elemen ini didefinisikan dengan benar
         const historyList = document.getElementById('history-list');
         const historyPanel = document.getElementById('history-panel');
         const overlay = document.getElementById('overlay');
         const adLinkInput = document.getElementById('ad-link-input');
         const notificationMessage = document.getElementById('notification-message');
 
-        // [BARU] Variabel untuk melacak status Captcha Cloudflare
-        let isCaptchaVerified = false;
+        let isCaptchaVerified = false; // Status untuk melacak apakah Captcha sudah lolos
 
-        // [DIUBAH] Fungsi Notifikasi agar animasi lebih halus
+        // Fungsi Notifikasi custom
         let notificationTimeout;
         function showNotification(message, type = 'info', duration = 4000) {
             notificationMessage.textContent = message;
@@ -189,14 +192,13 @@
             }, duration);
         }
 
-        // [PERBAIKAN] Fungsi toggleHistory() - Tidak ada perubahan logika, hanya memastikan definisi
+        // Fungsi History Panel (sudah diperbaiki)
         function toggleHistory() {
             historyPanel.classList.toggle('open');
             overlay.classList.toggle('hidden');
-            renderHistory();
+            renderHistory(); // Render ulang history setiap kali panel dibuka
         }
 
-        // Fungsi saveToHistory(), renderHistory(), clearHistory() - Tidak ada perubahan
         function saveToHistory(id, name, type, adLink) {
             let history = JSON.parse(localStorage.getItem('pokoco_history') || '[]');
             history.unshift({ id, name, type, adLink, date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) });
@@ -239,6 +241,7 @@
             } 
         }
 
+        // Event Listeners untuk Drag & Drop dan File Input
         dropArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
         
@@ -250,7 +253,7 @@
             if(e.dataTransfer.files[0]) handleFileSelection(e.dataTransfer.files[0]);
         });
 
-        // [BARU] Fungsi untuk mengecek apakah user sudah lolos Captcha harian
+        // Fungsi untuk mengecek apakah user sudah lolos Captcha harian
         function hasPassedDailyCaptcha() {
             const lastVerifiedTimestamp = localStorage.getItem('pokoco_daily_captcha_passed');
             if (!lastVerifiedTimestamp) {
@@ -260,7 +263,7 @@
             return (Date.now() - parseInt(lastVerifiedTimestamp)) < twentyFourHours;
         }
 
-        // [BARU] Fungsi callback dari Cloudflare Turnstile untuk halaman upload
+        // Fungsi callback dari Cloudflare Turnstile untuk halaman upload
         function captchaUploadSuccess(token) {
             isCaptchaVerified = true;
             // Simpan timestamp ke localStorage setelah Captcha lolos
@@ -302,7 +305,7 @@
                 previewContent.innerHTML = `<span class="text-xs text-slate-500">No preview available for this file type.</span>`;
             }
 
-            // [BARU] Logic untuk Captcha Cloudflare harian di Step 2 (preview)
+            // Logic untuk Captcha Cloudflare harian di Step 2 (preview)
             const uploadTurnstileContainer = document.getElementById('upload-turnstile-container');
             if (hasPassedDailyCaptcha()) {
                 // Jika user sudah lolos Captcha harian, sembunyikan container Captcha
@@ -325,7 +328,7 @@
                 return;
             }
             
-            // [BARU] Cek status Captcha sebelum upload
+            // Cek status Captcha sebelum upload
             if (!isCaptchaVerified) {
                 showNotification('Please complete the security check before uploading.', 'error');
                 return;
