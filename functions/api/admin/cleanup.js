@@ -13,16 +13,24 @@ export async function onRequest(context) {
   }
 
   try {
+    // =====================================================================
+    // [PERBAIKAN PALING STABIL] HITUNG BATAS WAKTU 30 HARI DI SINI SEKALI
+    // =====================================================================
+    const dateCutoff = new Date();
+    dateCutoff.setDate(dateCutoff.getDate() - 30);
+    // Ubah ke format 'YYYY-MM-DD HH:MM:SS' yang 100% kompatibel dengan D1
+    const thirtyDaysAgoISO = dateCutoff.toISOString().replace('T', ' ').substring(0, 19);
+
+
     // ==========================================
     // 1. CARI VIDEO YANG GAGAL TARGET (< 100 view)
-    // Pake IFNULL biar file baru yg datanya kosong tetep kehitung dari tanggal upload
     // ==========================================
     const queryFailed = `
       SELECT id FROM videos 
-      WHERE IFNULL(last_reset_at, created_at) <= datetime('now', '-30 days') 
+      WHERE IFNULL(last_reset_at, created_at) <= ? 
       AND IFNULL(period_views, 0) < 100
     `;
-    const failedVideos = await env.DB.prepare(queryFailed).all();
+    const failedVideos = await env.DB.prepare(queryFailed).bind(thirtyDaysAgoISO).all();
 
     let deletedCount = 0;
     
@@ -36,27 +44,23 @@ export async function onRequest(context) {
         },
       });
 
-      const idsToDelete = [];
+      const idsToDelete = failedVideos.results.map(row => row.id);
 
-      // A. Hapus file fisiknya dari R2
-      for (const row of failedVideos.results) {
+      // A. Hapus file fisik dari R2
+      for (const id of idsToDelete) {
         try {
-          await S3.send(new DeleteObjectCommand({ Bucket: env.R2_BUCKET_NAME, Key: row.id }));
-          idsToDelete.push(row.id); // Simpan ID yang berhasil dihapus
+          await S3.send(new DeleteObjectCommand({ Bucket: env.R2_BUCKET_NAME, Key: id }));
           deletedCount++;
         } catch (e) { 
-          console.error("R2 Delete Error:", e); 
-          idsToDelete.push(row.id); // Tetap simpan ID biar ampasnya di D1 ikut terhapus
+          console.error(`R2 Delete Error untuk ID ${id}:`, e);
         }
       }
 
       // B. Hapus ID dari Database D1 menggunakan BATCH (Anti Nyangkut)
       if (idsToDelete.length > 0) {
-        // Kumpulkan semua perintah hapus
         const deleteStatements = idsToDelete.map(id => 
           env.DB.prepare("DELETE FROM videos WHERE id = ?").bind(id)
         );
-        // Tembak hapus sekalian bareng-bareng!
         await env.DB.batch(deleteStatements);
       }
     }
@@ -67,17 +71,18 @@ export async function onRequest(context) {
     const querySuccess = `
       UPDATE videos 
       SET period_views = 0, last_reset_at = CURRENT_TIMESTAMP 
-      WHERE IFNULL(last_reset_at, created_at) <= datetime('now', '-30 days') 
+      WHERE IFNULL(last_reset_at, created_at) <= ? 
       AND IFNULL(period_views, 0) >= 100
     `;
-    await env.DB.prepare(querySuccess).run();
+    await env.DB.prepare(querySuccess).bind(thirtyDaysAgoISO).run();
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Proses Selesai! Menghapus ${deletedCount} file gagal dari R2 dan Database. Dan mereset nyawa file yang lulus target.`,
+      message: `Proses Selesai! Berhasil menghapus ${deletedCount} file dari R2 dan Database. Dan mereset timer file yang lulus target.`,
     }), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
+    console.error("Cleanup Error:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), { status: 500 });
   }
 }
