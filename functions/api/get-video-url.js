@@ -30,10 +30,9 @@ export async function onRequestGet(context) {
       throw new Error("File not found in database or has been deleted.");
     }
 
-    // 2. Update View Count DAN Last Viewed Timestamp di D1
-    // Ini krusial untuk logika retensi video 30 hari
+    // 2. Update View Count Total DAN View Bulanan (period_views)
     await env.DB.prepare(
-      "UPDATE videos SET views = views + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE id = ?"
+      "UPDATE videos SET views = views + 1, period_views = period_views + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE id = ?"
     ).bind(videoId).run();
 
     // 3. Buat Pre-signed URL R2 dengan expiresIn (3 jam = 10800 detik)
