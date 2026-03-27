@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokoco - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* Modern Minimalist Base Styles */
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #0f172a; /* Dark background */
-            color: #f8fafc; /* Light text */
+            background-color: #020617; /* Slate-950 equivalent for body */
+            color: #e2e8f0; /* Light text (slate-200) */
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -19,14 +19,14 @@
             padding: 1.5rem; /* Consistent padding */
         }
         .glass-panel { 
-            background-color: #1e293b; /* Darker panel background */
-            border: 1px solid #334155; /* Subtle border */
-            border-radius: 1rem; /* Rounded corners */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
+            background-color: #1e293b; /* Slate-800 for panels */
+            border: 1px solid #334155; /* Slate-700 border */
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* Subtle shadow */
         }
         .input-style {
-            background-color: #020617; /* Even darker input background */
-            border: 1px solid #334155;
+            background-color: #0f172a; /* Slate-900 for inputs */
+            border: 1px solid #334155; /* Slate-700 border */
             border-radius: 0.5rem;
             padding: 0.65rem 1rem;
             color: #e2e8f0;
@@ -47,7 +47,11 @@
             border-radius: 0.5rem;
             font-weight: 600;
             font-size: 0.9rem;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+        }
+        .button-style:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         /* Custom scrollbar for dark themes */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -56,20 +60,50 @@
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         /* Style for date input dark mode */
         input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1); /* Makes the calendar icon white */
+            filter: invert(0.8); /* Makes the calendar icon light */
         }
         .table-action-button {
             padding: 0.5rem; /* Uniform padding */
             border-radius: 0.375rem; /* Rounded for small buttons */
             line-height: 1; /* Adjust line height for icon buttons */
         }
+
+        /* Custom Notification Styles */
+        .notification-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease-out;
+            transform: translateX(100%);
+            opacity: 0;
+            min-width: 280px;
+            max-width: 380px;
+            color: white;
+            font-weight: 500;
+        }
+        .notification-item.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .notification-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
     </style>
 </head>
 <body class="min-h-screen">
 
+    <!-- Custom Notification Container -->
+    <div id="custom-notification-container" class="fixed top-4 right-4 z-[999] space-y-3 pointer-events-none">
+        <!-- Notifications will be appended here -->
+    </div>
+
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="w-full max-w-md mt-20 glass-panel p-8 text-center">
-        <h1 class="text-3xl font-bold mb-2 text-white">Admin Login</h1>
+    <div id="login-screen" class="w-full max-w-sm mx-auto my-auto p-8 glass-panel text-center">
+        <h1 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Pokoco Admin</h1>
         <p class="text-slate-400 text-sm mb-6">Enter password to access dashboard</p>
         <input type="password" id="password-input" class="w-full input-style mb-4 text-center" placeholder="••••••••" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()" class="w-full button-style bg-blue-600 hover:bg-blue-700 text-white">Login</button>
@@ -77,49 +111,55 @@
     </div>
 
     <!-- DASHBOARD SCREEN -->
-    <div id="dashboard-screen" class="w-full max-w-6xl hidden flex-col gap-6 p-4 md:p-0">
+    <div id="dashboard-screen" class="w-full max-w-screen-xl hidden flex-col gap-6 mx-auto">
         <!-- Dashboard Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 glass-panel p-6">
+        <div class="glass-panel p-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white">Admin Dashboard</h1>
-                <p class="text-slate-400 text-sm">Manage, filter, and process media assets</p>
+                <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Pokoco Admin Dashboard</h1>
+                <p class="text-slate-400 text-sm">Manage, filter, and process media assets efficiently</p>
             </div>
             <button onclick="logout()" class="button-style bg-red-900/20 hover:bg-red-900/30 text-red-400 border border-red-900/50">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 2.25V12M12 12l2.25 2.25M12 12l-2.25 2.25" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2.25a.75.75 0 0 1-1.5 0V4.25a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75V11.5a.75.75 0 0 1 1.5 0v2.25A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M19 10a.75.75 0 0 0-.75-.75H8.704l1.235-1.235a.75.75 0 1 0-1.06-1.06l-2.5 2.5a.75.75 0 0 0 0 1.06l2.5 2.5a.75.75 0 1 0 1.06-1.06l-1.235-1.235H18.25A.75.75 0 0 0 19 10Z" clip-rule="evenodd" />
                 </svg>
                 Logout
             </button>
         </div>
 
         <!-- FILTERS & ACTIONS -->
-        <div class="glass-panel p-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div class="glass-panel p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
             <div>
-                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Minimum Total Views</label>
+                <label for="filter-views" class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Minimum Total Views</label>
                 <input type="number" id="filter-views" placeholder="e.g. 50" class="w-full input-style" oninput="applyFilters()">
             </div>
             <div>
-                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Upload Date</label>
+                <label for="filter-date" class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Upload Date</label>
                 <input type="date" id="filter-date" class="w-full input-style [color-scheme:dark]" onchange="applyFilters()">
             </div>
-            <div class="flex gap-2">
+            
+            <div class="flex gap-2 col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
                 <button onclick="clearFilters()" class="w-full button-style bg-slate-700 hover:bg-slate-600 text-white" title="Clear all applied filters">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
                     </svg>
                     Clear Filters
                 </button>
                 <button onclick="fetchData()" class="w-full button-style bg-blue-600 hover:bg-blue-700 text-white" title="Refresh data from server">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.181m0 0h-4.992m0 0h-4.992m0 0l-3.181 3.181" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
                     </svg>
                     Refresh
                 </button>
-                
-                <!-- TOMBOL PROSES HARIAN -->
-                <button onclick="runDailyProcess()" class="w-full button-style bg-emerald-600 hover:bg-emerald-700 text-white" title="Jalankan proses hapus (jika gagal target) dan reset (jika lulus target)">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.23c.55 0 1.02.398 1.11.94l.167.992c.092.547.566.92 1.12.92H19.5c.56 0 1.036.38 1.133.919l.566 2.931c.1.52.008 1.04-.254 1.488l-.656 1.133c-.27.46-.777.715-1.297.715h-4.232c-.557 0-1.034.398-1.133.919l-.566 2.931c-.1.52.008 1.04.254 1.488l.656 1.133c.27.46.777.715 1.297.715h4.232c.557 0 1.034.398 1.133.919l.566 2.931c.1.52.008 1.04-.254 1.488l-.656 1.133c-.27.46-.777.715-1.297.715H9.594c-.557 0-1.034-.398-1.133-.919l-.566-2.931c-.1-.52.008-1.04.254-1.488l.656-1.133c.27-.46.777-.715 1.297-.715H9.594c-.557 0-1.034-.398-1.133-.919l-.167-.992a4.524 4.524 0 0 0-.165-.245zM11.994 16.5c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z" />
+            </div>
+            
+            <!-- TOMBOL PROSES HARIAN -->
+            <div class="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-1">
+                 <button onclick="runDailyProcess()" class="w-full button-style bg-emerald-600 hover:bg-emerald-700 text-white" title="Jalankan proses hapus (jika gagal target) dan reset (jika lulus target)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
                     </svg>
                     Proses Harian
                 </button>
@@ -160,6 +200,56 @@
         let adminPassword = sessionStorage.getItem('admin_pw') || '';
         let allData = [];
 
+        // --- Custom Notification System ---
+        let notificationTimeoutId = 0;
+        function showCustomNotification(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('custom-notification-container');
+            const notification = document.createElement('div');
+            notification.className = 'notification-item'; // Basic styling for all notifications
+
+            let bgColor, iconSvg;
+
+            switch (type) {
+                case 'success':
+                    bgColor = 'bg-emerald-600';
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>`;
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-600';
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94l-1.72-1.72Z" clip-rule="evenodd" /></svg>`;
+                    break;
+                case 'warning':
+                    bgColor = 'bg-orange-500';
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M8.483 2.436a1.5 1.5 0 0 1 3.034 0l6.212 11.05a1.5 1.5 0 0 1-1.31 2.264H3.58a1.5 1.5 0 0 1-1.31-2.264L8.483 2.436ZM10 6a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 10 6Zm0 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" /></svg>`;
+                    break;
+                default: // info
+                    bgColor = 'bg-blue-600';
+                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.69 6.22a.75.75 0 0 0-1.06 1.06L8.94 9l-1.31 1.31a.75.75 0 1 0 1.06 1.06l1.5-1.5a.75.75 0 0 0 0-1.06l-1.5-1.5ZM10 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" /></svg>`;
+                    break;
+            }
+
+            notification.classList.add(bgColor);
+            notification.innerHTML = `${iconSvg} <span>${message}</span>`;
+            container.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 50);
+
+            // Animate out and remove
+            const currentNotificationId = ++notificationTimeoutId;
+            setTimeout(() => {
+                const item = container.querySelector('.notification-item.show');
+                if (item) {
+                    item.classList.remove('show');
+                    setTimeout(() => item.remove(), 300); // Remove after transition
+                }
+            }, duration);
+        }
+        // --- End Custom Notification System ---
+
+
         // Inisialisasi dashboard jika password ada di sessionStorage
         if (adminPassword) {
             showDashboard();
@@ -168,35 +258,35 @@
 
         async function login() {
             const input = document.getElementById('password-input').value;
-            if (!input) return; // Jangan login jika input kosong
+            if (!input) return;
             adminPassword = input;
             
-            // Coba fetch data untuk memverifikasi password
             const res = await fetch(`/api/admin/videos?pw=${encodeURIComponent(adminPassword)}`);
             if (res.ok) {
-                sessionStorage.setItem('admin_pw', adminPassword); // Simpan password jika berhasil
+                sessionStorage.setItem('admin_pw', adminPassword);
                 showDashboard();
                 fetchData();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
-                adminPassword = ''; // Hapus password jika salah
+                adminPassword = '';
+                showCustomNotification("Incorrect password!", "error"); // Custom notification for login error
             }
         }
 
         function logout() {
-            sessionStorage.removeItem('admin_pw'); // Hapus password dari sessionStorage
-            location.reload(); // Muat ulang halaman untuk kembali ke login
+            sessionStorage.removeItem('admin_pw');
+            location.reload();
         }
 
         function showDashboard() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('dashboard-screen').classList.remove('hidden');
-            document.getElementById('dashboard-screen').classList.add('flex'); // Pastikan dashboard visible
+            document.getElementById('dashboard-screen').classList.add('flex');
         }
 
         async function fetchData() {
-            document.getElementById('table-body').innerHTML = ''; // Kosongkan tabel
-            document.getElementById('loading-indicator').classList.remove('hidden'); // Tampilkan loading
+            document.getElementById('table-body').innerHTML = '';
+            document.getElementById('loading-indicator').classList.remove('hidden');
 
             try {
                 // Pastikan `api/admin/videos.js` mengambil kolom `period_views`
@@ -206,13 +296,13 @@
                 
                 const data = await res.json();
                 allData = data.videos || [];
-                applyFilters(); // Terapkan filter setelah data dimuat
+                applyFilters();
 
             } catch (err) {
-                alert("Session expired or wrong password. Please login again.");
-                logout(); // Paksa logout jika ada error fetch
+                showCustomNotification("Session expired or wrong password. Please login again.", "error");
+                logout();
             } finally {
-                document.getElementById('loading-indicator').classList.add('hidden'); // Sembunyikan loading
+                document.getElementById('loading-indicator').classList.add('hidden');
             }
         }
 
@@ -220,7 +310,6 @@
         // FUNGSI UTAMA: MENJALANKAN PROSES HARIAN (HAPUS & RESET)
         // ================================================================
         async function runDailyProcess() {
-            // Peringatan yang sangat jelas tentang apa yang akan terjadi
             const confirmProcess = confirm(
                 "Yakin mau menjalankan PROSES HARIAN?\n\n" +
                 "Ini akan melakukan DUA hal secara otomatis:\n" +
@@ -228,21 +317,23 @@
                 "2. MERESET file yang umurnya > 30 hari & view bulanannya >= 100 (diberi 30 hari lagi)."
             );
 
-            if (!confirmProcess) return; // Batal jika user tidak setuju
+            if (!confirmProcess) return;
             
             if (!adminPassword) {
-                alert("Sesi admin tidak valid. Silakan login ulang.");
+                showCustomNotification("Admin session is invalid. Please log in again.", "error");
                 return;
             }
 
-            const button = event.target; // Dapatkan elemen tombol yang diklik
-            button.disabled = true; // Nonaktifkan tombol
+            const button = event.target;
+            button.disabled = true;
             button.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 animate-spin">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.23c.55 0 1.02.398 1.11.94l.167.992c.092.547.566.92 1.12.92H19.5c.56 0 1.036.38 1.133.919l.566 2.931c.1.52.008 1.04-.254 1.488l-.656 1.133c-.27.46-.777.715-1.297.715h-4.232c-.557 0-1.034.398-1.133.919l-.566 2.931c-.1.52.008 1.04.254 1.488l.656 1.133c.27.46.777.715 1.297.715h4.232c.557 0 1.034.398 1.133.919l.566 2.931c.1.52.008 1.04-.254 1.488l-.656 1.133c.27.46-.777-.715-1.297-.715H9.594c-.557 0-1.034-.398-1.133-.919l-.566-2.931c-.1-.52.008-1.04.254-1.488l.656-1.133c-.27-.46.777-.715 1.297-.715H9.594c-.557 0-1.034-.398-1.133-.919l-.167-.992a4.524 4.524 0 0 0-.165-.245zM11.994 16.5c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 animate-spin">
+                    <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
                 </svg>
-                Memproses...`; // Tampilkan icon loading
-            button.classList.add('bg-emerald-700'); // Sedikit gelap saat loading
+                Processing...`;
+            button.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+            button.classList.add('bg-emerald-700');
 
             try {
                 const res = await fetch('/api/admin/daily-process', {
@@ -254,19 +345,19 @@
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    alert(data.message);
-                    fetchData(); // Muat ulang tabel setelah proses
+                    showCustomNotification(data.message, "success");
+                    fetchData();
                 } else {
-                    alert("Gagal Proses: " + (data.message || "Error tidak diketahui"));
+                    showCustomNotification("Failed to process: " + (data.message || "Unknown error"), "error");
                 }
             } catch (e) {
-                alert("Terjadi kesalahan jaringan saat proses harian.");
+                showCustomNotification("Network error during daily process.", "error");
             } finally {
-                // Kembalikan tombol ke kondisi normal
                 button.disabled = false;
                 button.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.23c.55 0 1.02.398 1.11.94l.167.992c.092.547.566.92 1.12.92H19.5c.56 0 1.036.38 1.133.919l.566 2.931c.1.52.008 1.04-.254 1.488l-.656 1.133c-.27.46-.777.715-1.297.715h-4.232c-.557 0-1.034.398-1.133.919l-.566 2.931c-.1.52.008 1.04.254 1.488l.656 1.133c.27.46.777.715 1.297.715h4.232c.557 0 1.034.398 1.133.919l.566 2.931c.1.52.008 1.04-.254 1.488l-.656 1.133c-.27.46-.777-.715-1.297-.715H9.594c-.557 0-1.034-.398-1.133-.919l-.167-.992a4.524 4.524 0 0 0-.165-.245zM11.994 16.5c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
                     </svg>
                     Proses Harian`;
                 button.classList.remove('bg-emerald-700');
@@ -290,13 +381,13 @@
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    alert("Video dan Data berhasil dihapus.");
+                    showCustomNotification("Video dan Data berhasil dihapus.", "success");
                     fetchData();
                 } else {
-                    alert("Gagal menghapus: " + (data.message || "Error tidak diketahui"));
+                    showCustomNotification("Failed to delete: " + (data.message || "Unknown error"), "error");
                 }
             } catch (e) {
-                alert("Terjadi kesalahan jaringan saat menghapus.");
+                showCustomNotification("Network error during deletion.", "error");
             }
         }
 
@@ -307,7 +398,7 @@
             const filteredData = allData.filter(item => {
                 if (item.views < minViews) return false;
                 if (filterDate) {
-                    const itemDate = item.created_at.split(' ')[0]; // Ambil hanya tanggalnya
+                    const itemDate = item.created_at.split(' ')[0];
                     if (itemDate !== filterDate) return false;
                 }
                 return true;
@@ -320,12 +411,14 @@
             document.getElementById('filter-views').value = '';
             document.getElementById('filter-date').value = '';
             applyFilters();
+            showCustomNotification("Filters cleared.", "info");
         }
 
         function copyLink(id) {
             const url = window.location.origin + '/v?id=' + id;
-            navigator.clipboard.writeText(url);
-            alert("Link copied: " + url);
+            navigator.clipboard.writeText(url)
+                .then(() => showCustomNotification("Link copied to clipboard!", "success"))
+                .catch(() => showCustomNotification("Failed to copy link.", "error"));
         }
 
         // FUNGSI UNTUK MERENDER DATA KE TABEL
@@ -339,34 +432,25 @@
             }
 
             tbody.innerHTML = data.map(item => {
-                // Konversi tanggal ke format yang lebih mudah dibaca
-                const dateObj = new Date(item.created_at + "Z"); // Anggap created_at sebagai UTC
+                const dateObj = new Date(item.created_at + "Z");
                 const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 
-                // Ambil tipe konten, default 'unknown' jika tidak ada
                 const typeShort = item.content_type ? item.content_type.split('/')[0] : 'unknown';
                 
-                let badgeColor = 'bg-slate-700 text-slate-300 border border-slate-800'; // Default
+                let badgeColor = 'bg-slate-700 text-slate-300 border border-slate-800';
                 if(typeShort === 'video') badgeColor = 'bg-purple-900/50 text-purple-300 border border-purple-800';
                 if(typeShort === 'image') badgeColor = 'bg-blue-900/50 text-blue-300 border border-blue-800';
                 if(typeShort === 'audio') badgeColor = 'bg-emerald-900/50 text-emerald-300 border border-emerald-800';
 
-                // Ambil period_views, default 0 jika undefined (untuk data lama)
                 const periodViews = item.period_views !== undefined ? item.period_views : 0;
                 
-                // Styling untuk views bulanan (hijau jika >= 100, orange jika < 100)
-                const bulananAman = (periodViews >= 100) ? 'text-green-400 font-bold' : 'text-orange-400 font-bold';
+                const bulananAman = (periodViews >= 100) ? 'text-emerald-400 font-bold' : 'text-orange-400 font-bold';
 
                 return `
                 <tr class="hover:bg-slate-800/50 transition-colors">
                     <td class="px-6 py-4 font-mono text-slate-300">${item.id}</td>
-                    
-                    <!-- TOTAL VIEW -->
                     <td class="px-6 py-4 font-bold text-slate-200">${item.views.toLocaleString()}</td>
-                    
-                    <!-- VIEW BULAN INI -->
                     <td class="px-6 py-4 ${bulananAman}">${periodViews} / 100</td>
-                    
                     <td class="px-6 py-4 text-slate-400">${dateStr}</td>
                     <td class="px-6 py-4">
                         <span class="text-[10px] uppercase px-2 py-1 rounded-md ${badgeColor}">${typeShort}</span>
@@ -374,18 +458,20 @@
                     <td class="px-6 py-4 text-right">
                         <div class="flex justify-end gap-2">
                             <button onclick="copyLink('${item.id}')" class="text-slate-400 hover:text-white bg-slate-700 hover:bg-slate-600 table-action-button" title="Copy Link">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.313 0l1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                  <path d="M7.75 3.75a.75.75 0 0 0-1.5 0v3.5A.75.75 0 0 0 7 8h2.25a.75.75 0 0 0 0-1.5H7.75V3.75ZM4.002 11.25a.75.75 0 0 0-1.5 0v3.5c0 .414.336.75.75.75H7a.75.75 0 0 0 0-1.5H4.75v-3.5Z" />
+                                  <path fill-rule="evenodd" d="M5.25 2.25A2.25 2.25 0 0 0 3 4.5v11A2.25 2.25 0 0 0 5.25 18h9.5A2.25 2.25 0 0 0 17 15.5v-9.5A2.25 2.25 0 0 0 14.75 4h-3.26l-.317-.949A.75.75 0 0 0 10.75 2.25H5.25ZM12 6a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 12 6Zm3 7.75H9.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5Z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                             <a href="/v?id=${item.id}" target="_blank" class="text-white bg-blue-600 hover:bg-blue-500 table-action-button" title="Open Media">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                  <path fill-rule="evenodd" d="M4.25 5.5A.75.75 0 0 0 3.5 6.25v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4.69a.75.75 0 0 1 1.5 0v4.69c0 1.243-1.007 2.25-2.25 2.25h-8.5C3.007 17 2 15.993 2 14.75v-8.5C2 5.007 3.007 4 4.25 4h5.69a.75.75 0 0 1 0 1.5H4.25Z" clip-rule="evenodd" />
+                                  <path fill-rule="evenodd" d="M16.75 4.5a.75.75 0 0 0-1.5 0v.667L9.27 10.82a.75.75 0 1 0 1.06 1.06l5.98-5.98V6.25a.75.75 0 0 0 .75-.75v-1A.75.75 0 0 0 16.75 4.5Z" clip-rule="evenodd" />
                                 </svg>
                             </a>
                             <button onclick="deleteVideo('${item.id}')" class="text-white bg-red-600 hover:bg-red-500 table-action-button" title="Delete Permanently">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.166m10.126 0a48.11 48.11 0 01-7.678 0m-4.048 0c-1.133 0-2.378.077-3.655.202M2.25 7.5h19.5v-.275c0-1.637-1.313-2.962-2.936-2.962H5.186C3.563 4.263 2.25 5.588 2.25 7.225V7.5z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                  <path fill-rule="evenodd" d="M8.75 1A.75.75 0 0 0 8 1.75V2H5A.75.75 0 0 0 5 3h14a.75.75 0 0 0 0-1.5h-3.25V1.75A.75.75 0 0 0 15 1H8.75ZM7.75 7.75a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-1.5 0v-7.5a.75.75 0 0 1 .75-.75ZM11 1.75V2H9.75V1.75A.75.75 0 0 1 11 1Zm-3 6a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Zm5.25-.75a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5Z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </div>
