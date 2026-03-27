@@ -5,157 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokoco - Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Modern Minimalist Base Styles */
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #020617; /* Slate-950 equivalent for body */
-            color: #e2e8f0; /* Light text (slate-200) */
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1.5rem; /* Consistent padding */
-        }
-        .glass-panel { 
-            background-color: #1e293b; /* Slate-800 for panels */
-            border: 1px solid #334155; /* Slate-700 border */
-            border-radius: 0.75rem; /* Rounded corners */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05); /* Subtle shadow */
-        }
-        .input-style {
-            background-color: #0f172a; /* Slate-900 for inputs */
-            border: 1px solid #334155; /* Slate-700 border */
-            border-radius: 0.5rem;
-            padding: 0.65rem 1rem;
-            color: #e2e8f0;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .input-style:focus {
-            border-color: #3b82f6; /* Blue border on focus */
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); /* Blue shadow on focus */
-        }
-        .button-style {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.65rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-            white-space: nowrap; /* Prevent text wrapping */
-        }
-        .button-style:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        /* Custom scrollbar for dark themes */
+        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-panel { background-color: #1e293b; border: 1px solid #334155; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        /* Style for date input dark mode */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8); /* Makes the calendar icon light */
-        }
-        .table-action-button {
-            display: inline-flex; /* Crucial for icon centering */
-            align-items: center; /* Vertically center icon */
-            justify-content: center; /* Horizontally center icon */
-            padding: 0.5rem; 
-            border-radius: 0.375rem; 
-            line-height: 1; 
-            background-color: #334155; /* Slate-700 equivalent */
-            color: #cbd5e1; /* Slate-300 equivalent */
-            border: 1px solid #475569; /* Slate-600 border */
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-        }
-        .table-action-button:hover {
-            background-color: #475569; /* Slate-600 equivalent */
-            color: #f8fafc; /* White equivalent */
-            border-color: #64748b; /* Slate-500 border */
-        }
-
-        /* Custom Notification Styles */
-        .notification-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: all 0.3s ease-out;
-            transform: translateX(100%);
-            opacity: 0;
-            min-width: 280px;
-            max-width: 380px;
-            color: white;
-            font-weight: 500;
-            pointer-events: auto; /* Make them clickable if needed */
-        }
-        .notification-item.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        .notification-icon {
-            width: 1.25rem; /* Equivalent to w-5 */
-            height: 1.25rem; /* Equivalent to h-5 */
-        }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="min-h-screen">
-
-    <!-- Custom Notification Container -->
-    <div id="custom-notification-container" class="fixed top-4 right-4 z-[999] space-y-3 pointer-events-none">
-        <!-- Notifications will be appended here -->
-    </div>
+<body class="min-h-screen flex flex-col items-center p-4 md:p-8">
 
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="w-full max-w-sm mx-auto my-auto p-8 glass-panel text-center">
-        <h1 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Pokoco Admin</h1>
+    <div id="login-screen" class="w-full max-w-md mt-20 glass-panel p-8 rounded-2xl shadow-2xl text-center">
+        <h1 class="text-3xl font-bold mb-2">Admin Login</h1>
         <p class="text-slate-400 text-sm mb-6">Enter password to access dashboard</p>
-        <input type="password" id="password-input" class="w-full input-style mb-4 text-center" placeholder="••••••••" onkeypress="if(event.key === 'Enter') login()">
-        <button onclick="login()" class="w-full button-style bg-blue-600 hover:bg-blue-700 text-white">Login</button>
+        <input type="password" id="password-input" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 mb-4 text-center" placeholder="••••••••" onkeypress="if(event.key === 'Enter') login()">
+        <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition">Login</button>
         <p id="login-error" class="text-red-400 text-sm mt-4 hidden">Incorrect password!</p>
     </div>
 
     <!-- DASHBOARD SCREEN -->
-    <div id="dashboard-screen" class="w-full max-w-screen-xl hidden flex-col gap-6 mx-auto">
-        <!-- Dashboard Header -->
-        <div class="glass-panel p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div id="dashboard-screen" class="w-full max-w-6xl hidden flex-col gap-6">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 glass-panel p-6 rounded-2xl">
             <div>
-                <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Pokoco Admin Dashboard</h1>
-                <p class="text-slate-400 text-sm">Manage and process media assets</p>
+                <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+                <p class="text-slate-400 text-sm">Manage, Filter, and Process Media</p>
             </div>
-            <button onclick="logout()" class="button-style bg-red-900/20 hover:bg-red-900/30 text-red-400 border border-red-900/50">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                    <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2.25a.75.75 0 0 1-1.5 0V4.25a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75V11.5a.75.75 0 0 1 1.5 0v2.25A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clip-rule="evenodd" />
-                    <path fill-rule="evenodd" d="M19 10a.75.75 0 0 0-.75-.75H8.704l1.235-1.235a.75.75 0 1 0-1.06-1.06l-2.5 2.5a.75.75 0 0 0 0 1.06l2.5 2.5a.75.75 0 1 0 1.06-1.06l-1.235-1.235H18.25A.75.75 0 0 0 19 10Z" clip-rule="evenodd" />
-                </svg>
-                Logout
-            </button>
+            <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 px-4 py-2 border border-red-900/50 rounded-lg bg-red-900/20 transition">Logout</button>
         </div>
 
-        <!-- GLOBAL ACTIONS (Hanya Proses Harian) -->
-        <div class="glass-panel p-6 flex justify-center items-center">
-            <button onclick="runDailyProcess()" class="button-style bg-emerald-600 hover:bg-emerald-700 text-white w-full max-w-sm" title="Jalankan proses hapus (jika gagal target) dan reset (jika lulus target)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                    <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
-                    <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
-                </svg>
-                Proses Harian
-            </button>
+        <!-- FILTERS & ACTIONS -->
+        <div class="glass-panel p-6 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Minimum Total Views</label>
+                <input type="number" id="filter-views" placeholder="e.g. 50" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none" oninput="applyFilters()">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Upload Date</label>
+                <input type="date" id="filter-date" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none [color-scheme:dark]" onchange="applyFilters()">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="clearFilters()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg transition" title="Reset filter">Clear</button>
+                <button onclick="fetchData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition" title="Muat ulang tabel">Refresh</button>
+                
+                <!-- TOMBOL PROSES HARIAN -->
+                <button id="btn-process" onclick="runDailyProcess()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition" title="Eksekusi Hapus & Reset file > 30 hari">⚙️ Proses Harian</button>
+            </div>
         </div>
 
-        <!-- MEDIA LIST TABLE -->
-        <div class="glass-panel overflow-hidden flex flex-col">
+        <!-- STATS & TABLE -->
+        <div class="glass-panel rounded-2xl overflow-hidden flex flex-col">
             <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
-                <h2 class="font-semibold text-lg text-white">Media List</h2>
+                <h2 class="font-semibold text-lg">Media List</h2>
                 <span id="total-count" class="text-sm bg-blue-900/50 text-blue-300 py-1 px-3 rounded-full">Total: 0</span>
             </div>
             <div class="overflow-x-auto">
@@ -163,8 +66,8 @@
                     <thead class="bg-slate-900/50 text-slate-400 uppercase text-xs">
                         <tr>
                             <th class="px-6 py-4 font-medium">Video ID</th>
-                            <th class="px-6 py-4 font-medium">Views (Total)</th>
-                            <th class="px-6 py-4 font-medium">Views (Bulan Ini)</th>
+                            <th class="px-6 py-4 font-medium">Views (Total) ↓</th>
+                            <th class="px-6 py-4 font-medium">Views (Siklus 30 Hari)</th>
                             <th class="px-6 py-4 font-medium">Upload Date</th>
                             <th class="px-6 py-4 font-medium">Type</th>
                             <th class="px-6 py-4 font-medium text-right">Action</th>
@@ -177,7 +80,7 @@
             </div>
             <div id="loading-indicator" class="p-10 text-center text-slate-400 hidden">
                 <div class="inline-block w-6 h-6 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin mb-2"></div>
-                <p>Loading media data...</p>
+                <p>Loading data...</p>
             </div>
         </div>
     </div>
@@ -186,52 +89,6 @@
         let adminPassword = sessionStorage.getItem('admin_pw') || '';
         let allData = [];
 
-        // --- Custom Notification System ---
-        function showCustomNotification(message, type = 'info', duration = 4000) {
-            const container = document.getElementById('custom-notification-container');
-            const notification = document.createElement('div');
-            notification.className = 'notification-item';
-
-            let bgColor, iconSvg;
-
-            switch (type) {
-                case 'success':
-                    bgColor = 'bg-emerald-600';
-                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>`;
-                    break;
-                case 'error':
-                    bgColor = 'bg-red-600';
-                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94l-1.72-1.72Z" clip-rule="evenodd" /></svg>`;
-                    break;
-                case 'warning':
-                    bgColor = 'bg-orange-500';
-                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M8.483 2.436a1.5 1.5 0 0 1 3.034 0l6.212 11.05a1.5 1.5 0 0 1-1.31 2.264H3.58a1.5 1.5 0 0 1-1.31-2.264L8.483 2.436ZM10 6a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 10 6Zm0 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" /></svg>`;
-                    break;
-                default: // info
-                    bgColor = 'bg-blue-600';
-                    iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="notification-icon"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.69 6.22a.75.75 0 0 0-1.06 1.06L8.94 9l-1.31 1.31a.75.75 0 1 0 1.06 1.06l1.5-1.5a.75.75 0 0 0 0-1.06l-1.5-1.5ZM10 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" /></svg>`;
-                    break;
-            }
-
-            notification.classList.add(bgColor);
-            notification.innerHTML = `${iconSvg} <span>${message}</span>`;
-            container.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 50);
-
-            // Animate out and remove
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300); // Remove after transition
-            }, duration);
-        }
-        // --- End Custom Notification System ---
-
-
-        // Inisialisasi dashboard jika password ada di sessionStorage
         if (adminPassword) {
             showDashboard();
             fetchData();
@@ -239,10 +96,7 @@
 
         async function login() {
             const input = document.getElementById('password-input').value;
-            if (!input) {
-                showCustomNotification("Password cannot be empty.", "warning");
-                return;
-            }
+            if (!input) return;
             adminPassword = input;
             
             const res = await fetch(`/api/admin/videos?pw=${encodeURIComponent(adminPassword)}`);
@@ -252,7 +106,6 @@
                 fetchData();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
-                showCustomNotification("Incorrect password!", "error");
                 adminPassword = '';
             }
         }
@@ -278,9 +131,10 @@
                 
                 const data = await res.json();
                 allData = data.videos || [];
-                renderTable(allData); // Langsung render semua data karena tidak ada filter/sort di frontend
+                applyFilters();
+
             } catch (err) {
-                showCustomNotification("Session expired or wrong password. Please login again.", "error");
+                alert("Session expired or wrong password.");
                 logout();
             } finally {
                 document.getElementById('loading-indicator').classList.add('hidden');
@@ -292,31 +146,26 @@
         // ================================================================
         async function runDailyProcess() {
             const confirmProcess = confirm(
-                "Yakin mau menjalankan PROSES HARIAN?\n\n" +
-                "Ini akan melakukan DUA hal secara otomatis:\n" +
-                "1. MENGHAPUS file yang umurnya > 30 hari & view bulanannya < 100.\n" +
-                "2. MERESET file yang umurnya > 30 hari & view bulanannya >= 100 (diberi 30 hari lagi)."
+                "Yakin mau menjalankan PROSES HARIAN sekarang?\n\n" +
+                "Sistem akan otomatis memeriksa SEMUA file yang umurnya > 30 hari:\n" +
+                "❌ HAPUS PERMANEN: Jika view siklus ini < 100\n" +
+                "✅ RESET SIKLUS: Jika view siklus ini >= 100 (Dapat 30 hari lagi)"
             );
 
             if (!confirmProcess) return;
             
             if (!adminPassword) {
-                showCustomNotification("Admin session is invalid. Please log in again.", "error");
+                alert("Sesi admin tidak valid. Silakan login ulang.");
                 return;
             }
 
-            const button = event.target;
+            const button = document.getElementById('btn-process');
             button.disabled = true;
-            button.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 animate-spin">
-                    <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
-                    <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
-                </svg>
-                Processing...`;
-            button.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-            button.classList.add('bg-emerald-700');
+            button.innerHTML = '⚙️ Memproses...';
+            button.classList.replace('bg-emerald-600', 'bg-emerald-800');
 
             try {
+                // Memanggil file daily-process.js yang tadi kita buat
                 const res = await fetch('/api/admin/daily-process', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -326,30 +175,23 @@
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    showCustomNotification(data.message, "success");
-                    fetchData(); // Muat ulang tabel setelah proses
+                    alert(data.message); // Tampilkan laporan hasilnya (Berapa yg dihapus/direset)
+                    fetchData(); // Refresh tabel setelah dieksekusi
                 } else {
-                    showCustomNotification("Failed to process: " + (data.message || "Unknown error"), "error");
+                    alert("Gagal Proses: " + (data.message || "Error tidak diketahui"));
                 }
             } catch (e) {
-                showCustomNotification("Network error during daily process.", "error");
+                alert("Terjadi kesalahan jaringan saat mengeksekusi proses harian.");
             } finally {
-                // Kembalikan tombol ke kondisi normal
                 button.disabled = false;
-                button.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                        <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
-                        <path fill-rule="evenodd" d="M8.704 8.576A5.5 5.5 0 0 0 14.249 5.8a.75.75 0 0 1 .533-.742h4.717a.75.75 0 0 1 .517 1.258 10.355 10.355 0 0 1-5.694 5.346l-1.044 1.043a.75.75 0 0 1-1.06-1.06l2.41-2.41a5.5 5.5 0 0 0-9.201 2.45c-.109.31-.382.532-.741.532H.75A.75.75 0 0 1 .234 14c1.488-3.085 4.764-5 8.516-5 1.987 0 3.863.473 5.5.992l1.044-1.043a.75.75 0 0 1 1.06 1.06l-2.41 2.41Z" clip-rule="evenodd" />
-                    </svg>
-                    Proses Harian`;
-                button.classList.remove('bg-emerald-700');
-                button.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+                button.innerHTML = '⚙️ Proses Harian';
+                button.classList.replace('bg-emerald-800', 'bg-emerald-600');
             }
         }
 
         // FUNGSI HAPUS 1 VIDEO MANUAL
         async function deleteVideo(id) {
-            const confirmDelete = confirm(`PERINGATAN!\nApakah Abang yakin mau menghapus PERMANEN video ID: ${id}?\n\nIni akan menghapus data dari Database D1 dan file aslinya di R2 secara permanen dan tidak bisa dikembalikan!`);
+            const confirmDelete = confirm(`AWAS!\nApakah abang yakin mau hapus permanen video ID: ${id}?\n\nIni akan menghapus data dari Database D1 dan file aslinya di R2 secara permanen!`);
             
             if (!confirmDelete) return;
 
@@ -363,78 +205,88 @@
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    showCustomNotification("Video dan Data berhasil dihapus.", "success");
+                    alert("Mantab! Video dan Data berhasil dihapus.");
                     fetchData();
                 } else {
-                    showCustomNotification("Failed to delete: " + (data.message || "Unknown error"), "error");
+                    alert("Gagal menghapus: " + (data.message || "Error tidak diketahui"));
                 }
             } catch (e) {
-                showCustomNotification("Network error during deletion.", "error");
+                alert("Terjadi kesalahan jaringan saat menghapus.");
             }
         }
 
-        // Fungsi applyFilters() dihapus karena tidak ada filter UI
+        function applyFilters() {
+            const minViews = parseInt(document.getElementById('filter-views').value) || 0;
+            const filterDate = document.getElementById('filter-date').value;
+
+            const filteredData = allData.filter(item => {
+                if (item.views < minViews) return false;
+                if (filterDate) {
+                    const itemDate = item.created_at.split(' ')[0];
+                    if (itemDate !== filterDate) return false;
+                }
+                return true;
+            });
+
+            renderTable(filteredData);
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-views').value = '';
+            document.getElementById('filter-date').value = '';
+            applyFilters();
+        }
 
         function copyLink(id) {
             const url = window.location.origin + '/v?id=' + id;
-            navigator.clipboard.writeText(url)
-                .then(() => showCustomNotification("Link copied to clipboard!", "success"))
-                .catch(() => showCustomNotification("Failed to copy link.", "error"));
+            navigator.clipboard.writeText(url);
+            alert("Link copied: " + url);
         }
 
-        // FUNGSI UNTUK MERENDER DATA KE TABEL
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
             document.getElementById('total-count').innerText = `Total: ${data.length}`;
             
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No media found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No media found matching criteria.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = data.map(item => {
                 const dateObj = new Date(item.created_at + "Z");
                 const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                
                 const typeShort = item.content_type ? item.content_type.split('/')[0] : 'unknown';
                 
-                let badgeColor = 'bg-slate-700 text-slate-300 border border-slate-800';
+                let badgeColor = 'bg-slate-700 text-slate-300';
                 if(typeShort === 'video') badgeColor = 'bg-purple-900/50 text-purple-300 border border-purple-800';
                 if(typeShort === 'image') badgeColor = 'bg-blue-900/50 text-blue-300 border border-blue-800';
                 if(typeShort === 'audio') badgeColor = 'bg-emerald-900/50 text-emerald-300 border border-emerald-800';
 
+                // Ambil period_views, kalau undefined jadikan 0
                 const periodViews = item.period_views !== undefined ? item.period_views : 0;
                 
-                const bulananAman = (periodViews >= 100) ? 'text-emerald-400 font-bold' : 'text-orange-400 font-bold';
+                // Warnai hijau kalau bulan ini udah aman target 100, orange kalau belum aman
+                const bulananAman = (periodViews >= 100) ? 'text-green-400 font-bold' : 'text-orange-400 font-bold';
 
                 return `
-                <tr class="hover:bg-slate-700/50 transition-colors">
+                <tr class="hover:bg-slate-800/50 transition-colors">
                     <td class="px-6 py-4 font-mono text-slate-300">${item.id}</td>
+                    
+                    <!-- TOTAL VIEW -->
                     <td class="px-6 py-4 font-bold text-slate-200">${item.views.toLocaleString()}</td>
+                    
+                    <!-- VIEW SIKLUS (BULAN INI) -->
                     <td class="px-6 py-4 ${bulananAman}">${periodViews} / 100</td>
+                    
                     <td class="px-6 py-4 text-slate-400">${dateStr}</td>
                     <td class="px-6 py-4">
                         <span class="text-[10px] uppercase px-2 py-1 rounded-md ${badgeColor}">${typeShort}</span>
                     </td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex justify-end gap-2">
-                            <button onclick="copyLink('${item.id}')" class="table-action-button" title="Copy Link">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                  <path d="M7.75 3.75a.75.75 0 0 0-1.5 0v3.5A.75.75 0 0 0 7 8h2.25a.75.75 0 0 0 0-1.5H7.75V3.75ZM4.002 11.25a.75.75 0 0 0-1.5 0v3.5c0 .414.336.75.75.75H7a.75.75 0 0 0 0-1.5H4.75v-3.5Z" />
-                                  <path fill-rule="evenodd" d="M5.25 2.25A2.25 2.25 0 0 0 3 4.5v11A2.25 2.25 0 0 0 5.25 18h9.5A2.25 2.25 0 0 0 17 15.5v-9.5A2.25 2.25 0 0 0 14.75 4h-3.26l-.317-.949A.75.75 0 0 0 10.75 2.25H5.25ZM12 6a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 12 6Zm3 7.75H9.75a.75.75 0 0 0 0 1.5h5.5a.75.75 0 0 0 0-1.5Z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            <a href="/v?id=${item.id}" target="_blank" class="table-action-button bg-blue-600 hover:bg-blue-500 border-blue-700 hover:border-blue-600 text-white" title="Open Media">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                  <path fill-rule="evenodd" d="M4.25 5.5A.75.75 0 0 0 3.5 6.25v8.5c0 .414.336.75.75.75h8.5a.75.75 0 0 0 .75-.75v-4.69a.75.75 0 0 1 1.5 0v4.69c0 1.243-1.007 2.25-2.25 2.25h-8.5C3.007 17 2 15.993 2 14.75v-8.5C2 5.007 3.007 4 4.25 4h5.69a.75.75 0 0 1 0 1.5H4.25Z" clip-rule="evenodd" />
-                                  <path fill-rule="evenodd" d="M16.75 4.5a.75.75 0 0 0-1.5 0v.667L9.27 10.82a.75.75 0 1 0 1.06 1.06l5.98-5.98V6.25a.75.75 0 0 0 .75-.75v-1A.75.75 0 0 0 16.75 4.5Z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                            <button onclick="deleteVideo('${item.id}')" class="table-action-button bg-red-600 hover:bg-red-500 border-red-700 hover:border-red-600 text-white" title="Delete Permanently">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-                                  <path fill-rule="evenodd" d="M8.75 1A.75.75 0 0 0 8 1.75V2H5A.75.75 0 0 0 5 3h14a.75.75 0 0 0 0-1.5h-3.25V1.75A.75.75 0 0 0 15 1H8.75ZM7.75 7.75a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-1.5 0v-7.5a.75.75 0 0 1 .75-.75ZM11 1.75V2H9.75V1.75A.75.75 0 0 1 11 1Zm-3 6a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75ZM13.25 7a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5Z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
+                            <button onclick="copyLink('${item.id}')" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">Copy</button>
+                            <a href="/v?id=${item.id}" target="_blank" class="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Open</a>
+                            <button onclick="deleteVideo('${item.id}')" class="text-xs bg-red-600/80 hover:bg-red-500 text-white px-3 py-1.5 rounded transition border border-red-800">Delete</button>
                         </div>
                     </td>
                 </tr>`;
