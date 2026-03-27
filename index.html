@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- Bahasa menjadi English untuk SEO -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -87,7 +87,8 @@
             
             <div id="upload-step-1">
                 <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Your Media Files</h1>
-                <p class="text-slate-400 text-sm mb-10">Private, fast, and secure. Up to 200 MB.</p>
+                <!-- [DIUBAH] Deskripsi keunggulan -->
+                <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 200MB file size.</p>
 
                 <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer group">
                     <input type="file" id="file-input" class="hidden" 
@@ -116,10 +117,10 @@
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
                 
-                <!-- [BARU] Input link iklan (Hidden by default) -->
+                <!-- Input link iklan (Hidden by default) -->
                 <input type="text" id="ad-link-input" placeholder="Enter your custom direct/smartlink (optional)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mt-4 mb-4 hidden">
                 
-                <!-- [BARU] Tombol untuk menampilkan/menyembunyikan input ad link -->
+                <!-- Tombol untuk menampilkan/menyembunyikan input ad link -->
                 <button type="button" id="toggle-ad-link-input" onclick="toggleAdLinkInput()" class="text-sm text-slate-500 hover:text-white transition mt-2 mb-4">
                     Add Custom Ad Link (Optional)
                 </button>
@@ -159,9 +160,9 @@
         const overlay = document.getElementById('overlay');
         const adLinkInput = document.getElementById('ad-link-input');
         const notificationMessage = document.getElementById('notification-message');
-        const toggleAdLinkInputButton = document.getElementById('toggle-ad-link-input'); // [BARU] Ambil elemen tombol
+        const toggleAdLinkInputButton = document.getElementById('toggle-ad-link-input');
         
-        let isAdLinkFieldVisible = false; // [BARU] Variabel untuk melacak status visibilitas input ad link
+        let isAdLinkFieldVisible = false;
 
         // Fungsi Notifikasi custom
         let notificationTimeout;
@@ -176,10 +177,10 @@
             } else {
                 notificationMessage.classList.add('bg-blue-600');
             }
-            notificationMessage.classList.remove('hidden'); // Tampilkan element
+            notificationMessage.classList.remove('hidden');
 
             clearTimeout(notificationTimeout);
-            void notificationMessage.offsetWidth; // Paksa reflow
+            void notificationMessage.offsetWidth;
             notificationMessage.classList.add('show');
 
             notificationTimeout = setTimeout(() => {
@@ -239,14 +240,14 @@
             } 
         }
 
-        // [BARU] Fungsi untuk toggle visibility input ad link
+        // Fungsi untuk toggle visibility input ad link
         function toggleAdLinkInput() {
-            isAdLinkFieldVisible = !isAdLinkFieldVisible; // Toggle state
+            isAdLinkFieldVisible = !isAdLinkFieldVisible;
 
             if (isAdLinkFieldVisible) {
                 adLinkInput.classList.remove('hidden');
                 toggleAdLinkInputButton.textContent = 'Hide Custom Ad Link';
-                adLinkInput.focus(); // Beri fokus agar user langsung bisa mengetik
+                adLinkInput.focus();
             } else {
                 adLinkInput.classList.add('hidden');
                 toggleAdLinkInputButton.textContent = 'Add Custom Ad Link (Optional)';
@@ -297,7 +298,7 @@
             } else { // audio atau tipe lain
                 previewContent.innerHTML = `<audio src="${fileUrl}" controls></audio>`;
             } 
-            // [BARU] Reset kondisi input ad link saat file baru dipilih/preview muncul
+            // Reset kondisi input ad link saat file baru dipilih/preview muncul
             if (isAdLinkFieldVisible) {
                 toggleAdLinkInput(); // Sembunyikan dan hapus nilainya
             }
@@ -317,7 +318,7 @@
             try {
                 let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}`;
                 
-                // [PENTING] Hanya tambahkan parameter ad_link jika ada isinya
+                // Hanya tambahkan parameter ad_link jika ada isinya
                 if (adLink) {
                     apiUrl += `&ad_link=${encodeURIComponent(adLink)}`;
                 }
