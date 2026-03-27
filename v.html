@@ -9,7 +9,6 @@
     
     <title>Pokoco - Free and Simpel Media Hosting</title>
 
-    <!-- SEO, OG, Twitter, Favicon, etc. (Tidak berubah) -->
     <meta name="description" content="Watch and share media on Pokoco." />
     <meta property="og:title" content="Pokoco - Media Preview" />
     <meta property="og:description" content="Watch and share media securely." />
@@ -44,15 +43,20 @@
         <p id="alert-message" class="text-white font-semibold text-sm"></p>
     </div>
 
-    <!-- ROBOT VERIFICATION GIMMICK PAGE (Desain dan keberadaan tetap sama seperti script asli) -->
     <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
+        <!-- [PERBAIKAN] Header Robot Screen dibuat persis dengan Main Player -->
         <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
-            <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center">
-                <span class="font-semibold text-[26px] tracking-[-2px] text-white cursor-default">pokoco</span>
+            <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
+                <a href="/" class="flex items-center">
+                    <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
+                </a>
+                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800">
+                    <span>Upload</span>
+                </a>
             </div>
         </header>
 
-        <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10">
+        <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10 mt-16">
             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
               <rect width="16" height="12" x="4" y="8" rx="2" ry="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/><path d="M12 8V4H8"/>
             </svg>
@@ -64,7 +68,6 @@
                 I am not a robot
             </button>
             
-            <!-- [PERBAIKAN] CLOUDFLARE TURNSTILE DENGAN ID YANG BISA DI-HIDE -->
             <div class="mt-6 flex justify-center w-full" id="turnstile-container">
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAACwgqhT8gR0kdo64" data-theme="dark" data-callback="captchaSuccess"></div>
             </div>
@@ -73,7 +76,6 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT PAGE (Tidak berubah, seperti script asli) -->
     <div id="root" class="min-h-screen flex flex-col hidden">
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -122,79 +124,68 @@
             document.head.appendChild(prefetch);
         }
 
-        // --- ROBOT GIMMICK LOGIC ---
         const robotAdUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         const robotScreen = document.getElementById('robot-screen');
         const rootScreen = document.getElementById('root');
-        let isCaptchaVerified = false; // Status captcha Cloudflare untuk klik tombol
+        let isCaptchaVerified = false; 
 
-        // Fungsi untuk menampilkan notifikasi custom (tidak berubah)
         let alertTimeout;
-        function showCustomAlert(message) { /* ... fungsi sama ... */ }
+        function showCustomAlert(message) { 
+            const alertBox = document.getElementById('custom-alert');
+            const alertMsg = document.getElementById('alert-message');
+            alertMsg.innerText = message;
+            alertBox.classList.remove('hidden', 'opacity-0');
+            clearTimeout(alertTimeout);
+            alertTimeout = setTimeout(() => {
+                alertBox.classList.add('opacity-0');
+                setTimeout(() => alertBox.classList.add('hidden'), 300);
+            }, 3000);
+        }
 
-        // [BARU] Fungsi untuk mengecek apakah user sudah lolos Captcha harian
         function hasPassedDailyCaptcha() {
             const lastVerifiedTimestamp = localStorage.getItem('pokoco_daily_captcha_passed');
             if (!lastVerifiedTimestamp) {
-                return false; // Belum pernah lolos
+                return false; 
             }
             const twentyFourHours = 24 * 60 * 60 * 1000;
             return (Date.now() - parseInt(lastVerifiedTimestamp)) < twentyFourHours;
         }
 
         window.onload = function() {
-            const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); // Pengecekan sessionStorage asli
+            const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
 
             if (isVerifiedSession) {
-                // Jika sudah verifikasi untuk ID video ini di SESI yang sama (dari script asli)
                 rootScreen.style.display = 'flex';
                 fetchAndUpdateMedia(); 
             } else {
-                // Jika belum, SELALU tampilkan halaman verifikasi (robot screen)
                 robotScreen.style.display = 'flex';
                 prefetchSafe(robotAdUrl);
 
-                // [PERBAIKAN] Logic untuk Captcha Cloudflare harian di dalam robot-screen
                 if (hasPassedDailyCaptcha()) {
-                    // Jika user sudah lolos Captcha harian, sembunyikan container Captcha
                     const turnstileContainer = document.getElementById('turnstile-container');
                     if (turnstileContainer) {
                         turnstileContainer.classList.add('hidden');
                     }
-                    // Dan set isCaptchaVerified TRUE agar user bisa langsung klik tombol
                     isCaptchaVerified = true; 
                 }
-                // Jika belum lolos, Captcha akan tampil seperti biasa (tidak disembunyikan)
             }
         };
 
-        // Fungsi callback dari Cloudflare Turnstile
         function captchaSuccess(token) {
             isCaptchaVerified = true;
-            // [PERBAIKAN] Simpan timestamp ke localStorage setelah Captcha lolos
             localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
         }
 
         function triggerVerification() {
-            // Cek apakah user ada di halaman robot screen DAN belum lolos captcha
-            if (!isCaptchaVerified) { // isCaptchaVerified hanya TRUE jika Turnstile sudah diselesaikan/di-skip
+            if (!isCaptchaVerified) { 
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
-            
-            // Jika sudah lolos Captcha (atau Captcha di-skip otomatis karena sudah lolos harian),
-            // jalankan flow iklan persis seperti script asli
-            sessionStorage.setItem(`robot_verified_${id}`, 'true'); // Ini penting untuk tab baru
-
-            // Buka video di tab baru (tab baru ini akan di-redirect ke player karena sessionStorage sudah diset)
+            sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
             window.open(window.location.href, '_blank'); 
-            
-            // Redirect tab yang sedang aktif (tab tempat user ngeklik) ke link iklan
             redirectSafe(robotAdUrl);
         }
-        // -----------------------------------------
 
-        // --- PLAYER ADS (SERVER + OMG10) ---
         const extraAdUrl = "https://omg10.com/4/10390860"; 
 
         function handleMediaError() {
@@ -259,8 +250,13 @@
 
                              player.addEventListener('error', handleMediaError); 
 
+                             let isProcessingClick = false;
+
                              if(overlay) {
                                  overlay.addEventListener('click', function() {
+                                     if (isProcessingClick) return; 
+                                     isProcessingClick = true;
+
                                      player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      
                                      const currentServerAdDone = sessionStorage.getItem(`adTriggeredForVideo_${id}`) === 'true';
@@ -270,6 +266,7 @@
                                          sessionStorage.setItem(`adTriggeredForVideo_${id}`, 'true'); 
                                          setTimeout(() => {
                                              redirectSafe(adLink); 
+                                             isProcessingClick = false;
                                          }, 800); 
                                      } 
                                      else if (!currentExtraAdDone) {
@@ -281,6 +278,7 @@
                                      } 
                                      else {
                                          overlay.remove();
+                                         isProcessingClick = false;
                                      }
                                  });
                              }
