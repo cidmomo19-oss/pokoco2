@@ -44,7 +44,7 @@
         <p id="alert-message" class="text-white font-semibold text-sm"></p>
     </div>
 
-    <!-- ROBOT VERIFICATION GIMMICK PAGE (Desain Tetap sama) -->
+    <!-- ROBOT VERIFICATION GIMMICK PAGE (Desain dan keberadaan tetap sama seperti script asli) -->
     <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
         <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center">
@@ -64,6 +64,7 @@
                 I am not a robot
             </button>
             
+            <!-- [PERBAIKAN] CLOUDFLARE TURNSTILE DENGAN ID YANG BISA DI-HIDE -->
             <div class="mt-6 flex justify-center w-full" id="turnstile-container">
                 <div class="cf-turnstile" data-sitekey="0x4AAAAAACwgqhT8gR0kdo64" data-theme="dark" data-callback="captchaSuccess"></div>
             </div>
@@ -72,7 +73,7 @@
         </div>
     </div>
 
-    <!-- MAIN CONTENT PAGE -->
+    <!-- MAIN CONTENT PAGE (Tidak berubah, seperti script asli) -->
     <div id="root" class="min-h-screen flex flex-col hidden">
         <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -142,41 +143,50 @@
         }
 
         window.onload = function() {
-            // [DIUBAH] Logika utama di sini
-            if (hasPassedDailyCaptcha()) {
-                // Jika sudah lolos Captcha harian, langsung tampilkan halaman player
+            const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); // Pengecekan sessionStorage asli
+
+            if (isVerifiedSession) {
+                // Jika sudah verifikasi untuk ID video ini di SESI yang sama (dari script asli)
                 rootScreen.style.display = 'flex';
-                fetchAndUpdateMedia();
-                // Prefetch iklan karena halaman robot screen tidak muncul
-                prefetchSafe(robotAdUrl); 
+                fetchAndUpdateMedia(); 
             } else {
-                // Jika belum lolos Captcha harian, tampilkan halaman verifikasi (robot screen)
+                // Jika belum, SELALU tampilkan halaman verifikasi (robot screen)
                 robotScreen.style.display = 'flex';
-                // Prefetch iklan untuk robot screen
                 prefetchSafe(robotAdUrl);
-                // Captcha Cloudflare akan tampil secara default di halaman ini
+
+                // [PERBAIKAN] Logic untuk Captcha Cloudflare harian di dalam robot-screen
+                if (hasPassedDailyCaptcha()) {
+                    // Jika user sudah lolos Captcha harian, sembunyikan container Captcha
+                    const turnstileContainer = document.getElementById('turnstile-container');
+                    if (turnstileContainer) {
+                        turnstileContainer.classList.add('hidden');
+                    }
+                    // Dan set isCaptchaVerified TRUE agar user bisa langsung klik tombol
+                    isCaptchaVerified = true; 
+                }
+                // Jika belum lolos, Captcha akan tampil seperti biasa (tidak disembunyikan)
             }
         };
 
         // Fungsi callback dari Cloudflare Turnstile
         function captchaSuccess(token) {
             isCaptchaVerified = true;
-            // [BARU] Simpan timestamp ke localStorage setelah Captcha lolos
+            // [PERBAIKAN] Simpan timestamp ke localStorage setelah Captcha lolos
             localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
         }
 
         function triggerVerification() {
-            // Jika user ada di robotScreen dan belum lolos captcha
-            if (robotScreen.style.display === 'flex' && !isCaptchaVerified) {
+            // Cek apakah user ada di halaman robot screen DAN belum lolos captcha
+            if (!isCaptchaVerified) { // isCaptchaVerified hanya TRUE jika Turnstile sudah diselesaikan/di-skip
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
             
-            // Jika sudah lolos captcha Harian (dan halaman robot tidak muncul)
-            // Atau jika sudah lolos captcha di halaman robot, jalankan flow iklan
+            // Jika sudah lolos Captcha (atau Captcha di-skip otomatis karena sudah lolos harian),
+            // jalankan flow iklan persis seperti script asli
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); // Ini penting untuk tab baru
 
-            // Buka video di tab baru (tanpa halaman robot karena sessionStorage sudah diset)
+            // Buka video di tab baru (tab baru ini akan di-redirect ke player karena sessionStorage sudah diset)
             window.open(window.location.href, '_blank'); 
             
             // Redirect tab yang sedang aktif (tab tempat user ngeklik) ke link iklan
@@ -297,7 +307,6 @@
                 navigator.share({ title: `Pokoco - ${label}`, url: window.location.href });
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                // [BARU] Ganti alert() di sini juga
                 showCustomAlert("Link copied to clipboard!");
             }
         }
