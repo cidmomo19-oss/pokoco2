@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en"> <!-- [DIUBAH] Bahasa menjadi English -->
+<html lang="en"> <!-- Bahasa menjadi English untuk SEO -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a" />
     <meta name="referrer" content="no-referrer" />
     
-    <!-- [DIUBAH] TITLE TAG untuk SEO Google -->
+    <!-- TITLE TAG untuk SEO Google -->
     <title>Pokoco - Free & Secure Media Hosting | Upload Videos, Images, Audio</title>
 
-    <!-- [DIUBAH] META DESCRIPTION untuk SEO Google -->
+    <!-- META DESCRIPTION untuk SEO Google -->
     <meta name="description" content="Pokoco offers free, fast, and secure media hosting. Upload and privately share videos, images, and audio files. Supports direct link / smartlink ads." />
     
-    <!-- [DIUBAH] OPEN GRAPH untuk WhatsApp, Facebook, Google, dll. -->
+    <!-- OPEN GRAPH untuk WhatsApp, Facebook, Google, dll. -->
     <meta property="og:title" content="Pokoco - Free Media Hosting" />
     <meta property="og:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
     <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
@@ -20,7 +20,7 @@
     <meta property="og:image:height" content="800" />
     <meta property="og:type" content="website" />
     
-    <!-- [DIUBAH] TWITTER CARD untuk Twitter -->
+    <!-- TWITTER CARD untuk Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Pokoco - Free Media Hosting" />
     <meta name="twitter:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
@@ -33,8 +33,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <!-- SCRIPT CLOUDFLARE TURNSTILE -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <!-- Captcha Cloudflare sudah dihapus dari halaman upload -->
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -65,7 +64,6 @@
             <a href="/" class="flex items-center">
                 <span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span>
             </a>
-            <!-- Tombol Your Uploads (HTML asli lu, tidak diubah) -->
             <button onclick="toggleHistory()" class="btn-custom text-white px-5 py-1.5 rounded-full text-sm font-semibold shadow-sm flex items-center gap-2">
                 Your Uploads
             </button>
@@ -116,15 +114,13 @@
                     </div>
                 </div>
 
-                <input type="text" id="ad-link-input" placeholder="Your ad link (Optional: Direct Link / Smartlink)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4">
+                <!-- [DIUBAH] INPUT LINK IKLAN SEKARANG DISEMbunyikan secara visual -->
+                <input type="text" id="ad-link-input" placeholder="Your ad link (Optional: Direct Link / Smartlink)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4 hidden">
                 
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
                 
-                <!-- [DIUBAH] WIDGET CLOUDFLARE TURNSTILE DITARUH DI SINI -->
-                <div id="upload-turnstile-container" class="mt-4 mb-4 flex justify-center w-full">
-                    <div class="cf-turnstile" data-sitekey="0x4AAAAAACwgqhT8gR0kdo64" data-theme="dark" data-callback="captchaUploadSuccess"></div>
-                </div>
+                <!-- Captcha Cloudflare sudah dihapus dari sini -->
 
                 <div id="upload-action" class="flex flex-col gap-3">
                     <button onclick="startUpload()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg">Upload Now</button>
@@ -159,10 +155,14 @@
         const historyList = document.getElementById('history-list');
         const historyPanel = document.getElementById('history-panel');
         const overlay = document.getElementById('overlay');
-        const adLinkInput = document.getElementById('ad-link-input');
+        const adLinkInput = document.getElementById('ad-link-input'); // Tetap ada agar bisa diambil valuenya
         const notificationMessage = document.getElementById('notification-message');
 
-        let isCaptchaVerified = false; // Status untuk melacak apakah Captcha sudah lolos
+        // [BARU] Variabel untuk Default Ad Link
+        // Ubah link ini jika lu ingin mengubah ad link default yang dikirim ke server
+        const defaultAdLink = "https://omg10.com/your-default-ad-id"; 
+        // Atau biarkan kosong jika API lu sudah handle ad link otomatis
+        // const defaultAdLink = ""; 
 
         // Fungsi Notifikasi custom
         let notificationTimeout;
@@ -180,8 +180,7 @@
             notificationMessage.classList.remove('hidden'); // Tampilkan element
 
             clearTimeout(notificationTimeout);
-            // Paksa reflow untuk memulai transisi dari posisi 'hidden'
-            void notificationMessage.offsetWidth; 
+            void notificationMessage.offsetWidth; // Paksa reflow
             notificationMessage.classList.add('show');
 
             notificationTimeout = setTimeout(() => {
@@ -192,11 +191,11 @@
             }, duration);
         }
 
-        // Fungsi History Panel (sudah diperbaiki)
+        // Fungsi History Panel
         function toggleHistory() {
             historyPanel.classList.toggle('open');
             overlay.classList.toggle('hidden');
-            renderHistory(); // Render ulang history setiap kali panel dibuka
+            renderHistory(); 
         }
 
         function saveToHistory(id, name, type, adLink) {
@@ -253,24 +252,6 @@
             if(e.dataTransfer.files[0]) handleFileSelection(e.dataTransfer.files[0]);
         });
 
-        // Fungsi untuk mengecek apakah user sudah lolos Captcha harian
-        function hasPassedDailyCaptcha() {
-            const lastVerifiedTimestamp = localStorage.getItem('pokoco_daily_captcha_passed');
-            if (!lastVerifiedTimestamp) {
-                return false; // Belum pernah lolos
-            }
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            return (Date.now() - parseInt(lastVerifiedTimestamp)) < twentyFourHours;
-        }
-
-        // Fungsi callback dari Cloudflare Turnstile untuk halaman upload
-        function captchaUploadSuccess(token) {
-            isCaptchaVerified = true;
-            // Simpan timestamp ke localStorage setelah Captcha lolos
-            localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
-            showNotification('Security check passed!', 'success', 2000);
-        }
-
         function handleFileSelection(file) {
             if (file.size > 200 * 1024 * 1024) {
                 showNotification('File is too large! Maximum 200MB is allowed.', 'error');
@@ -304,22 +285,9 @@
             } else {
                 previewContent.innerHTML = `<span class="text-xs text-slate-500">No preview available for this file type.</span>`;
             }
-
-            // Logic untuk Captcha Cloudflare harian di Step 2 (preview)
-            const uploadTurnstileContainer = document.getElementById('upload-turnstile-container');
-            if (hasPassedDailyCaptcha()) {
-                // Jika user sudah lolos Captcha harian, sembunyikan container Captcha
-                if (uploadTurnstileContainer) {
-                    uploadTurnstileContainer.classList.add('hidden');
-                }
-                isCaptchaVerified = true; // Langsung anggap Captcha lolos
-            } else {
-                // Jika belum lolos, pastikan Captcha terlihat dan belum diverifikasi
-                if (uploadTurnstileContainer) {
-                    uploadTurnstileContainer.classList.remove('hidden');
-                }
-                isCaptchaVerified = false; // Reset status captcha jika container ditampilkan
-            }
+            
+            // [BARU] Set nilai input tersembunyi dengan defaultAdLink
+            adLinkInput.value = defaultAdLink;
         }
 
         async function startUpload() {
@@ -328,13 +296,8 @@
                 return;
             }
             
-            // Cek status Captcha sebelum upload
-            if (!isCaptchaVerified) {
-                showNotification('Please complete the security check before uploading.', 'error');
-                return;
-            }
-
-            const adLink = adLinkInput.value.trim();
+            // [DIUBAH] Variabel adLink akan mengambil dari nilai defaultAdLink
+            const adLink = adLinkInput.value.trim(); // Akan mengambil nilai defaultAdLink atau jika diisi manual (walaupun hidden)
             
             document.getElementById('upload-action').classList.add('hidden');
             document.getElementById('progress-container').classList.remove('hidden');
