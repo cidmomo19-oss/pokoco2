@@ -13,7 +13,9 @@ export async function onRequest(context) {
   }
 
   try {
-    // KONDISI 1: CARI VIDEO YANG GAGAL TARGET (< 100 view dalam 30 hari)
+    // ==========================================
+    // 1. CARI VIDEO YANG GAGAL TARGET
+    // ==========================================
     const queryFailed = `
       SELECT id FROM videos 
       WHERE last_reset_at <= datetime('now', '-30 days') 
@@ -23,7 +25,7 @@ export async function onRequest(context) {
 
     let deletedCount = 0;
     
-    // Jika ada video yang gagal target, hapus dari R2 dan D1
+    // Jika ada video yang gagal target
     if (failedVideos.results && failedVideos.results.length > 0) {
       const S3 = new S3Client({
         region: "auto",
@@ -34,31 +36,39 @@ export async function onRequest(context) {
         },
       });
 
+      // A. Hapus file fisiknya dari R2
       for (const row of failedVideos.results) {
-        // Hapus file fisik di R2
         try {
           await S3.send(new DeleteObjectCommand({ Bucket: env.R2_BUCKET_NAME, Key: row.id }));
-        } catch (e) { console.error("R2 Delete Error:", e); }
-
-        // Hapus dari D1
-        await env.DB.prepare("DELETE FROM videos WHERE id = ?").bind(row.id).run();
+        } catch (e) { 
+          console.error("R2 Delete Error:", e); 
+        }
         deletedCount++;
       }
+
+      // B. [PERBAIKAN] Hapus permanen ID-nya dari Database D1 (Sekali tebas)
+      const deleteQuery = `
+        DELETE FROM videos 
+        WHERE last_reset_at <= datetime('now', '-30 days') 
+        AND period_views < 100
+      `;
+      await env.DB.prepare(deleteQuery).run();
     }
 
-    // KONDISI 2: CARI VIDEO YANG LULUS TARGET (>= 100 view)
-    // Beri "nyawa" 30 hari lagi dan reset view bulanannya jadi 0
+    // ==========================================
+    // 2. RESET VIDEO YANG LULUS TARGET
+    // ==========================================
     const querySuccess = `
       UPDATE videos 
       SET period_views = 0, last_reset_at = CURRENT_TIMESTAMP 
       WHERE last_reset_at <= datetime('now', '-30 days') 
       AND period_views >= 100
     `;
-    const updatedVideos = await env.DB.prepare(querySuccess).run();
+    await env.DB.prepare(querySuccess).run();
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Proses Selesai! Menghapus ${deletedCount} video gagal. Dan mereset ulang siklus video yang lulus target.`,
+      message: `Proses Selesai! Menghapus ${deletedCount} file & ID data yang gagal. Serta mereset timer yang lulus.`,
     }), { headers: { 'Content-Type': 'application/json' } });
 
   } catch (error) {
