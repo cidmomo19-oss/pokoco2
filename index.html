@@ -33,7 +33,6 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Captcha Cloudflare sudah dihapus dari halaman upload -->
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -113,14 +112,17 @@
                         <span class="text-xs text-slate-500 animate-pulse">Loading preview...</span>
                     </div>
                 </div>
-
-                <!-- [DIUBAH] INPUT LINK IKLAN SEKARANG DISEMbunyikan secara visual -->
-                <input type="text" id="ad-link-input" placeholder="Your ad link (Optional: Direct Link / Smartlink)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mb-4 hidden">
                 
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
                 
-                <!-- Captcha Cloudflare sudah dihapus dari sini -->
+                <!-- [BARU] Input link iklan (Hidden by default) -->
+                <input type="text" id="ad-link-input" placeholder="Enter your custom direct/smartlink (optional)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mt-4 mb-4 hidden">
+                
+                <!-- [BARU] Tombol untuk menampilkan/menyembunyikan input ad link -->
+                <button type="button" id="toggle-ad-link-input" onclick="toggleAdLinkInput()" class="text-sm text-slate-500 hover:text-white transition mt-2 mb-4">
+                    Add Custom Ad Link (Optional)
+                </button>
 
                 <div id="upload-action" class="flex flex-col gap-3">
                     <button onclick="startUpload()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg">Upload Now</button>
@@ -155,14 +157,11 @@
         const historyList = document.getElementById('history-list');
         const historyPanel = document.getElementById('history-panel');
         const overlay = document.getElementById('overlay');
-        const adLinkInput = document.getElementById('ad-link-input'); // Tetap ada agar bisa diambil valuenya
+        const adLinkInput = document.getElementById('ad-link-input');
         const notificationMessage = document.getElementById('notification-message');
-
-        // [BARU] Variabel untuk Default Ad Link
-        // Ubah link ini jika lu ingin mengubah ad link default yang dikirim ke server
-        const defaultAdLink = "https://omg10.com/your-default-ad-id"; 
-        // Atau biarkan kosong jika API lu sudah handle ad link otomatis
-        // const defaultAdLink = ""; 
+        const toggleAdLinkInputButton = document.getElementById('toggle-ad-link-input'); // [BARU] Ambil elemen tombol
+        
+        let isAdLinkFieldVisible = false; // [BARU] Variabel untuk melacak status visibilitas input ad link
 
         // Fungsi Notifikasi custom
         let notificationTimeout;
@@ -240,6 +239,21 @@
             } 
         }
 
+        // [BARU] Fungsi untuk toggle visibility input ad link
+        function toggleAdLinkInput() {
+            isAdLinkFieldVisible = !isAdLinkFieldVisible; // Toggle state
+
+            if (isAdLinkFieldVisible) {
+                adLinkInput.classList.remove('hidden');
+                toggleAdLinkInputButton.textContent = 'Hide Custom Ad Link';
+                adLinkInput.focus(); // Beri fokus agar user langsung bisa mengetik
+            } else {
+                adLinkInput.classList.add('hidden');
+                toggleAdLinkInputButton.textContent = 'Add Custom Ad Link (Optional)';
+                adLinkInput.value = ''; // Hapus nilai input ketika disembunyikan
+            }
+        }
+
         // Event Listeners untuk Drag & Drop dan File Input
         dropArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
@@ -280,14 +294,13 @@
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Image">`;
             } else if (file.type.startsWith('video/')) {
                 previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
-            } else if (file.type.startsWith('audio/')) {
+            } else { // audio atau tipe lain
                 previewContent.innerHTML = `<audio src="${fileUrl}" controls></audio>`;
-            } else {
-                previewContent.innerHTML = `<span class="text-xs text-slate-500">No preview available for this file type.</span>`;
+            } 
+            // [BARU] Reset kondisi input ad link saat file baru dipilih/preview muncul
+            if (isAdLinkFieldVisible) {
+                toggleAdLinkInput(); // Sembunyikan dan hapus nilainya
             }
-            
-            // [BARU] Set nilai input tersembunyi dengan defaultAdLink
-            adLinkInput.value = defaultAdLink;
         }
 
         async function startUpload() {
@@ -296,14 +309,20 @@
                 return;
             }
             
-            // [DIUBAH] Variabel adLink akan mengambil dari nilai defaultAdLink
-            const adLink = adLinkInput.value.trim(); // Akan mengambil nilai defaultAdLink atau jika diisi manual (walaupun hidden)
+            const adLink = adLinkInput.value.trim(); // Ambil nilai ad link yang mungkin diisi user
             
             document.getElementById('upload-action').classList.add('hidden');
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                const res = await fetch(`/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&ad_link=${encodeURIComponent(adLink)}`);
+                let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}`;
+                
+                // [PENTING] Hanya tambahkan parameter ad_link jika ada isinya
+                if (adLink) {
+                    apiUrl += `&ad_link=${encodeURIComponent(adLink)}`;
+                }
+
+                const res = await fetch(apiUrl);
                 const data = await res.json();
                 
                 if (!data.success) {
@@ -324,7 +343,7 @@
                     if (xhr.status >= 200 && xhr.status < 300) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
-                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink);
+                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink); // Simpan adLink ke history juga
                         
                         showNotification('Upload successful! Redirecting to your file...', 'success');
                         setTimeout(() => {
