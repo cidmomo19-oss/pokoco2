@@ -21,7 +21,7 @@ export async function onRequestGet(context) {
   try {
     // Ambil semua video, urutkan berdasarkan views terbanyak (DESC)
     const { results } = await env.DB.prepare(
-      "SELECT id, views, content_type, created_at, ad_link FROM videos ORDER BY views DESC"
+      "SELECT id, views, period_views, content_type, created_at, ad_link FROM videos ORDER BY views DESC"
     ).all();
 
     return new Response(JSON.stringify({ success: true, videos: results }), {
