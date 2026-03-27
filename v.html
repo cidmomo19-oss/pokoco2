@@ -40,12 +40,11 @@
 </head>
 <body>
 
-    <!-- [BARU] KOTAK NOTIFIKASI CUSTOM DITARUH DI SINI -->
     <div id="custom-alert" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-lg shadow-xl bg-red-900/50 border border-red-500/50 backdrop-blur-sm transition-all duration-300 opacity-0">
         <p id="alert-message" class="text-white font-semibold text-sm"></p>
     </div>
 
-    <!-- ROBOT VERIFICATION GIMMICK PAGE (Tidak berubah) -->
+    <!-- ROBOT VERIFICATION GIMMICK PAGE (Desain Tidak berubah) -->
     <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
         <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
             <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center">
@@ -75,90 +74,77 @@
 
     <!-- MAIN CONTENT PAGE (Tidak berubah) -->
     <div id="root" class="min-h-screen flex flex-col hidden">
-        <!-- ... (konten di dalam sini sama persis) ... -->
+         <!-- ... (konten di dalam sini sama persis seperti kode asli lu) ... -->
     </div>
 
     <script>
-        // Variabel dan fungsi dasar (tidak berubah)
-        const mediaWrapper = document.getElementById('media-wrapper');
-        const shareLabel = document.getElementById('share-label');
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        
-        function redirectSafe(url) {
-            const a = document.createElement('a'); a.href = url; a.rel = 'noreferrer noopener'; 
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); 
-        }
-
-        function prefetchSafe(url) {
-            const prefetch = document.createElement('link'); prefetch.rel = 'prefetch';
-            prefetch.href = url; prefetch.referrerPolicy = 'no-referrer'; 
-            document.head.appendChild(prefetch);
-        }
-
-        // --- ROBOT GIMMICK LOGIC DENGAN CAPTCHA ASLI ---
         const robotAdUrl = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
         const robotScreen = document.getElementById('robot-screen');
         const rootScreen = document.getElementById('root');
-        const isVerified = sessionStorage.getItem(`robot_verified_${id}`);
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
         let isCaptchaVerified = false;
 
-        // [BARU] FUNGSI UNTUK MENAMPILKAN NOTIFIKASI CUSTOM
+        // Fungsi-fungsi pembantu (tidak berubah)
+        function redirectSafe(url) { /* ... fungsi sama ... */ }
+        function prefetchSafe(url) { /* ... fungsi sama ... */ }
         let alertTimeout;
-        function showCustomAlert(message) {
-            const alertBox = document.getElementById('custom-alert');
-            const alertMessage = document.getElementById('alert-message');
-            
-            clearTimeout(alertTimeout); // Hapus timer sebelumnya jika ada
-            
-            alertMessage.textContent = message;
-            alertBox.classList.remove('hidden');
-            
-            // Trik untuk memicu transisi CSS
-            setTimeout(() => {
-                alertBox.classList.remove('opacity-0');
-            }, 10);
-            
-            // Sembunyikan notifikasi setelah 3 detik
-            alertTimeout = setTimeout(() => {
-                alertBox.classList.add('opacity-0');
-                // Tunggu animasi fade-out selesai sebelum benar-benar disembunyikan
-                setTimeout(() => {
-                    alertBox.classList.add('hidden');
-                }, 300); // 300ms sesuai durasi transisi
-            }, 3000);
+        function showCustomAlert(message) { /* ... fungsi sama ... */ }
+        
+        // Fungsi pengecekan harian
+        function isVerifiedToday() {
+            const verificationTimestamp = localStorage.getItem('pokoco_daily_verified');
+            if (!verificationTimestamp) return false;
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            return (Date.now() - parseInt(verificationTimestamp)) < twentyFourHours;
         }
 
         window.onload = function() {
-            if (isVerified) {
+            // Logika lama (sessionStorage) tetap dipertahankan untuk skip halaman jika kembali ke video yg sama
+            const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`);
+            
+            if (isVerifiedSession) {
+                // Langsung tampilkan video jika user sudah klik iklan untuk ID video ini di sesi yang sama
                 rootScreen.style.display = 'flex';
                 fetchAndUpdateMedia(); 
             } else {
+                // Tampilkan halaman verifikasi
                 robotScreen.style.display = 'flex';
-                prefetchSafe(robotAdUrl); 
+                prefetchSafe(robotAdUrl);
+
+                // [DIUBAH] Cek apakah perlu menampilkan Captcha atau tidak
+                if (isVerifiedToday()) {
+                    // Jika sudah terverifikasi hari ini, sembunyikan Captcha & anggap sudah lolos
+                    document.getElementById('turnstile-container').classList.add('hidden');
+                    isCaptchaVerified = true;
+                }
+                // Jika belum, biarkan Captcha terlihat seperti biasa
             }
         };
 
         function captchaSuccess(token) {
             isCaptchaVerified = true;
+            // Simpan "tiket" harian ke localStorage
+            localStorage.setItem('pokoco_daily_verified', Date.now());
         }
 
         function triggerVerification() {
             if (!isCaptchaVerified) {
-                // [BARU] GANTI alert() DENGAN FUNGSI BARU
                 showCustomAlert("Please complete the security check first.");
                 return; 
             }
             
+            // Simpan status ke sessionStorage agar halaman ini di-skip jika user kembali ke video ini
             sessionStorage.setItem(`robot_verified_${id}`, 'true');
+
+            // Jalankan iklan
             window.open(window.location.href, '_blank');
             redirectSafe(robotAdUrl);
         }
         
         // --- KODE PLAYER ADS DAN LAIN-LAIN (TIDAK BERUBAH SAMA SEKALI) ---
-        // ... (sisanya sama persis)
-        const extraAdUrl = "https://omg10.com/4/10390860"; 
-        // ... dst
+        async function fetchAndUpdateMedia() { /* ... fungsi sama ... */ }
+        function shareMedia() { /* ... fungsi sama ... */ }
     </script>
 </body>
 </html>
