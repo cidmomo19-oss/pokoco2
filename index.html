@@ -317,7 +317,7 @@
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}`;
+let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&size=${selectedFile.size}`;
                 
                 // Hanya tambahkan parameter ad_link jika ada isinya
                 if (adLink) {
