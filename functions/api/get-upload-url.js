@@ -13,8 +13,27 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   
   const contentType = url.searchParams.get("type") || "application/octet-stream";
-  const adLink = url.searchParams.get("ad_link") || null; // Ambil link iklan dari frontend
-  
+  const adLink = url.searchParams.get("ad_link") || null; 
+  const fileSizeStr = url.searchParams.get("size"); // Ambil ukuran file dari frontend
+
+  // --- VALIDASI LIMIT 300 MB DI BACKEND ---
+  const MAX_SIZE = 300 * 1024 * 1024; // 300 MB dalam bytes
+
+  if (!fileSizeStr || isNaN(fileSizeStr)) {
+    return new Response(JSON.stringify({ success: false, message: "Missing or invalid file size parameter." }), { 
+      status: 400, headers: { 'Content-Type': 'application/json' } 
+    });
+  }
+
+  const fileSize = parseInt(fileSizeStr, 10);
+
+  if (fileSize > MAX_SIZE) {
+    return new Response(JSON.stringify({ success: false, message: "File exceeds the 300MB limit." }), { 
+      status: 413, headers: { 'Content-Type': 'application/json' } // 413 Payload Too Large
+    });
+  }
+  // ----------------------------------------
+
   const videoId = generateVideoId();
   const fileName = videoId; 
 
@@ -37,6 +56,7 @@ export async function onRequestGet(context) {
       Bucket: env.R2_BUCKET_NAME,
       Key: fileName,
       ContentType: contentType,
+      ContentLength: fileSize, // KUNCI KEAMANAN: Mengunci URL presigned HANYA untuk ukuran file yang disetujui
     });
 
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 });
@@ -49,6 +69,8 @@ export async function onRequestGet(context) {
 
   } catch (error) {
     console.error("Upload URL Error:", error);
-    return new Response(JSON.stringify({ success: false, message: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ success: false, message: error.message }), { 
+      status: 500, headers: { 'Content-Type': 'application/json' } 
+    });
   }
 }
