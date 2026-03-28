@@ -88,7 +88,7 @@
             <div id="upload-step-1">
                 <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Your Media Files</h1>
                 <!-- [DIUBAH] Deskripsi keunggulan -->
-                <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 200MB file size.</p>
+                <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 300MB file size.</p>
 
                 <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer group">
                     <input type="file" id="file-input" class="hidden" 
@@ -268,8 +268,9 @@
         });
 
         function handleFileSelection(file) {
-            if (file.size > 200 * 1024 * 1024) {
-                showNotification('File is too large! Maximum 200MB is allowed.', 'error');
+            // [DIUBAH] Validasi limit ukuran ke 300MB
+            if (file.size > 300 * 1024 * 1024) {
+                showNotification('File is too large! Maximum 300MB is allowed.', 'error');
                 return;
             }
             
