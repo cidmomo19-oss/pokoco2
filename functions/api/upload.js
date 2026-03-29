@@ -11,7 +11,7 @@ function generateVideoId(length = 9) {
 }
 
 // ==========================================
-// 1. INI UNTUK BOT (METHOD POST) - Fungsi Asli
+// 1. INI UNTUK BOT (METHOD POST)
 // ==========================================
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -20,9 +20,22 @@ export async function onRequestPost(context) {
     const body = await request.json();
     const contentType = body.type || "application/octet-stream";
     const adLink = body.ad_link || null;
+    const fileSizeBytes = body.size || null; // Opsional: Bisa dikirim oleh BOT, bisa tidak
+
+    // --- VALIDASI LIMIT 5 GB ---
+    const MAX_SIZE = 5 * 1024 * 1024 * 1024; // 5 GB dalam bytes
+
+    // Kalau bot ngirim ukuran, cek apakah melebihi 5 GB
+    if (fileSizeBytes && fileSizeBytes > MAX_SIZE) {
+      return new Response(JSON.stringify({ 
+        success: false, message: "File exceeds the 5GB maximum limit for Cloudflare R2." 
+      }), { status: 413, headers: { 'Content-Type': 'application/json' } });
+    }
+    // -----------------------------
 
     const videoId = generateVideoId();
 
+    // Simpan data ke Database D1
     await env.DB.prepare(
       "INSERT INTO videos (id, views, content_type, ad_link, created_at, last_viewed_at) VALUES (?, 0, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
     ).bind(videoId, contentType, adLink).run();
@@ -36,11 +49,19 @@ export async function onRequestPost(context) {
       },
     });
 
-    const command = new PutObjectCommand({
+    // Setup Parameter untuk R2 S3
+    const commandParams = {
       Bucket: env.R2_BUCKET_NAME,
       Key: videoId,
       ContentType: contentType,
-    });
+    };
+
+    // Kunci URL S3 kalau bot memberikan info ukuran file
+    if (fileSizeBytes) {
+      commandParams.ContentLength = fileSizeBytes;
+    }
+
+    const command = new PutObjectCommand(commandParams);
 
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 });
     const domain = new URL(request.url).origin;
@@ -55,13 +76,13 @@ export async function onRequestPost(context) {
 
   } catch (error) {
     return new Response(JSON.stringify({ 
-      success: false, message: "Invalid request. Send JSON body with 'type'." 
+      success: false, message: "Invalid request. Ensure your JSON body is correct." 
     }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 }
 
 // ==========================================
-// 2. INI UNTUK BROWSER (METHOD GET) - Tambahan Baru
+// 2. INI UNTUK BROWSER (METHOD GET)
 // ==========================================
 export async function onRequestGet(context) {
   // Kalau ada yang iseng buka link ini di browser, kasih pesan ini:
