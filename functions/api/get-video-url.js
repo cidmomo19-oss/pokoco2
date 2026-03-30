@@ -2,7 +2,7 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export async function onRequestGet(context) {
-  const { request, env, waitUntil } = context; 
+  const { request, env, waitUntil } = context;
   const url = new URL(request.url);
   const videoId = url.searchParams.get("id");
 
@@ -11,20 +11,18 @@ export async function onRequestGet(context) {
   }
 
   // ==========================================
-  // 1. CEK CACHE TERLEBIH DAHULU
+  // SISTEM CACHE CLOUDFLARE
   // ==========================================
-  const cache = caches.default;
   const cacheKey = new Request(url.toString(), request);
+  const cache = caches.default;
+  
+  // Cek apakah data API ini sudah ada di memori Cache Edge Cloudflare
   let response = await cache.match(cacheKey);
-
   if (response) {
-    // Jika ada di cache, langsung kirim (Sangat Cepat & Hemat Database)
-    return response;
+    return response; // Langsung kirim dari cache, tidak hit Database D1 / R2 sama sekali
   }
 
-  // ==========================================
-  // 2. JIKA CACHE KOSONG, AMBIL DATA
-  // ==========================================
+  // Jika belum ada di cache, buat baru
   const S3 = new S3Client({
     region: "auto",
     endpoint: `https://${env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -35,7 +33,7 @@ export async function onRequestGet(context) {
   });
 
   try {
-    // Ambil data content_type dan ad_link
+    // 1. Ambil data dari D1 (Hanya jalan 1x setiap 6 hari per video)
     const videoData = await env.DB.prepare(
       "SELECT content_type, ad_link FROM videos WHERE id = ?"
     ).bind(videoId).first();
@@ -44,40 +42,42 @@ export async function onRequestGet(context) {
       throw new Error("File not found in database or has been deleted.");
     }
 
-    // --- BAGIAN UPDATE VIEW SUDAH DIHAPUS DARI SINI ---
-    // (Karena sudah dipindah ke /api/track-view agar lebih akurat)
+    // (UPDATE VIEW DIHAPUS DARI SINI SESUAI PERMINTAAN)
 
-    // Buat Pre-signed URL R2 berlaku 24 JAM (86400 detik)
+    // 2. Buat Pre-signed URL R2 maksimal 7 Hari (604800 detik)
     const getCommand = new GetObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
       Key: videoId,
     });
-    const signedUrl = await getSignedUrl(S3, getCommand, { expiresIn: 86400 }); 
+    const signedUrl = await getSignedUrl(S3, getCommand, { expiresIn: 604800 }); 
 
-    // Buat response API
-    response = new Response(JSON.stringify({
+    // 3. Susun Response Data
+    const responseData = JSON.stringify({
       success: true,
       playUrl: signedUrl,
       contentType: videoData.content_type,
       adLink: videoData.ad_link 
-    }), { 
+    });
+
+    // 4. Bikin Response dengan Header Cache
+    response = new Response(responseData, { 
       headers: { 
         'Content-Type': 'application/json',
-        // Cache hasil ini di Edge Cloudflare selama 24 jam
-        'Cache-Control': 'public, max-age=86400' 
+        // Simpan di cache Browser dan Edge Cloudflare selama 6 Hari (518400 detik)
+        'Cache-Control': 'public, max-age=518400, s-maxage=518400' 
       } 
     });
 
-    // Simpan ke cache untuk user berikutnya
+    // 5. Simpan ke Cache Cloudflare di latar belakang
     waitUntil(cache.put(cacheKey, response.clone()));
 
     return response;
 
   } catch (error) {
     console.error(`Error fetching URL for video ID ${videoId}:`, error);
-    return new Response(
-      JSON.stringify({ success: false, message: "File not found or an error occurred." }), 
-      { status: error.message.includes("not found") || error.message.includes("deleted") ? 404 : 500 }
-    );
+    return new Response(JSON.stringify({ success: false, message: "File not found or an error occurred." }), { 
+      status: error.message.includes("not found") || error.message.includes("deleted") ? 404 : 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
