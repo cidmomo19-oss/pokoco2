@@ -1,0 +1,25 @@
+export async function onRequestPost(context) {
+  const { request, env } = context;
+
+  try {
+    const body = await request.json();
+    const videoId = body.id;
+
+    if (!videoId) {
+      return new Response(JSON.stringify({ success: false, message: "ID missing" }), { status: 400 });
+    }
+
+    // UPDATE DATABASE SECARA REALTIME (Langsung bertambah saat lolos robot)
+    await env.DB.prepare(
+      "UPDATE videos SET views = views + 1, period_views = period_views + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE id = ?"
+    ).bind(videoId).run();
+
+    return new Response(JSON.stringify({ success: true }), { 
+      headers: { 'Content-Type': 'application/json' } 
+    });
+
+  } catch (error) {
+    console.error("Error tracking view:", error);
+    return new Response(JSON.stringify({ success: false }), { status: 500 });
+  }
+}
