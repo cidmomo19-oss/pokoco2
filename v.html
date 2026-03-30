@@ -114,6 +114,28 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
+        // ==========================================
+        // SISTEM TRACK VIEW (BARU)
+        // ==========================================
+        function trackView() {
+            const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
+            // Jika ID ada dan belum dihitung view-nya di session ini
+            if (id && !alreadyViewed) {
+                // Tunggu 5 detik (biar hemat request bot/hit & run)
+                setTimeout(() => {
+                    fetch('/api/track-view', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id }),
+                        keepalive: true 
+                    }).then(() => {
+                        // Tandai agar refresh dalam satu sesi tidak spam view
+                        sessionStorage.setItem(`viewed_${id}`, 'true');
+                    }).catch(err => console.error("View track failed"));
+                }, 5000); 
+            }
+        }
+
         function redirectSafe(url) {
             const a = document.createElement('a'); a.href = url; a.rel = 'noreferrer noopener'; 
             document.body.appendChild(a); a.click(); document.body.removeChild(a); 
@@ -148,17 +170,10 @@
             localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
         }
 
-        // ==========================================
-        // 1. POOL IKLAN GLOBAL CUKUP 2 (A & B)
-        // ==========================================
         const adPool = [
             "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Iklan A
             "https://omg10.com/4/10390860" // Iklan B
         ];
-
-        // ==========================================
-        // ALUR EKSESKUSI
-        // ==========================================
 
         window.onload = function() {
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
@@ -166,6 +181,8 @@
             if (isVerifiedSession) {
                 rootScreen.style.display = 'flex';
                 fetchAndUpdateMedia(); 
+                // Jalankan penghitung view
+                trackView(); 
             } else {
                 robotScreen.style.display = 'flex';
                 if (hasPassedDailyCaptcha()) {
@@ -176,30 +193,23 @@
             }
         };
 
-        // KETIKA KLIK TOMBOL ROBOT (Sistem memori browser di-eksekusi disini)
         function triggerVerification() {
             if (!isCaptchaVerified) { 
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
 
-            // Baca urutan memori browser saat ini (0 = Iklan A, 1 = Iklan B)
             let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
             if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
 
-            // Bagi jatah: Robot dapat iklan sesuai urutan, Player dapat SISA-nya (lawannya).
             const robotAd = adPool[currentIdx];
             const playerAd = adPool[(currentIdx + 1) % adPool.length]; 
 
-            // Simpan jatah Player ke session untuk video spesifik ini biar gatau ketuker
             sessionStorage.setItem(`assigned_player_ad_${id}`, playerAd);
-            
-            // Perbarui memori browser untuk giliran buka video SELANJUTNYA
             localStorage.setItem('pokoco_global_ad_index', (currentIdx + 1) % adPool.length);
 
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
             
-            // Buka tab player, tab lama redirect ke Iklan Robot
             window.open(window.location.href, '_blank'); 
             redirectSafe(robotAd);
         }
@@ -209,7 +219,6 @@
             fetchAndUpdateMedia(); 
         }
 
-        // KETIKA MASUK KE PLAYER
         async function fetchAndUpdateMedia() {
             if (!id) {
                 mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
@@ -222,8 +231,6 @@
 
                 if (data.success) {
                     const { playUrl, contentType } = data;
-                    
-                    // 2. SISTEM ADLINK API (TIDAK GANGGU GUGAT ROTASI)
                     const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
                     
                     if (contentType.startsWith('image/')) {
@@ -251,8 +258,6 @@
                         } else { 
                             const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
                             const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-                            
-                            // Munculkan overlay selama Iklan API (kalo ada) atau Iklan Jatah Player belum ter-klik
                             const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
 
                             mediaWrapper.innerHTML = `
@@ -280,7 +285,6 @@
                                      const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
                                      const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
 
-                                     // PRIORITAS 1: Kalau ada AdLink dari API, tembak ini duluan
                                      if (adLink && !currentAdLinkDone) {
                                          sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
                                          setTimeout(() => {
@@ -288,15 +292,11 @@
                                              isProcessingClick = false;
                                          }, 800); 
                                      } 
-                                     // PRIORITAS 2: Temabk Iklan Jatah Player (A / B yang udah disimpan dari Robot)
                                      else if (!currentGenericAdDone) {
                                          sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
-                                         overlay.remove(); // Selesai! Semua iklan udah abis
+                                         overlay.remove(); 
                                          
-                                         // Panggil jatah iklan yang sudah disiapkan Robot khusus untuk player ini
                                          let nextAdUrl = sessionStorage.getItem(`assigned_player_ad_${id}`);
-                                         
-                                         // (Pengaman/Fallback) Kalau bypass langsung link tanpa lewat Robot
                                          if (!nextAdUrl) {
                                              let fallbackIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
                                              nextAdUrl = adPool[fallbackIdx];
