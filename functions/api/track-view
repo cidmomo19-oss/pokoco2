@@ -1,25 +1,20 @@
-export async function onRequestPost(context) {
-  const { request, env } = context;
+function trackView() {
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get('id');
+    const alreadyViewed = sessionStorage.getItem(`viewed_${videoId}`);
 
-  try {
-    const body = await request.json();
-    const videoId = body.id;
-
-    if (!videoId) {
-      return new Response(JSON.stringify({ success: false }), { status: 400 });
+    if (videoId && !alreadyViewed) {
+        // Tunggu 8 detik baru kirim request view ke server
+        setTimeout(() => {
+            fetch('/api/track-view', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: videoId }),
+                keepalive: true // Agar tetap terkirim meskipun tab ditutup mendadak
+            }).then(() => {
+                sessionStorage.setItem(`viewed_${videoId}`, 'true');
+            }).catch(() => {});
+        }, 8000); // 8000 ms = 8 detik
     }
-
-    // UPDATE DATABASE SECARA REALTIME TANPA CACHE
-    await env.DB.prepare(
-      "UPDATE videos SET views = views + 1, period_views = period_views + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE id = ?"
-    ).bind(videoId).run();
-
-    return new Response(JSON.stringify({ success: true }), { 
-      headers: { 'Content-Type': 'application/json' } 
-    });
-
-  } catch (error) {
-    console.error("Error tracking view:", error);
-    return new Response(JSON.stringify({ success: false }), { status: 500 });
-  }
 }
+trackView();
