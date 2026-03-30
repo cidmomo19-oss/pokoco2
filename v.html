@@ -107,44 +107,26 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. SISTEM ROTASI IKLAN BERURUTAN (SEQUENCE)
-        // ==========================================
-        const adPool = [
-            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Iklan 1
-            "https://omg10.com/4/10390860" // Iklan 2
-        ];
-
-        function getNextSequentialAd() {
-            let currentIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0', 10);
-            const nextAdUrl = adPool[currentIndex];
-            currentIndex = (currentIndex + 1) % adPool.length;
-            localStorage.setItem('pokoco_ad_index', currentIndex.toString());
-            return nextAdUrl;
-        }
-
-        // ==========================================
-        // 2. VARIABEL GLOBAL & FUNGSI UTILITAS
-        // ==========================================
         const mediaWrapper = document.getElementById('media-wrapper');
         const shareLabel = document.getElementById('share-label');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
-        const robotScreen = document.getElementById('robot-screen');
-        const rootScreen = document.getElementById('root');
-        let isCaptchaVerified = false; 
-
         function redirectSafe(url) {
             const a = document.createElement('a'); a.href = url; a.rel = 'noreferrer noopener'; 
             document.body.appendChild(a); a.click(); document.body.removeChild(a); 
         }
 
         function prefetchSafe(url) {
+            if(!url) return;
             const prefetch = document.createElement('link'); prefetch.rel = 'prefetch';
             prefetch.href = url; prefetch.referrerPolicy = 'no-referrer'; 
             document.head.appendChild(prefetch);
         }
+
+        const robotScreen = document.getElementById('robot-screen');
+        const rootScreen = document.getElementById('root');
+        let isCaptchaVerified = false; 
 
         let alertTimeout;
         function showCustomAlert(message) { 
@@ -159,29 +141,80 @@
             }, 3000);
         }
 
-        // ==========================================
-        // 3. FUNGSI TRACK VIEW (DIKIRIM SAAT LOLOS ROBOT)
-        // ==========================================
-        function trackMediaView(mediaId) {
-            if (!mediaId) return;
-            // keepalive: true wajib agar request tidak mati saat halaman ter-redirect iklan
-            fetch('/api/track-view', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: mediaId }),
-                keepalive: true 
-            }).catch(e => console.error("Gagal mencatat view:", e));
-        }
-
-        // ==========================================
-        // 4. LOGIKA CAPTCHA & HALAMAN ROBOT
-        // ==========================================
         function hasPassedDailyCaptcha() {
             const lastVerifiedTimestamp = localStorage.getItem('pokoco_daily_captcha_passed');
             if (!lastVerifiedTimestamp) return false; 
             const twentyFourHours = 24 * 60 * 60 * 1000;
             return (Date.now() - parseInt(lastVerifiedTimestamp)) < twentyFourHours;
         }
+
+        function captchaSuccess(token) {
+            isCaptchaVerified = true;
+            localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
+        }
+
+        // ==========================================
+        // SISTEM ROTASI IKLAN GLOBAL (URUT)
+        // ==========================================
+        
+        // 1. Array default berisi iklan wajib (AdLink dari API akan di-push menyusul jika ada)
+        let adPool = [
+            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Iklan 1 (Awalnya untuk Robot)
+            "https://omg10.com/4/10390860" // Iklan 2 (Awalnya Extra Player)
+        ];
+
+        // 2. Fungsi Fetch Singleton (Agar API tidak diminta berulang kali)
+        let fetchPromise = null;
+        function getMediaData() {
+            if (!id) return Promise.reject("Invalid ID");
+            if (!fetchPromise) {
+                fetchPromise = fetch(`/api/get-video-url?id=${id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        // Jika adLink dari API ada dan tidak kosong, tambahkan ke Pool
+                        if (data.success && data.adLink && data.adLink.trim() !== "") {
+                            if (!adPool.includes(data.adLink)) {
+                                adPool.push(data.adLink); // Masuk sebagai Iklan ke-3
+                            }
+                        }
+                        prefetchNextAd(); // Siapkan iklan selanjutnya di background
+                        return data;
+                    })
+                    .catch(err => {
+                        console.error("Fetch error", err);
+                        throw err;
+                    });
+            }
+            return fetchPromise;
+        }
+
+        // 3. Menarik antrean iklan selanjutnya
+        function getNextAd() {
+            let idx = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
+            
+            // Pengaman: Jika index melebihi total adPool saat ini, reset ke 0
+            if (idx >= adPool.length) {
+                idx = 0;
+            }
+            
+            const selectedAd = adPool[idx];
+            
+            // Simpan state index ditambahkan 1 untuk rotasi click selanjutnya
+            localStorage.setItem('pokoco_ad_index', idx + 1);
+            
+            return selectedAd;
+        }
+
+        // 4. Mem-prefetch iklan untuk mempercepat load
+        function prefetchNextAd() {
+            let idx = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
+            if (idx >= adPool.length) idx = 0;
+            prefetchSafe(adPool[idx]);
+        }
+
+        // ==========================================
+        // ALUR EKSESKUSI APLIKASI
+        // ==========================================
 
         window.onload = function() {
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
@@ -191,6 +224,10 @@
                 fetchAndUpdateMedia(); 
             } else {
                 robotScreen.style.display = 'flex';
+                
+                // Fetch API dibelakang layar untuk memasukkan data adLink sebelum tombol Robot diklik
+                getMediaData().catch(() => {}); 
+
                 if (hasPassedDailyCaptcha()) {
                     const turnstileContainer = document.getElementById('turnstile-container');
                     if (turnstileContainer) turnstileContainer.classList.add('hidden');
@@ -199,29 +236,30 @@
             }
         };
 
-        function captchaSuccess(token) {
-            isCaptchaVerified = true;
-            localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
-        }
-
         function triggerVerification() {
             if (!isCaptchaVerified) { 
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
             
-            trackMediaView(id);
+            // Catat bahwa video ini sudah memakan 1 porsi iklan
+            let adsShownForThisVideo = parseInt(sessionStorage.getItem(`adsShown_${id}`) || '0');
+            sessionStorage.setItem(`adsShown_${id}`, adsShownForThisVideo + 1);
+            
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
-            const nextAdUrl = getNextSequentialAd();
+            
+            // Ambil URL iklan urutan selanjutnya
+            const nextAdUrl = getNextAd();
+            
+            // Buka tab player video, alihkan tab lama ini ke URL iklan
             window.open(window.location.href, '_blank'); 
             redirectSafe(nextAdUrl);
         }
 
-        // ==========================================
-        // 5. FETCH MEDIA & LOGIKA IKLAN PLAYER (OVERLAY)
-        // ==========================================
         function handleMediaError() {
             console.error("Media error detected. Requesting a new link...");
+            // Reset fetch promise to force refresh if error occurs
+            fetchPromise = null;
             fetchAndUpdateMedia(); 
         }
 
@@ -232,11 +270,11 @@
             }
             
             try {
-                const response = await fetch(`/api/get-video-url?id=${id}`);
-                const data = await response.json();
+                // Pakai data API yang sudah dipanggil sejak awal atau load ulang jika kosong
+                const data = await getMediaData();
 
                 if (data.success) {
-                    const { playUrl, contentType, adLink } = data;
+                    const { playUrl, contentType } = data;
                     
                     if (contentType.startsWith('image/')) {
                         mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
@@ -247,40 +285,77 @@
                         shareLabel.innerText = 'Share video';
                         document.title = 'Pokoco - Video';
                         
-                        const isPlayerAdShown = sessionStorage.getItem(`player_ad_shown_${id}`) === 'true';
-                        const needsOverlay = !isPlayerAdShown;
+                        const existingPlayer = document.getElementById('main-player');
 
-                        mediaWrapper.innerHTML = `
-                            <div class="relative w-full overflow-hidden media-container"> 
-                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                ${needsOverlay ? 
-                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
-                                }
-                            </div>`;
-                        
-                         const player = document.getElementById('main-player');
-                         const overlay = document.getElementById('ad-overlay');
+                        if (existingPlayer) { 
+                            const currentTime = existingPlayer.currentTime;
+                            const wasPlaying = !existingPlayer.paused;
+                            existingPlayer.src = playUrl;
+                            existingPlayer.load(); 
+                            
+                            existingPlayer.addEventListener('loadedmetadata', () => {
+                                existingPlayer.currentTime = currentTime;
+                                if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
+                            }, { once: true });
 
-                         player.addEventListener('error', handleMediaError); 
+                        } else { 
+                            // Kalkulasi jatah tayang klik iklan video ini
+                            const totalAdsForThisVideo = adPool.length; // Akan berjumlah 2 atau 3
+                            let adsShownForThisVideo = parseInt(sessionStorage.getItem(`adsShown_${id}`) || '0');
+                            
+                            // Tampilkan overlay jika jatah klik masih tersisa
+                            const needsOverlay = adsShownForThisVideo < totalAdsForThisVideo;
 
-                         if(overlay) {
+                            mediaWrapper.innerHTML = `
+                                <div class="relative w-full overflow-hidden media-container"> 
+                                    <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
+                                    ${needsOverlay ? 
+                                        `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
+                                    }
+                                </div>`;
+                            
+                             const player = document.getElementById('main-player');
+                             const overlay = document.getElementById('ad-overlay');
+
+                             player.addEventListener('error', handleMediaError); 
+
                              let isProcessingClick = false;
-                             overlay.addEventListener('click', function() {
-                                 if (isProcessingClick) return; 
-                                 isProcessingClick = true;
 
-                                 player.play().catch(e => console.warn("Autoplay diblokir:", e));
-                                 
-                                 const adUrlToOpen = adLink ? adLink : getNextSequentialAd();
+                             if(overlay) {
+                                 overlay.addEventListener('click', function() {
+                                     if (isProcessingClick) return; 
+                                     isProcessingClick = true;
 
-                                 sessionStorage.setItem(`player_ad_shown_${id}`, 'true'); 
-                                 overlay.remove(); 
-                                 
-                                 setTimeout(() => {
-                                     redirectSafe(adUrlToOpen); 
-                                 }, 800); 
-                             });
-                         }
+                                     player.play().catch(e => console.warn("Autoplay blocked:", e));
+                                     
+                                     // Baca ulang dari sessionStorage buat keamanan jika tab diduplikat
+                                     adsShownForThisVideo = parseInt(sessionStorage.getItem(`adsShown_${id}`) || '0');
+
+                                     if (adsShownForThisVideo < totalAdsForThisVideo) {
+                                         const nextAdUrl = getNextAd(); // Tarik antrean index terbaru
+                                         
+                                         adsShownForThisVideo++;
+                                         sessionStorage.setItem(`adsShown_${id}`, adsShownForThisVideo);
+                                         
+                                         setTimeout(() => {
+                                             redirectSafe(nextAdUrl); 
+                                             isProcessingClick = false;
+                                             
+                                             // Hapus div overlay jika jatah iklan video ini sudah habis (tuntas 2/3 iklan)
+                                             if (adsShownForThisVideo >= totalAdsForThisVideo) {
+                                                 overlay.remove();
+                                             } else {
+                                                 prefetchNextAd(); // Siapkan untuk klik selanjutnya
+                                             }
+                                         }, 800); 
+                                     } 
+                                     else {
+                                         overlay.remove();
+                                         isProcessingClick = false;
+                                     }
+                                 });
+                             }
+                        }
                     } else if (contentType.startsWith('audio/')) {
                         mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
                         shareLabel.innerText = 'Share audio';
@@ -297,9 +372,6 @@
             }
         }
 
-        // ==========================================
-        // 6. FUNGSI SHARE
-        // ==========================================
         function shareMedia() {
             const label = document.getElementById('share-label').innerText;
             if (navigator.share) {
