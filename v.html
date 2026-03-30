@@ -149,24 +149,12 @@
         }
 
         // ==========================================
-        // 1. SISTEM IKLAN GLOBAL (SELALU GANTIAN A & B)
+        // 1. POOL IKLAN GLOBAL CUKUP 2 (A & B)
         // ==========================================
         const adPool = [
             "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Iklan A
             "https://omg10.com/4/10390860" // Iklan B
         ];
-
-        // Fungsi narik Iklan A/B secara urut tiap kali dieksekusi
-        function getNextGlobalAd() {
-            let idx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-            if (isNaN(idx) || idx >= adPool.length) idx = 0;
-            
-            const selectedAd = adPool[idx];
-            
-            // Lanjut ke index berikutnya (0 ke 1, 1 ke 0)
-            localStorage.setItem('pokoco_global_ad_index', (idx + 1) % adPool.length);
-            return selectedAd;
-        }
 
         // ==========================================
         // ALUR EKSESKUSI
@@ -188,20 +176,32 @@
             }
         };
 
-        // KETIKA KLIK TOMBOL ROBOT
+        // KETIKA KLIK TOMBOL ROBOT (Sistem memori browser di-eksekusi disini)
         function triggerVerification() {
             if (!isCaptchaVerified) { 
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
 
+            // Baca urutan memori browser saat ini (0 = Iklan A, 1 = Iklan B)
+            let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
+            if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
+
+            // Bagi jatah: Robot dapat iklan sesuai urutan, Player dapat SISA-nya (lawannya).
+            const robotAd = adPool[currentIdx];
+            const playerAd = adPool[(currentIdx + 1) % adPool.length]; 
+
+            // Simpan jatah Player ke session untuk video spesifik ini biar gatau ketuker
+            sessionStorage.setItem(`assigned_player_ad_${id}`, playerAd);
+            
+            // Perbarui memori browser untuk giliran buka video SELANJUTNYA
+            localStorage.setItem('pokoco_global_ad_index', (currentIdx + 1) % adPool.length);
+
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
             
-            // Tarik iklan urut dari adPool Global
-            const nextAdUrl = getNextGlobalAd();
-            
+            // Buka tab player, tab lama redirect ke Iklan Robot
             window.open(window.location.href, '_blank'); 
-            redirectSafe(nextAdUrl);
+            redirectSafe(robotAd);
         }
 
         function handleMediaError() {
@@ -223,7 +223,7 @@
                 if (data.success) {
                     const { playUrl, contentType } = data;
                     
-                    // 2. SISTEM ADLINK KHUSUS (Cek apakah API ngirim AdLink)
+                    // 2. SISTEM ADLINK API (TIDAK GANGGU GUGAT ROTASI)
                     const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
                     
                     if (contentType.startsWith('image/')) {
@@ -249,11 +249,10 @@
                             }, { once: true });
 
                         } else { 
-                            // Status klik di video spesifik ini
                             const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
                             const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
                             
-                            // Munculkan overlay JIKA: (punya adlink TAPI belum diklik) ATAU (iklan rotasi player belum diklik)
+                            // Munculkan overlay selama Iklan API (kalo ada) atau Iklan Jatah Player belum ter-klik
                             const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
 
                             mediaWrapper.innerHTML = `
@@ -278,11 +277,10 @@
 
                                      player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      
-                                     // Baca status yang terbaru
                                      const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
                                      const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
 
-                                     // PRIORITAS 1: Kalau ada AdLink dari API, dieksekusi duluan
+                                     // PRIORITAS 1: Kalau ada AdLink dari API, tembak ini duluan
                                      if (adLink && !currentAdLinkDone) {
                                          sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
                                          setTimeout(() => {
@@ -290,13 +288,20 @@
                                              isProcessingClick = false;
                                          }, 800); 
                                      } 
-                                     // PRIORITAS 2: Iklan Rotasi A/B Global
+                                     // PRIORITAS 2: Temabk Iklan Jatah Player (A / B yang udah disimpan dari Robot)
                                      else if (!currentGenericAdDone) {
                                          sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
-                                         overlay.remove(); // Cabut overlay karena ini jatah iklan terakhir
+                                         overlay.remove(); // Selesai! Semua iklan udah abis
                                          
-                                         // Tarik antrean Iklan dari Global (A / B)
-                                         const nextAdUrl = getNextGlobalAd();
+                                         // Panggil jatah iklan yang sudah disiapkan Robot khusus untuk player ini
+                                         let nextAdUrl = sessionStorage.getItem(`assigned_player_ad_${id}`);
+                                         
+                                         // (Pengaman/Fallback) Kalau bypass langsung link tanpa lewat Robot
+                                         if (!nextAdUrl) {
+                                             let fallbackIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
+                                             nextAdUrl = adPool[fallbackIdx];
+                                             localStorage.setItem('pokoco_global_ad_index', (fallbackIdx + 1) % adPool.length);
+                                         }
                                          
                                          setTimeout(() => {
                                              redirectSafe(nextAdUrl); 
