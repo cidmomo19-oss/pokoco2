@@ -6,10 +6,10 @@ export async function onRequestPost(context) {
     const videoId = body.id;
 
     if (!videoId) {
-      return new Response(JSON.stringify({ success: false, message: "ID missing" }), { status: 400 });
+      return new Response(JSON.stringify({ success: false }), { status: 400 });
     }
 
-    // UPDATE DATABASE SECARA REALTIME (Langsung bertambah saat lolos robot)
+    // UPDATE DATABASE SECARA REALTIME TANPA CACHE
     await env.DB.prepare(
       "UPDATE videos SET views = views + 1, period_views = period_views + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE id = ?"
     ).bind(videoId).run();
