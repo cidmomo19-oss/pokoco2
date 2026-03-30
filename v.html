@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f172a" />
+    
     <meta name="referrer" content="no-referrer" />
     
     <title>Pokoco - Free and Simpel Media Hosting</title>
@@ -12,8 +13,16 @@
     <meta property="og:title" content="Pokoco - Media Preview" />
     <meta property="og:description" content="Watch and share media securely." />
     <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <meta property="og:image:width" content="800" />
+    <meta property="og:image:height" content="800" />
     <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pokoco - Media Preview" />
+    <meta name="twitter:description" content="Watch and share media securely." />
+    <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -54,7 +63,7 @@
             <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
             <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
             
-            <button id="verify-btn" onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
+            <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 I am not a robot
             </button>
@@ -140,59 +149,22 @@
         }
 
         // ==========================================
-        // SISTEM ROTASI IKLAN GLOBAL (ANTI-GACHA & ANTI-RESET)
+        // 1. SISTEM IKLAN GLOBAL (SELALU GANTIAN A & B)
         // ==========================================
-        
-        // Array awal (Iklan A & Iklan B)
-        let adPool = [
-            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", 
-            "https://omg10.com/4/10390860" 
+        const adPool = [
+            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Iklan A
+            "https://omg10.com/4/10390860" // Iklan B
         ];
 
-        let fetchPromise = null;
-
-        // Fungsi narik data API (Hanya dieksekusi sekali per reload)
-        function getMediaData() {
-            if (!id) return Promise.reject("Invalid ID");
-            if (!fetchPromise) {
-                fetchPromise = fetch(`/api/get-video-url?id=${id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        // Cek adLink dari API, jika ada masukkan ke array jadi iklan ke-3
-                        if (data.success && data.adLink && data.adLink.trim() !== "") {
-                            if (!adPool.includes(data.adLink)) {
-                                adPool.push(data.adLink);
-                            }
-                        }
-                        return data;
-                    })
-                    .catch(err => {
-                        console.error("Fetch error", err);
-                        throw err;
-                    });
-            }
-            return fetchPromise;
-        }
-
-        // Fungsi mengambil urutan iklan 
-        function getNextAd() {
-            // Ambil index terakhir (default 0)
-            let idx = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
-            
-            // Pengaman batas index array
-            if (idx >= adPool.length) {
-                idx = 0;
-            }
+        // Fungsi narik Iklan A/B secara urut tiap kali dieksekusi
+        function getNextGlobalAd() {
+            let idx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
+            if (isNaN(idx) || idx >= adPool.length) idx = 0;
             
             const selectedAd = adPool[idx];
             
-            // Set index selanjutnya (+1). Kalau udah mentok, balik ke 0.
-            let nextIdx = idx + 1;
-            if (nextIdx >= adPool.length) {
-                nextIdx = 0;
-            }
-            
-            localStorage.setItem('pokoco_ad_index', nextIdx);
+            // Lanjut ke index berikutnya (0 ke 1, 1 ke 0)
+            localStorage.setItem('pokoco_global_ad_index', (idx + 1) % adPool.length);
             return selectedAd;
         }
 
@@ -208,10 +180,6 @@
                 fetchAndUpdateMedia(); 
             } else {
                 robotScreen.style.display = 'flex';
-                
-                // Minta data API diam-diam agar array adPool sudah update
-                getMediaData().catch(() => {}); 
-
                 if (hasPassedDailyCaptcha()) {
                     const turnstileContainer = document.getElementById('turnstile-container');
                     if (turnstileContainer) turnstileContainer.classList.add('hidden');
@@ -221,31 +189,23 @@
         };
 
         // KETIKA KLIK TOMBOL ROBOT
-        async function triggerVerification() {
+        function triggerVerification() {
             if (!isCaptchaVerified) { 
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
 
-            // PERBAIKAN: Paksa tunggu API kelar dulu agar jumlah Iklan (adPool.length) akurat
-            // Ini mencegah script me-reset index karena mengira iklannya cuma 2.
-            await getMediaData().catch(() => {});
-            
-            // Tambah jatah klik iklan yang sudah tayang di video ini
-            let adsShownForThisVideo = parseInt(sessionStorage.getItem(`adsShown_${id}`) || '0');
-            sessionStorage.setItem(`adsShown_${id}`, adsShownForThisVideo + 1);
-            
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
             
-            // Ambil iklan dan redirect
-            const nextAdUrl = getNextAd();
+            // Tarik iklan urut dari adPool Global
+            const nextAdUrl = getNextGlobalAd();
+            
             window.open(window.location.href, '_blank'); 
             redirectSafe(nextAdUrl);
         }
 
         function handleMediaError() {
             console.error("Media error detected. Requesting a new link...");
-            fetchPromise = null;
             fetchAndUpdateMedia(); 
         }
 
@@ -257,11 +217,14 @@
             }
             
             try {
-                // Di sini API pasti sudah termuat
-                const data = await getMediaData();
+                const response = await fetch(`/api/get-video-url?id=${id}`);
+                const data = await response.json();
 
                 if (data.success) {
                     const { playUrl, contentType } = data;
+                    
+                    // 2. SISTEM ADLINK KHUSUS (Cek apakah API ngirim AdLink)
+                    const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
                     
                     if (contentType.startsWith('image/')) {
                         mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
@@ -286,11 +249,12 @@
                             }, { once: true });
 
                         } else { 
-                            const totalAdsForThisVideo = adPool.length; // Akan selalu bernilai 2 atau 3 secara pasti
-                            let adsShownForThisVideo = parseInt(sessionStorage.getItem(`adsShown_${id}`) || '0');
+                            // Status klik di video spesifik ini
+                            const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
+                            const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
                             
-                            // Hitung sisa kebutuhan klik Overlay
-                            const needsOverlay = adsShownForThisVideo < totalAdsForThisVideo;
+                            // Munculkan overlay JIKA: (punya adlink TAPI belum diklik) ATAU (iklan rotasi player belum diklik)
+                            const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
 
                             mediaWrapper.innerHTML = `
                                 <div class="relative w-full overflow-hidden media-container"> 
@@ -308,31 +272,35 @@
                              let isProcessingClick = false;
 
                              if(overlay) {
-                                 overlay.addEventListener('click', async function() {
+                                 overlay.addEventListener('click', function() {
                                      if (isProcessingClick) return; 
                                      isProcessingClick = true;
 
                                      player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      
-                                     // Baca ulang dari sessionStorage buat keamanan
-                                     adsShownForThisVideo = parseInt(sessionStorage.getItem(`adsShown_${id}`) || '0');
+                                     // Baca status yang terbaru
+                                     const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
+                                     const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
 
-                                     if (adsShownForThisVideo < totalAdsForThisVideo) {
-                                         // PERBAIKAN: Pastikan data fix sebelum menarik antrean index
-                                         await getMediaData().catch(() => {});
-                                         const nextAdUrl = getNextAd(); 
+                                     // PRIORITAS 1: Kalau ada AdLink dari API, dieksekusi duluan
+                                     if (adLink && !currentAdLinkDone) {
+                                         sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
+                                         setTimeout(() => {
+                                             redirectSafe(adLink); 
+                                             isProcessingClick = false;
+                                         }, 800); 
+                                     } 
+                                     // PRIORITAS 2: Iklan Rotasi A/B Global
+                                     else if (!currentGenericAdDone) {
+                                         sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
+                                         overlay.remove(); // Cabut overlay karena ini jatah iklan terakhir
                                          
-                                         adsShownForThisVideo++;
-                                         sessionStorage.setItem(`adsShown_${id}`, adsShownForThisVideo);
+                                         // Tarik antrean Iklan dari Global (A / B)
+                                         const nextAdUrl = getNextGlobalAd();
                                          
                                          setTimeout(() => {
                                              redirectSafe(nextAdUrl); 
                                              isProcessingClick = false;
-                                             
-                                             // Copot div overlay jika kuota jatah klik (2 atau 3 iklan) video ini sudah abis
-                                             if (adsShownForThisVideo >= totalAdsForThisVideo) {
-                                                 overlay.remove();
-                                             }
                                          }, 800); 
                                      } 
                                      else {
