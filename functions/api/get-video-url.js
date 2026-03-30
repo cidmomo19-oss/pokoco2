@@ -2,7 +2,6 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export async function onRequestGet(context) {
-  // Tambahkan waitUntil dari context untuk proses background caching
   const { request, env, waitUntil } = context; 
   const url = new URL(request.url);
   const videoId = url.searchParams.get("id");
@@ -19,13 +18,12 @@ export async function onRequestGet(context) {
   let response = await cache.match(cacheKey);
 
   if (response) {
-    // Jika sudah ada di cache (dari orang pertama), langsung kembalikan!
-    // Tidak akan hit database D1 atau R2 S3 sama sekali.
+    // Jika ada di cache, langsung kirim (Sangat Cepat & Hemat Database)
     return response;
   }
 
   // ==========================================
-  // 2. JIKA CACHE KOSONG, PROSES SEPERTI BIASA
+  // 2. JIKA CACHE KOSONG, AMBIL DATA
   // ==========================================
   const S3 = new S3Client({
     region: "auto",
@@ -37,6 +35,7 @@ export async function onRequestGet(context) {
   });
 
   try {
+    // Ambil data content_type dan ad_link
     const videoData = await env.DB.prepare(
       "SELECT content_type, ad_link FROM videos WHERE id = ?"
     ).bind(videoId).first();
@@ -45,12 +44,10 @@ export async function onRequestGet(context) {
       throw new Error("File not found in database or has been deleted.");
     }
 
-    // UPDATE DATABASE (Hanya berjalan oleh orang pertama yang nge-hit)
-    await env.DB.prepare(
-      "UPDATE videos SET views = views + 1, period_views = period_views + 1, last_viewed_at = CURRENT_TIMESTAMP WHERE id = ?"
-    ).bind(videoId).run();
+    // --- BAGIAN UPDATE VIEW SUDAH DIHAPUS DARI SINI ---
+    // (Karena sudah dipindah ke /api/track-view agar lebih akurat)
 
-    // Buat Pre-signed URL R2 dengan expiresIn 24 JAM (86400 detik)
+    // Buat Pre-signed URL R2 berlaku 24 JAM (86400 detik)
     const getCommand = new GetObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
       Key: videoId,
@@ -66,13 +63,12 @@ export async function onRequestGet(context) {
     }), { 
       headers: { 
         'Content-Type': 'application/json',
-        // Set Header Cache-Control agar disimpan selama 24 jam (86400 detik)
+        // Cache hasil ini di Edge Cloudflare selama 24 jam
         'Cache-Control': 'public, max-age=86400' 
       } 
     });
 
-    // Simpan response ke dalam cache untuk pengunjung selanjutnya
-    // Gunakan response.clone() karena response body hanya bisa dibaca sekali
+    // Simpan ke cache untuk user berikutnya
     waitUntil(cache.put(cacheKey, response.clone()));
 
     return response;
