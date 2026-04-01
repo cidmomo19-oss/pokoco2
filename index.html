@@ -6,21 +6,26 @@
     <meta name="theme-color" content="#0f172a" />
     <meta name="referrer" content="no-referrer" />
     
-    <title>Pokoco - Free & Secure Media Hosting | Upload Videos, Images, Audio</title>
-    <meta name="description" content="Pokoco offers free, fast, and secure media hosting. Upload and privately share videos, images, and audio files. Supports direct link / smartlink ads." />
+    <!-- SEO OPTIMIZATION: Title & Description yang Kuat -->
+    <title>Free Video & Media Hosting | Securely Upload & Share Files - Pokoco</title>
+    <meta name="description" content="Host, upload, and share videos, images, and audio for free with Pokoco. Enjoy up to 1GB per file, password protection, custom ad links, and ultimate privacy. No sign-up required!" />
+    <meta name="keywords" content="free video hosting, secure file upload, share video links, password protected media hosting, image host, no sign up, up to 1GB, custom ad link hosting" />
     
-    <meta property="og:title" content="Pokoco - Free Media Hosting" />
-    <meta property="og:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
+    <!-- OPEN GRAPH (Untuk preview link di WhatsApp, FB, Telegram, dll) -->
+    <meta property="og:title" content="Free Video & Media Hosting | Securely Upload & Share Files - Pokoco" />
+    <meta property="og:description" content="Upload and privately share videos, images, and audio files for free. Fast streaming, up to 1GB per file, and password protection." />
     <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="800" />
     <meta property="og:type" content="website" />
     
+    <!-- TWITTER CARDS -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Pokoco - Free Media Hosting" />
-    <meta name="twitter:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
+    <meta name="twitter:title" content="Free Video & Media Hosting | Pokoco" />
+    <meta name="twitter:description" content="Upload and privately share videos, images, and audio files for free. Fast streaming, up to 1GB per file, and password protection." />
     <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
+    <!-- FAVICON -->
     <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
@@ -80,7 +85,6 @@
             
             <div id="upload-step-1">
                 <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Your Media Files</h1>
-                <!-- LIMIT DIUBAH KE 1GB -->
                 <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 1GB file size.</p>
 
                 <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer group">
@@ -110,7 +114,6 @@
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
                 
-                <!-- INPUT AD LINK & PASSWORD -->
                 <div class="mt-4 mb-6 text-left space-y-3">
                     <div>
                         <button type="button" id="toggle-ad-link-input" onclick="toggleAdLinkInput()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1">
@@ -125,7 +128,8 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                             Add Password Protection (Optional)
                         </button>
-                        <input type="password" id="password-input" placeholder="Set a password for this file" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 mt-2 hidden transition-all">
+                        <!-- Type diubah jadi "text" agar tidak bintang-bintang -->
+                        <input type="text" id="password-input" placeholder="Set a password for this file" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 mt-2 hidden transition-all">
                     </div>
                 </div>
 
@@ -283,7 +287,6 @@
         });
 
         function handleFileSelection(file) {
-            // LIMIT FILE SIZE 1 GB
             if (file.size > 1 * 1024 * 1024 * 1024) {
                 showNotification('File is too large! Maximum 1GB is allowed.', 'error');
                 return;
