@@ -14,10 +14,11 @@ export async function onRequestGet(context) {
   
   const contentType = url.searchParams.get("type") || "application/octet-stream";
   const adLink = url.searchParams.get("ad_link") || null; 
-  const fileSizeStr = url.searchParams.get("size"); // Ambil ukuran file dari frontend
+  const password = url.searchParams.get("password") || null; // [BARU] Ambil password
+  const fileSizeStr = url.searchParams.get("size");
 
-  // --- VALIDASI LIMIT 300 MB DI BACKEND ---
-  const MAX_SIZE = 300 * 1024 * 1024; // 300 MB dalam bytes
+  // --- VALIDASI LIMIT 2 GB DI BACKEND ---
+  const MAX_SIZE = 2 * 1024 * 1024 * 1024; // [DIUBAH] 2 GB dalam bytes
 
   if (!fileSizeStr || isNaN(fileSizeStr)) {
     return new Response(JSON.stringify({ success: false, message: "Missing or invalid file size parameter." }), { 
@@ -28,8 +29,8 @@ export async function onRequestGet(context) {
   const fileSize = parseInt(fileSizeStr, 10);
 
   if (fileSize > MAX_SIZE) {
-    return new Response(JSON.stringify({ success: false, message: "File exceeds the 300MB limit." }), { 
-      status: 413, headers: { 'Content-Type': 'application/json' } // 413 Payload Too Large
+    return new Response(JSON.stringify({ success: false, message: "File exceeds the 2GB limit." }), { 
+      status: 413, headers: { 'Content-Type': 'application/json' } 
     });
   }
   // ----------------------------------------
@@ -38,10 +39,10 @@ export async function onRequestGet(context) {
   const fileName = videoId; 
 
   try {
-    // SIMPAN SEMUA DATA KE DATABASE D1
+    // [DIUBAH] Masukkan kolom password ke database
     await env.DB.prepare(
-      "INSERT INTO videos (id, views, content_type, ad_link) VALUES (?, 0, ?, ?)"
-    ).bind(videoId, contentType, adLink).run();
+      "INSERT INTO videos (id, views, content_type, ad_link, password) VALUES (?, 0, ?, ?, ?)"
+    ).bind(videoId, contentType, adLink, password).run();
 
     const S3 = new S3Client({
       region: "auto",
@@ -56,7 +57,7 @@ export async function onRequestGet(context) {
       Bucket: env.R2_BUCKET_NAME,
       Key: fileName,
       ContentType: contentType,
-      ContentLength: fileSize, // KUNCI KEAMANAN: Mengunci URL presigned HANYA untuk ukuran file yang disetujui
+      ContentLength: fileSize, 
     });
 
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 });
