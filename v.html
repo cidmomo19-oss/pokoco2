@@ -74,10 +74,8 @@
             <h2 class="text-[22px] font-bold text-white mb-2">Protected Media</h2>
             <p class="text-[#94a3b8] text-[14px] leading-snug mb-6">This file is password protected. Please enter the password to continue.</p>
             
-            <!-- Type diubah jadi "text", bukan "password" -->
             <input type="text" id="viewer-password-input" placeholder="Enter password" class="w-full bg-[#1e293b] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 mb-2 transition-all text-center tracking-widest">
             
-            <!-- Notifikasi Error Password (di bawah input) -->
             <p id="password-error-msg" class="text-red-500 text-xs mb-4 hidden font-medium">Incorrect password. Please try again.</p>
             
             <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg">
@@ -178,24 +176,34 @@
             "https://acidic-deal.com/bXpQVi" 
         ];
 
+        // --- [BARU] OPTIMASI JARINGAN (AMAN DARI BANNED) ---
+        // Preconnect ke server iklan untuk loading lebih cepat saat diklik
         function optimizeAdNetworkSpeed() {
             adPool.forEach(url => {
                 try {
+                    // Ambil domain utama (e.g., "https://conductivebreeds.com")
                     const domain = new URL(url).origin;
-                    const dns = document.createElement('link');
-                    dns.rel = 'dns-prefetch';
-                    dns.href = domain;
-                    const preconnect = document.createElement('link');
-                    preconnect.rel = 'preconnect';
-                    preconnect.href = domain;
-                    preconnect.crossOrigin = 'anonymous';
-                    document.head.appendChild(dns);
-                    document.head.appendChild(preconnect);
-                } catch (e) {}
+
+                    // 1. Minta browser siap-siap cari alamat IP server iklan (DNS Lookup)
+                    const dnsPrefetchLink = document.createElement('link');
+                    dnsPrefetchLink.rel = 'dns-prefetch';
+                    dnsPrefetchLink.href = domain;
+                    document.head.appendChild(dnsPrefetchLink);
+
+                    // 2. Minta browser buka koneksi (TCP + TLS) ke server iklan
+                    const preconnectLink = document.createElement('link');
+                    preconnectLink.rel = 'preconnect';
+                    preconnectLink.href = domain;
+                    preconnectLink.crossOrigin = 'anonymous'; // Wajib untuk preconnect
+                    document.head.appendChild(preconnectLink);
+                } catch (e) {
+                    // Abaikan jika ada URL yang formatnya salah
+                }
             });
         }
 
         window.onload = function() {
+            // Jalankan optimasi kecepatan iklan di awal
             optimizeAdNetworkSpeed();
 
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
@@ -244,7 +252,7 @@
                 return;
             }
 
-            errorMsg.classList.add('hidden'); // Sembunyikan error saat nge-cek
+            errorMsg.classList.add('hidden'); 
             currentPasswordAttempt = pwdInput;
             document.getElementById('submit-password-btn').innerText = "Verifying...";
             fetchAndUpdateMedia();
@@ -281,7 +289,6 @@
                     return; 
                 }
 
-                // Jika password salah (Tampilkan error di bawah input box)
                 if (data.success === false && response.status === 401) {
                     const errorMsg = document.getElementById('password-error-msg');
                     errorMsg.innerText = "Incorrect password. Please try again.";
@@ -291,107 +298,111 @@
                     return;
                 }
 
-                if (data.success) {
-                    robotScreen.style.display = 'none';
-                    passwordScreen.style.display = 'none';
-                    rootScreen.style.display = 'flex';
+                if (!data.success) {
+                    throw new Error(data.message || "Media not found or has been deleted.");
+                }
 
-                    const { playUrl, contentType } = data;
-                    const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
+                robotScreen.style.display = 'none';
+                passwordScreen.style.display = 'none';
+                rootScreen.style.display = 'flex';
+
+                const { playUrl, contentType } = data;
+                const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
+                
+                if (contentType.startsWith('image/')) {
+                    mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
+                    shareLabel.innerText = 'Share image';
+                    document.title = 'Pokoco - Image';
+
+                } else if (contentType.startsWith('video/')) {
+                    shareLabel.innerText = 'Share video';
+                    document.title = 'Pokoco - Video';
                     
-                    if (contentType.startsWith('image/')) {
-                        mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
-                        shareLabel.innerText = 'Share image';
-                        document.title = 'Pokoco - Image';
+                    const existingPlayer = document.getElementById('main-player');
 
-                    } else if (contentType.startsWith('video/')) {
-                        shareLabel.innerText = 'Share video';
-                        document.title = 'Pokoco - Video';
+                    if (existingPlayer) { 
+                        const currentTime = existingPlayer.currentTime;
+                        const wasPlaying = !existingPlayer.paused;
+                        existingPlayer.src = playUrl;
+                        existingPlayer.load(); 
                         
-                        const existingPlayer = document.getElementById('main-player');
+                        existingPlayer.addEventListener('loadedmetadata', () => {
+                            existingPlayer.currentTime = currentTime;
+                            if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
+                        }, { once: true });
 
-                        if (existingPlayer) { 
-                            const currentTime = existingPlayer.currentTime;
-                            const wasPlaying = !existingPlayer.paused;
-                            existingPlayer.src = playUrl;
-                            existingPlayer.load(); 
-                            
-                            existingPlayer.addEventListener('loadedmetadata', () => {
-                                existingPlayer.currentTime = currentTime;
-                                if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
-                            }, { once: true });
+                    } else { 
+                        const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
+                        const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+                        const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
 
-                        } else { 
-                            const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
-                            const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-                            const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
+                        mediaWrapper.innerHTML = `
+                            <div class="relative w-full overflow-hidden media-container"> 
+                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
+                                ${needsOverlay ? 
+                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
+                                }
+                            </div>`;
+                        
+                         const player = document.getElementById('main-player');
+                         const overlay = document.getElementById('ad-overlay');
 
-                            mediaWrapper.innerHTML = `
-                                <div class="relative w-full overflow-hidden media-container"> 
-                                    <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                    ${needsOverlay ? 
-                                        `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
-                                    }
-                                </div>`;
-                            
-                             const player = document.getElementById('main-player');
-                             const overlay = document.getElementById('ad-overlay');
+                         player.addEventListener('error', handleMediaError); 
 
-                             player.addEventListener('error', handleMediaError); 
+                         let isProcessingClick = false;
 
-                             let isProcessingClick = false;
+                         if(overlay) {
+                             overlay.addEventListener('click', function() {
+                                 if (isProcessingClick) return; 
+                                 isProcessingClick = true;
 
-                             if(overlay) {
-                                 overlay.addEventListener('click', function() {
-                                     if (isProcessingClick) return; 
-                                     isProcessingClick = true;
+                                 player.play().catch(e => console.warn("Autoplay blocked:", e));
+                                 
+                                 const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
+                                 const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
 
-                                     player.play().catch(e => console.warn("Autoplay blocked:", e));
+                                 if (adLink && !currentAdLinkDone) {
+                                     sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
+                                     redirectSafe(adLink); 
+                                     isProcessingClick = false;
+                                 } 
+                                 else if (!currentGenericAdDone) {
+                                     sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
+                                     overlay.remove(); 
                                      
-                                     const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
-                                     const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-
-                                     if (adLink && !currentAdLinkDone) {
-                                         sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
-                                         redirectSafe(adLink); 
-                                         isProcessingClick = false;
-                                     } 
-                                     else if (!currentGenericAdDone) {
-                                         sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
-                                         overlay.remove(); 
-                                         
-                                         let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-                                         if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
-                                         
-                                         let adNewTab = adPool[currentIdx];
-                                         let adMainTab = adPool[(currentIdx + 1) % adPool.length];
-                                         
-                                         localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
-                                         
-                                         window.open(adNewTab, '_blank');
-                                         redirectSafe(adMainTab); 
-                                         isProcessingClick = false;
-                                     } 
-                                     else {
-                                         overlay.remove();
-                                         isProcessingClick = false;
-                                     }
-                                 });
-                             }
-                        }
-                    } else if (contentType.startsWith('audio/')) {
-                        mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
-                        shareLabel.innerText = 'Share audio';
-                        document.title = 'Pokoco - Audio';
-                        const player = document.getElementById('main-player');
-                        player.addEventListener('error', handleMediaError); 
+                                     let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
+                                     if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
+                                     
+                                     let adNewTab = adPool[currentIdx];
+                                     let adMainTab = adPool[(currentIdx + 1) % adPool.length];
+                                     
+                                     localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
+                                     
+                                     window.open(adNewTab, '_blank');
+                                     redirectSafe(adMainTab); 
+                                     isProcessingClick = false;
+                                 } 
+                                 else {
+                                     overlay.remove();
+                                     isProcessingClick = false;
+                                 }
+                             });
+                         }
                     }
-                } else {
-                    throw new Error("Failed to load media.");
+                } else if (contentType.startsWith('audio/')) {
+                    mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
+                    shareLabel.innerText = 'Share audio';
+                    document.title = 'Pokoco - Audio';
+                    const player = document.getElementById('main-player');
+                    player.addEventListener('error', handleMediaError); 
                 }
             } catch (e) {
                 console.error("Error in fetch:", e);
-                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or expired.</div>`;
+                // PERBAIKAN BUG: Pastikan layar utama muncul saat error
+                robotScreen.style.display = 'none';
+                passwordScreen.style.display = 'none';
+                rootScreen.style.display = 'flex';
+                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or has been deleted.</div>`;
             }
         }
 
