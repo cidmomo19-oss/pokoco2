@@ -74,7 +74,11 @@
             <h2 class="text-[22px] font-bold text-white mb-2">Protected Media</h2>
             <p class="text-[#94a3b8] text-[14px] leading-snug mb-6">This file is password protected. Please enter the password to continue.</p>
             
-            <input type="password" id="viewer-password-input" placeholder="Enter password" class="w-full bg-[#1e293b] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 mb-4 transition-all text-center tracking-widest">
+            <!-- Type diubah jadi "text", bukan "password" -->
+            <input type="text" id="viewer-password-input" placeholder="Enter password" class="w-full bg-[#1e293b] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 mb-2 transition-all text-center tracking-widest">
+            
+            <!-- Notifikasi Error Password (di bawah input) -->
+            <p id="password-error-msg" class="text-red-500 text-xs mb-4 hidden font-medium">Incorrect password. Please try again.</p>
             
             <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg">
                 Unlock Media
@@ -226,18 +230,21 @@
 
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
             
-            // Buka instan tanpa delay 
             window.open(window.location.href, '_blank'); 
             redirectSafe(robotAd);
         }
 
         function submitPassword() {
             const pwdInput = document.getElementById('viewer-password-input').value.trim();
+            const errorMsg = document.getElementById('password-error-msg');
+            
             if (!pwdInput) {
-                showCustomAlert("Please enter a password.");
+                errorMsg.innerText = "Please enter a password.";
+                errorMsg.classList.remove('hidden');
                 return;
             }
 
+            errorMsg.classList.add('hidden'); // Sembunyikan error saat nge-cek
             currentPasswordAttempt = pwdInput;
             document.getElementById('submit-password-btn').innerText = "Verifying...";
             fetchAndUpdateMedia();
@@ -274,8 +281,12 @@
                     return; 
                 }
 
+                // Jika password salah (Tampilkan error di bawah input box)
                 if (data.success === false && response.status === 401) {
-                    showCustomAlert("Incorrect password. Please try again.");
+                    const errorMsg = document.getElementById('password-error-msg');
+                    errorMsg.innerText = "Incorrect password. Please try again.";
+                    errorMsg.classList.remove('hidden');
+                    
                     document.getElementById('submit-password-btn').innerText = "Unlock Media";
                     return;
                 }
