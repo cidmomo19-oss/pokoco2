@@ -14,7 +14,7 @@ export async function onRequestGet(context) {
   
   const contentType = url.searchParams.get("type") || "application/octet-stream";
   const adLink = url.searchParams.get("ad_link") || null; 
-  const password = url.searchParams.get("password") || null; // Ambil password
+  const password = url.searchParams.get("password") || null; // Ambil password dari URL
   const fileSizeStr = url.searchParams.get("size");
 
   // --- VALIDASI LIMIT 1 GB DI BACKEND ---
@@ -39,7 +39,7 @@ export async function onRequestGet(context) {
   const fileName = videoId; 
 
   try {
-    // SIMPAN SEMUA DATA KE DATABASE D1 (TERMASUK PASSWORD)
+    // SIMPAN SEMUA DATA KE DATABASE D1
     await env.DB.prepare(
       "INSERT INTO videos (id, views, content_type, ad_link, password) VALUES (?, 0, ?, ?, ?)"
     ).bind(videoId, contentType, adLink, password).run();
