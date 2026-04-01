@@ -6,13 +6,9 @@
     <meta name="theme-color" content="#0f172a" />
     <meta name="referrer" content="no-referrer" />
     
-    <!-- TITLE TAG untuk SEO Google -->
     <title>Pokoco - Free & Secure Media Hosting | Upload Videos, Images, Audio</title>
-
-    <!-- META DESCRIPTION untuk SEO Google -->
     <meta name="description" content="Pokoco offers free, fast, and secure media hosting. Upload and privately share videos, images, and audio files. Supports direct link / smartlink ads." />
     
-    <!-- OPEN GRAPH untuk WhatsApp, Facebook, Google, dll. -->
     <meta property="og:title" content="Pokoco - Free Media Hosting" />
     <meta property="og:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
     <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
@@ -20,13 +16,11 @@
     <meta property="og:image:height" content="800" />
     <meta property="og:type" content="website" />
     
-    <!-- TWITTER CARD untuk Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Pokoco - Free Media Hosting" />
     <meta name="twitter:description" content="Upload & share videos, images, and audio privately and securely. Supports custom ad links." />
     <meta name="twitter:image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
 
-    <!-- FAVICON & NOTIFICATION / HOMESCREEN ICONS (Tidak berubah) -->
     <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="shortcut icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <link rel="apple-touch-icon" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
@@ -49,7 +43,6 @@
             max-height: 180px; width: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
         #file-preview-content audio { padding: 10px; }
-        /* Notifikasi custom */
         #notification-message { opacity: 0; transform: translateY(-100%) translateX(-50%); transition: all 0.3s ease-in-out; }
         #notification-message.show { opacity: 1; transform: translateY(0) translateX(-50%); }
     </style>
@@ -87,8 +80,8 @@
             
             <div id="upload-step-1">
                 <h1 class="text-3xl font-semibold mb-2 tracking-tight">Upload Your Media Files</h1>
-                <!-- [DIUBAH] Deskripsi keunggulan -->
-                <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 300MB file size.</p>
+                <!-- LIMIT DIUBAH KE 1GB -->
+                <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 1GB file size.</p>
 
                 <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer group">
                     <input type="file" id="file-input" class="hidden" 
@@ -117,15 +110,26 @@
                 <p id="file-name-display" class="text-sm font-medium text-slate-200 truncate px-4"></p>
                 <p id="file-size-display" class="text-[10px] text-slate-500 mt-1 uppercase tracking-widest"></p>
                 
-                <!-- Input link iklan (Hidden by default) -->
-                <input type="text" id="ad-link-input" placeholder="Enter your custom direct/smartlink (optional)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none mt-4 mb-4 hidden">
-                
-                <!-- Tombol untuk menampilkan/menyembunyikan input ad link -->
-                <button type="button" id="toggle-ad-link-input" onclick="toggleAdLinkInput()" class="text-sm text-slate-500 hover:text-white transition mt-2 mb-4">
-                    Add Custom Ad Link (Optional)
-                </button>
+                <!-- INPUT AD LINK & PASSWORD -->
+                <div class="mt-4 mb-6 text-left space-y-3">
+                    <div>
+                        <button type="button" id="toggle-ad-link-input" onclick="toggleAdLinkInput()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            Add Custom Ad Link (Optional)
+                        </button>
+                        <input type="text" id="ad-link-input" placeholder="Enter your custom direct/smartlink" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 mt-2 hidden transition-all">
+                    </div>
+                    
+                    <div>
+                        <button type="button" id="toggle-password-input" onclick="togglePasswordInput()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            Add Password Protection (Optional)
+                        </button>
+                        <input type="password" id="password-input" placeholder="Set a password for this file" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 mt-2 hidden transition-all">
+                    </div>
+                </div>
 
-                <div id="upload-action" class="flex flex-col gap-3">
+                <div id="upload-action" class="flex flex-col gap-3 mt-4">
                     <button onclick="startUpload()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg">Upload Now</button>
                     <button onclick="location.reload()" class="text-sm text-slate-500 hover:text-white transition">Cancel / Select another file</button>
                 </div>
@@ -159,12 +163,14 @@
         const historyPanel = document.getElementById('history-panel');
         const overlay = document.getElementById('overlay');
         const adLinkInput = document.getElementById('ad-link-input');
+        const passwordInput = document.getElementById('password-input');
         const notificationMessage = document.getElementById('notification-message');
         const toggleAdLinkInputButton = document.getElementById('toggle-ad-link-input');
+        const togglePasswordInputButton = document.getElementById('toggle-password-input');
         
         let isAdLinkFieldVisible = false;
+        let isPasswordFieldVisible = false;
 
-        // Fungsi Notifikasi custom
         let notificationTimeout;
         function showNotification(message, type = 'info', duration = 4000) {
             notificationMessage.textContent = message;
@@ -191,7 +197,6 @@
             }, duration);
         }
 
-        // Fungsi History Panel
         function toggleHistory() {
             historyPanel.classList.toggle('open');
             overlay.classList.toggle('hidden');
@@ -240,22 +245,32 @@
             } 
         }
 
-        // Fungsi untuk toggle visibility input ad link
         function toggleAdLinkInput() {
             isAdLinkFieldVisible = !isAdLinkFieldVisible;
-
             if (isAdLinkFieldVisible) {
                 adLinkInput.classList.remove('hidden');
-                toggleAdLinkInputButton.textContent = 'Hide Custom Ad Link';
+                toggleAdLinkInputButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Hide Custom Ad Link';
                 adLinkInput.focus();
             } else {
                 adLinkInput.classList.add('hidden');
-                toggleAdLinkInputButton.textContent = 'Add Custom Ad Link (Optional)';
-                adLinkInput.value = ''; // Hapus nilai input ketika disembunyikan
+                toggleAdLinkInputButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Add Custom Ad Link (Optional)';
+                adLinkInput.value = ''; 
             }
         }
 
-        // Event Listeners untuk Drag & Drop dan File Input
+        function togglePasswordInput() {
+            isPasswordFieldVisible = !isPasswordFieldVisible;
+            if (isPasswordFieldVisible) {
+                passwordInput.classList.remove('hidden');
+                togglePasswordInputButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Remove Password';
+                passwordInput.focus();
+            } else {
+                passwordInput.classList.add('hidden');
+                togglePasswordInputButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Add Password Protection (Optional)';
+                passwordInput.value = ''; 
+            }
+        }
+
         dropArea.onclick = () => fileInput.click();
         fileInput.onchange = (e) => { if(e.target.files[0]) handleFileSelection(e.target.files[0]); };
         
@@ -268,9 +283,9 @@
         });
 
         function handleFileSelection(file) {
-            // [DIUBAH] Validasi limit ukuran ke 300MB
-            if (file.size > 300 * 1024 * 1024) {
-                showNotification('File is too large! Maximum 300MB is allowed.', 'error');
+            // LIMIT FILE SIZE 1 GB
+            if (file.size > 1 * 1024 * 1024 * 1024) {
+                showNotification('File is too large! Maximum 1GB is allowed.', 'error');
                 return;
             }
             
@@ -296,13 +311,12 @@
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Image">`;
             } else if (file.type.startsWith('video/')) {
                 previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
-            } else { // audio atau tipe lain
+            } else { 
                 previewContent.innerHTML = `<audio src="${fileUrl}" controls></audio>`;
             } 
-            // Reset kondisi input ad link saat file baru dipilih/preview muncul
-            if (isAdLinkFieldVisible) {
-                toggleAdLinkInput(); // Sembunyikan dan hapus nilainya
-            }
+            
+            if (isAdLinkFieldVisible) toggleAdLinkInput();
+            if (isPasswordFieldVisible) togglePasswordInput();
         }
 
         async function startUpload() {
@@ -311,24 +325,23 @@
                 return;
             }
             
-            const adLink = adLinkInput.value.trim(); // Ambil nilai ad link yang mungkin diisi user
+            const adLink = adLinkInput.value.trim(); 
+            const password = passwordInput.value.trim();
             
             document.getElementById('upload-action').classList.add('hidden');
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&size=${selectedFile.size}`;
+                let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&size=${selectedFile.size}`;
                 
-                // Hanya tambahkan parameter ad_link jika ada isinya
-                if (adLink) {
-                    apiUrl += `&ad_link=${encodeURIComponent(adLink)}`;
-                }
+                if (adLink) apiUrl += `&ad_link=${encodeURIComponent(adLink)}`;
+                if (password) apiUrl += `&password=${encodeURIComponent(password)}`;
 
                 const res = await fetch(apiUrl);
                 const data = await res.json();
                 
                 if (!data.success) {
-                    throw new Error(data.message || "Failed to get upload URL from server. Please try again.");
+                    throw new Error(data.message || "Failed to get upload URL from server.");
                 }
 
                 const xhr = new XMLHttpRequest();
@@ -345,21 +358,21 @@ let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&
                     if (xhr.status >= 200 && xhr.status < 300) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
-                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink); // Simpan adLink ke history juga
+                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type, adLink); 
                         
                         showNotification('Upload successful! Redirecting to your file...', 'success');
                         setTimeout(() => {
                             window.location.href = '/v?id=' + data.videoId;
                         }, 1000);
                     } else { 
-                        showNotification(`Upload failed. Server responded with status: ${xhr.status}. Please try again.`, 'error');
+                        showNotification(`Upload failed. Server responded with status: ${xhr.status}.`, 'error');
                         document.getElementById('upload-action').classList.remove('hidden');
                         document.getElementById('progress-container').classList.add('hidden');
                     }
                 };
                 
                 xhr.onerror = () => {
-                    showNotification('Network error or internet connection lost. Please check your connection and try again.', 'error');
+                    showNotification('Network error. Please check your connection and try again.', 'error');
                     document.getElementById('upload-action').classList.remove('hidden');
                     document.getElementById('progress-container').classList.add('hidden');
                 };
