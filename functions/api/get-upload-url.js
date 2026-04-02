@@ -14,11 +14,11 @@ export async function onRequestGet(context) {
   
   const contentType = url.searchParams.get("type") || "application/octet-stream";
   const adLink = url.searchParams.get("ad_link") || null; 
-  const password = url.searchParams.get("password") || null; // Ambil password dari URL
+  const password = url.searchParams.get("password") || null;
   const fileSizeStr = url.searchParams.get("size");
 
-  // --- VALIDASI LIMIT 1 GB DI BACKEND ---
-  const MAX_SIZE = 1 * 1024 * 1024 * 1024; // 1 GB dalam bytes
+  // --- VALIDASI LIMIT 200MB DI BACKEND ---
+  const MAX_SIZE = 200 * 1024 * 1024; // 200 MB dalam bytes
 
   if (!fileSizeStr || isNaN(fileSizeStr)) {
     return new Response(JSON.stringify({ success: false, message: "Missing or invalid file size parameter." }), { 
@@ -29,7 +29,7 @@ export async function onRequestGet(context) {
   const fileSize = parseInt(fileSizeStr, 10);
 
   if (fileSize > MAX_SIZE) {
-    return new Response(JSON.stringify({ success: false, message: "File exceeds the 1GB limit." }), { 
+    return new Response(JSON.stringify({ success: false, message: "File exceeds the 200MB limit." }), { 
       status: 413, headers: { 'Content-Type': 'application/json' } 
     });
   }
@@ -60,7 +60,7 @@ export async function onRequestGet(context) {
       ContentLength: fileSize,
     });
 
-    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 });
+    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 }); // 3 hours to upload
 
     return new Response(JSON.stringify({
       success: true,
@@ -70,7 +70,7 @@ export async function onRequestGet(context) {
 
   } catch (error) {
     console.error("Upload URL Error:", error);
-    return new Response(JSON.stringify({ success: false, message: error.message }), { 
+    return new Response(JSON.stringify({ success: false, message: "Could not process your upload request. Please try again." }), { 
       status: 500, headers: { 'Content-Type': 'application/json' } 
     });
   }
