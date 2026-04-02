@@ -103,15 +103,10 @@
                 </div>
             </div>
 
-            <!-- [DIUBAH] Tombol Download ditambahkan di sini -->
-            <div id="action-buttons" class="w-full flex items-center justify-center gap-4 mt-6 mb-0 hidden">
+            <div class="w-full flex flex-col items-center mt-6 mb-0">
                 <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
                     <span id="share-label">Share link</span>
-                </button>
-                <button id="download-btn" onclick="downloadMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-blue-600 hover:bg-blue-700 font-semibold border border-slate-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                    <span id="download-label">Download</span>
                 </button>
             </div>
         </main>
@@ -120,13 +115,8 @@
     <script>
         const mediaWrapper = document.getElementById('media-wrapper');
         const shareLabel = document.getElementById('share-label');
-        const actionButtons = document.getElementById('action-buttons');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        
-        // [BARU] Variabel global untuk menyimpan info media
-        let currentPlayUrl = null;
-        let currentContentType = null;
         
         function trackView() {
             const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
@@ -185,25 +175,35 @@
             "https://omg10.com/4/10390860", 
             "https://acidic-deal.com/bXpQVi" 
         ];
-        
+
+        // --- [BARU] OPTIMASI JARINGAN (AMAN DARI BANNED) ---
+        // Preconnect ke server iklan untuk loading lebih cepat saat diklik
         function optimizeAdNetworkSpeed() {
             adPool.forEach(url => {
                 try {
+                    // Ambil domain utama (e.g., "https://conductivebreeds.com")
                     const domain = new URL(url).origin;
+
+                    // 1. Minta browser siap-siap cari alamat IP server iklan (DNS Lookup)
                     const dnsPrefetchLink = document.createElement('link');
                     dnsPrefetchLink.rel = 'dns-prefetch';
                     dnsPrefetchLink.href = domain;
                     document.head.appendChild(dnsPrefetchLink);
+
+                    // 2. Minta browser buka koneksi (TCP + TLS) ke server iklan
                     const preconnectLink = document.createElement('link');
                     preconnectLink.rel = 'preconnect';
                     preconnectLink.href = domain;
-                    preconnectLink.crossOrigin = 'anonymous';
+                    preconnectLink.crossOrigin = 'anonymous'; // Wajib untuk preconnect
                     document.head.appendChild(preconnectLink);
-                } catch (e) {}
+                } catch (e) {
+                    // Abaikan jika ada URL yang formatnya salah
+                }
             });
         }
 
         window.onload = function() {
+            // Jalankan optimasi kecepatan iklan di awal
             optimizeAdNetworkSpeed();
 
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
@@ -309,35 +309,85 @@
                 const { playUrl, contentType } = data;
                 const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
                 
-                // [BARU] Simpan info media ke variabel global
-                currentPlayUrl = playUrl;
-                currentContentType = contentType;
-                
                 if (contentType.startsWith('image/')) {
                     mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
                     shareLabel.innerText = 'Share image';
                     document.title = 'Pokoco - Image';
+
                 } else if (contentType.startsWith('video/')) {
                     shareLabel.innerText = 'Share video';
                     document.title = 'Pokoco - Video';
                     
                     const existingPlayer = document.getElementById('main-player');
+
                     if (existingPlayer) { 
+                        const currentTime = existingPlayer.currentTime;
+                        const wasPlaying = !existingPlayer.paused;
                         existingPlayer.src = playUrl;
-                        existingPlayer.load();
+                        existingPlayer.load(); 
+                        
+                        existingPlayer.addEventListener('loadedmetadata', () => {
+                            existingPlayer.currentTime = currentTime;
+                            if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
+                        }, { once: true });
+
                     } else { 
-                        const needsOverlay = (adLink && !sessionStorage.getItem(`adLinkDone_${id}`)) || !sessionStorage.getItem(`genericAdDone_${id}`);
+                        const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
+                        const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+                        const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
+
                         mediaWrapper.innerHTML = `
                             <div class="relative w-full overflow-hidden media-container"> 
                                 <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                ${needsOverlay ? `<div id="ad-overlay" class="absolute inset-0 z-50 cursor-pointer"></div>` : ''}
+                                ${needsOverlay ? 
+                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
+                                }
                             </div>`;
-                        const player = document.getElementById('main-player');
-                        player.addEventListener('error', handleMediaError);
-                        const overlay = document.getElementById('ad-overlay');
-                        if (overlay) {
-                            overlay.addEventListener('click', handleOverlayClick);
-                        }
+                        
+                         const player = document.getElementById('main-player');
+                         const overlay = document.getElementById('ad-overlay');
+
+                         player.addEventListener('error', handleMediaError); 
+
+                         let isProcessingClick = false;
+
+                         if(overlay) {
+                             overlay.addEventListener('click', function() {
+                                 if (isProcessingClick) return; 
+                                 isProcessingClick = true;
+
+                                 player.play().catch(e => console.warn("Autoplay blocked:", e));
+                                 
+                                 const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
+                                 const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+
+                                 if (adLink && !currentAdLinkDone) {
+                                     sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
+                                     redirectSafe(adLink); 
+                                     isProcessingClick = false;
+                                 } 
+                                 else if (!currentGenericAdDone) {
+                                     sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
+                                     overlay.remove(); 
+                                     
+                                     let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
+                                     if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
+                                     
+                                     let adNewTab = adPool[currentIdx];
+                                     let adMainTab = adPool[(currentIdx + 1) % adPool.length];
+                                     
+                                     localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
+                                     
+                                     window.open(adNewTab, '_blank');
+                                     redirectSafe(adMainTab); 
+                                     isProcessingClick = false;
+                                 } 
+                                 else {
+                                     overlay.remove();
+                                     isProcessingClick = false;
+                                 }
+                             });
+                         }
                     }
                 } else if (contentType.startsWith('audio/')) {
                     mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
@@ -346,48 +396,13 @@
                     const player = document.getElementById('main-player');
                     player.addEventListener('error', handleMediaError); 
                 }
-                
-                // [BARU] Tampilkan tombol Share & Download setelah media siap
-                actionButtons.classList.remove('hidden');
-
             } catch (e) {
                 console.error("Error in fetch:", e);
+                // PERBAIKAN BUG: Pastikan layar utama muncul saat error
                 robotScreen.style.display = 'none';
                 passwordScreen.style.display = 'none';
                 rootScreen.style.display = 'flex';
                 mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or has been deleted.</div>`;
-                actionButtons.classList.add('hidden'); // Sembunyikan tombol jika error
-            }
-        }
-        
-        // [DISEMPURNAKAN] Fungsi overlay dipisah agar lebih rapi
-        function handleOverlayClick() {
-            const player = document.getElementById('main-player');
-            player.play().catch(e => console.warn("Autoplay blocked:", e));
-            
-            const adLink = (new URL(currentPlayUrl)).searchParams.get('adLink'); // Ambil dari data global
-            const adLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
-            const genericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-            
-            if (adLink && !adLinkDone) {
-                sessionStorage.setItem(`adLinkDone_${id}`, 'true');
-                redirectSafe(adLink);
-            } else if (!genericAdDone) {
-                sessionStorage.setItem(`genericAdDone_${id}`, 'true');
-                document.getElementById('ad-overlay')?.remove();
-                
-                let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-                if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
-                
-                let adNewTab = adPool[currentIdx];
-                let adMainTab = adPool[(currentIdx + 1) % adPool.length];
-                
-                localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
-                
-                window.open(adNewTab, '_blank');
-                redirectSafe(adMainTab);
-            } else {
-                document.getElementById('ad-overlay')?.remove();
             }
         }
 
@@ -400,55 +415,6 @@
                 showCustomAlert("Link copied to clipboard!");
             }
         }
-
-        // --- [BARU] FUNGSI DOWNLOAD DENGAN TANGGAL HARI INI ---
-        async function downloadMedia() {
-            if (!currentPlayUrl || !currentContentType) {
-                showCustomAlert('Media is not loaded yet. Please wait.');
-                return;
-            }
-
-            const downloadBtn = document.getElementById('download-btn');
-            const downloadLabel = document.getElementById('download-label');
-            const originalText = downloadLabel.innerText;
-            
-            try {
-                downloadLabel.innerText = "Preparing...";
-                downloadBtn.disabled = true;
-
-                // 1. Fetch data video sebagai blob
-                const response = await fetch(currentPlayUrl);
-                if (!response.ok) throw new Error('Network response was not ok.');
-                const blob = await response.blob();
-                
-                // 2. Buat nama file dinamis
-                const date = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-                const extension = currentContentType.split('/')[1];
-                const filename = `pokoco-media-${date}.${extension}`;
-
-                // 3. Buat link sementara dan trigger download
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                
-                // 4. Bersihkan memori
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-            } catch (error) {
-                console.error('Download failed:', error);
-                showCustomAlert('Download failed. Please try again.');
-            } finally {
-                // Kembalikan tombol ke kondisi semula
-                downloadLabel.innerText = originalText;
-                downloadBtn.disabled = false;
-            }
-        }
-
     </script>
 </body>
 </html>
