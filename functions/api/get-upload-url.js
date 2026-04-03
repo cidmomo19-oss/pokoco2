@@ -38,7 +38,7 @@ export async function onRequestGet(context) {
   const fileName = videoId; 
 
   try {
-    // SIMPAN DATA KE DATABASE D1 (Tanpa ad_link)
+    // SIMPAN SEMUA DATA KE DATABASE D1 (ad_link dihapus)
     await env.DB.prepare(
       "INSERT INTO videos (id, views, content_type, password) VALUES (?, 0, ?, ?)"
     ).bind(videoId, contentType, password).run();
