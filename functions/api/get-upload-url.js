@@ -13,12 +13,11 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   
   const contentType = url.searchParams.get("type") || "application/octet-stream";
-  const adLink = url.searchParams.get("ad_link") || null; 
   const password = url.searchParams.get("password") || null;
   const fileSizeStr = url.searchParams.get("size");
 
-  // --- VALIDASI LIMIT 200MB DI BACKEND ---
-  const MAX_SIZE = 200 * 1024 * 1024; // 200 MB dalam bytes
+  // --- VALIDASI LIMIT 500MB DI BACKEND ---
+  const MAX_SIZE = 500 * 1024 * 1024; // 500 MB dalam bytes
 
   if (!fileSizeStr || isNaN(fileSizeStr)) {
     return new Response(JSON.stringify({ success: false, message: "Missing or invalid file size parameter." }), { 
@@ -29,7 +28,7 @@ export async function onRequestGet(context) {
   const fileSize = parseInt(fileSizeStr, 10);
 
   if (fileSize > MAX_SIZE) {
-    return new Response(JSON.stringify({ success: false, message: "File exceeds the 200MB limit." }), { 
+    return new Response(JSON.stringify({ success: false, message: "File exceeds the 500MB limit." }), { 
       status: 413, headers: { 'Content-Type': 'application/json' } 
     });
   }
@@ -39,10 +38,10 @@ export async function onRequestGet(context) {
   const fileName = videoId; 
 
   try {
-    // SIMPAN SEMUA DATA KE DATABASE D1
+    // SIMPAN DATA KE DATABASE D1 (Tanpa ad_link)
     await env.DB.prepare(
-      "INSERT INTO videos (id, views, content_type, ad_link, password) VALUES (?, 0, ?, ?, ?)"
-    ).bind(videoId, contentType, adLink, password).run();
+      "INSERT INTO videos (id, views, content_type, password) VALUES (?, 0, ?, ?)"
+    ).bind(videoId, contentType, password).run();
 
     const S3 = new S3Client({
       region: "auto",
