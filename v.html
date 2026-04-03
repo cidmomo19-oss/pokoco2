@@ -21,12 +21,17 @@
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
         video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
         audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
-        .media-container { background-color: transparent; } 
+        .media-container { background-color: transparent; position: relative; } 
         .text-gray-pokoco { color: #64748b; }
+        
+        /* Loading Spinner */
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #3b82f6; border-radius: 50%; animate: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
+    <!-- ALERT CUSTOM -->
     <div id="custom-alert" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-lg shadow-xl bg-red-900/50 border border-red-500/50 backdrop-blur-sm transition-all duration-300 opacity-0">
         <p id="alert-message" class="text-white font-semibold text-sm"></p>
     </div>
@@ -60,27 +65,12 @@
 
     <!-- PASSWORD SCREEN -->
     <div id="password-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
-        <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
-            <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-                <a href="/" class="flex items-center"><span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span></a>
-                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800">Upload</a>
-            </div>
-        </header>
-
-        <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10 mt-16">
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
+        <!-- Header as above -->
+        <div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10">
             <h2 class="text-[22px] font-bold text-white mb-2">Protected Media</h2>
-            <p class="text-[#94a3b8] text-[14px] leading-snug mb-6">This file is password protected. Please enter the password to continue.</p>
-            
-            <input type="text" id="viewer-password-input" placeholder="Enter password" class="w-full bg-[#1e293b] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 mb-2 transition-all text-center tracking-widest">
-            
-            <p id="password-error-msg" class="text-red-500 text-xs mb-4 hidden font-medium">Incorrect password. Please try again.</p>
-            
-            <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg">
-                Unlock Media
-            </button>
+            <input type="password" id="viewer-password-input" placeholder="Enter password" class="w-full bg-[#1e293b] border border-slate-700 rounded-lg px-4 py-3 text-white mb-4 text-center">
+            <button onclick="submitPassword()" id="submit-password-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors">Unlock Media</button>
+            <p id="password-error-msg" class="text-red-500 text-xs mt-3 hidden">Incorrect password.</p>
         </div>
     </div>
 
@@ -96,14 +86,11 @@
         <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-4">
             <div class="w-full flex justify-center">
                 <div class="w-full" id="media-wrapper">
-                    <div id="loading-state" class="flex flex-col items-center justify-center w-full h-[250px]">
-                        <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
-                        <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
-                    </div>
+                    <!-- Media Content will load here -->
                 </div>
             </div>
 
-            <div class="w-full flex flex-col items-center mt-6 mb-0">
+            <div class="w-full flex flex-col items-center mt-6 mb-10">
                 <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
                     <span id="share-label">Share link</span>
@@ -113,294 +100,204 @@
     </div>
 
     <script>
+        // 1. KONFIGURASI IKLAN
+        const adPool = [
+            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", // Link A
+            "https://omg10.com/4/10390860",                                               // Link B
+            "https://onandasmilee.com?q58dL=1251380"                                      // Link C
+        ];
+
         const mediaWrapper = document.getElementById('media-wrapper');
         const shareLabel = document.getElementById('share-label');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
-        function trackView() {
-            const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
-            if (id && !alreadyViewed) {
-                setTimeout(() => {
-                    fetch('/api/track-view', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: id }),
-                        keepalive: true 
-                    }).then(() => {
-                        sessionStorage.setItem(`viewed_${id}`, 'true');
-                    }).catch(err => console.error("View track failed"));
-                }, 5000); 
-            }
-        }
-
-        function redirectSafe(url) {
-            const a = document.createElement('a'); a.href = url; a.rel = 'noreferrer noopener'; 
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); 
-        }
-
         const robotScreen = document.getElementById('robot-screen');
         const passwordScreen = document.getElementById('password-screen');
         const rootScreen = document.getElementById('root');
-        let isCaptchaVerified = false; 
+        
+        let isCaptchaVerified = false;
         let currentPasswordAttempt = null;
 
-        let alertTimeout;
-        function showCustomAlert(message) { 
-            const alertBox = document.getElementById('custom-alert');
-            const alertMsg = document.getElementById('alert-message');
-            alertMsg.innerText = message;
-            alertBox.classList.remove('hidden', 'opacity-0');
-            clearTimeout(alertTimeout);
-            alertTimeout = setTimeout(() => {
-                alertBox.classList.add('opacity-0');
-                setTimeout(() => alertBox.classList.add('hidden'), 300);
-            }, 3000);
+        // 2. FUNGSI REDIRECT AMAN
+        function redirectSafe(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.rel = 'noreferrer noopener';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
-        function hasPassedDailyCaptcha() {
-            const lastVerifiedTimestamp = localStorage.getItem('pokoco_daily_captcha_passed');
-            if (!lastVerifiedTimestamp) return false; 
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            return (Date.now() - parseInt(lastVerifiedTimestamp)) < twentyFourHours;
+        // 3. LOGIKA ROTASI BERURUTAN
+        function getCurrentRotationIndex() {
+            let idx = localStorage.getItem('pokoco_rotation_idx');
+            return idx ? parseInt(idx) : 0;
         }
 
-        function captchaSuccess(token) {
-            isCaptchaVerified = true;
-            localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
+        function setNextRotationIndex(currentIdx) {
+            let nextIdx = (currentIdx + 1) % adPool.length;
+            localStorage.setItem('pokoco_rotation_idx', nextIdx);
         }
 
-        const adPool = [
-            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", 
-            "https://omg10.com/4/10390860", 
-            "https://onandasmilee.com?q58dL=1251380" 
-        ];
-
-        // OPTIMASI JARINGAN (AMAN DARI BANNED)
-        function optimizeAdNetworkSpeed() {
-            adPool.forEach(url => {
-                try {
-                    const domain = new URL(url).origin;
-
-                    const dnsPrefetchLink = document.createElement('link');
-                    dnsPrefetchLink.rel = 'dns-prefetch';
-                    dnsPrefetchLink.href = domain;
-                    document.head.appendChild(dnsPrefetchLink);
-
-                    const preconnectLink = document.createElement('link');
-                    preconnectLink.rel = 'preconnect';
-                    preconnectLink.href = domain;
-                    preconnectLink.crossOrigin = 'anonymous'; 
-                    document.head.appendChild(preconnectLink);
-                } catch (e) {
-                    // Abaikan jika ada URL yang formatnya salah
-                }
-            });
-        }
-
-        window.onload = function() {
-            optimizeAdNetworkSpeed();
-
-            const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
-
-            if (isVerifiedSession) {
-                fetchAndUpdateMedia(); 
-                trackView(); 
-            } else {
-                robotScreen.style.display = 'flex';
-                if (hasPassedDailyCaptcha()) {
-                    const turnstileContainer = document.getElementById('turnstile-container');
-                    if (turnstileContainer) turnstileContainer.classList.add('hidden');
-                    isCaptchaVerified = true; 
-                }
-            }
-        };
-
+        // 4. TRIGGER VERIFIKASI (HALAMAN ROBOT)
         function triggerVerification() {
-            if (!isCaptchaVerified) { 
+            if (!isCaptchaVerified) {
                 showCustomAlert("Please complete the security check first.");
                 return;
             }
 
-            let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-            if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
-
-            const robotAd = adPool[currentIdx];
-            const playerAd = adPool[(currentIdx + 1) % adPool.length]; 
-
-            sessionStorage.setItem(`assigned_player_ad_${id}`, playerAd);
-            localStorage.setItem('pokoco_global_ad_index', (currentIdx + 1) % adPool.length);
-
-            sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
+            const currentIdx = getCurrentRotationIndex();
             
-            window.open(window.location.href, '_blank'); 
-            redirectSafe(robotAd);
+            // Link Robot = Index sekarang
+            // Link Player 1 = Index selanjutnya
+            // Link Player 2 = Index setelah selanjutnya
+            const adRobot = adPool[currentIdx];
+            const adPlayer1 = adPool[(currentIdx + 1) % adPool.length];
+            const adPlayer2 = adPool[(currentIdx + 2) % adPool.length];
+
+            // Simpan link player ke sessionStorage agar bisa dipanggil di halaman player
+            sessionStorage.setItem(`ad_p1_${id}`, adPlayer1);
+            sessionStorage.setItem(`ad_p2_${id}`, adPlayer2);
+            sessionStorage.setItem(`robot_verified_${id}`, 'true');
+
+            // Update index untuk kunjungan video berikutnya
+            setNextRotationIndex(currentIdx);
+
+            // Eksekusi: Buka video di tab baru, tab sekarang ke iklan
+            window.open(window.location.href, '_blank');
+            redirectSafe(adRobot);
         }
 
-        function submitPassword() {
-            const pwdInput = document.getElementById('viewer-password-input').value.trim();
-            const errorMsg = document.getElementById('password-error-msg');
-            
-            if (!pwdInput) {
-                errorMsg.innerText = "Please enter a password.";
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-
-            errorMsg.classList.add('hidden'); 
-            currentPasswordAttempt = pwdInput;
-            document.getElementById('submit-password-btn').innerText = "Verifying...";
-            fetchAndUpdateMedia();
-        }
-
-        document.getElementById('viewer-password-input')?.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') submitPassword();
-        });
-
-        function handleMediaError() {
-            console.error("Media error detected. Requesting a new link...");
-            fetchAndUpdateMedia(); 
-        }
-
+        // 5. LOADING MEDIA & PLAYER
         async function fetchAndUpdateMedia() {
-            if (!id) {
-                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
-                return;
-            }
+            if (!id) return;
             
             try {
                 let apiUrl = `/api/get-video-url?id=${id}`;
-                if (currentPasswordAttempt) {
-                    apiUrl += `&pwd=${encodeURIComponent(currentPasswordAttempt)}`;
-                }
+                if (currentPasswordAttempt) apiUrl += `&pwd=${encodeURIComponent(currentPasswordAttempt)}`;
 
                 const response = await fetch(apiUrl);
                 const data = await response.json();
 
                 if (data.requiresPassword) {
-                    robotScreen.style.display = 'none';
-                    rootScreen.style.display = 'none';
-                    passwordScreen.style.display = 'flex';
-                    return; 
-                }
-
-                if (data.success === false && response.status === 401) {
-                    const errorMsg = document.getElementById('password-error-msg');
-                    errorMsg.innerText = "Incorrect password. Please try again.";
-                    errorMsg.classList.remove('hidden');
-                    
-                    document.getElementById('submit-password-btn').innerText = "Unlock Media";
+                    toggleScreen('password');
                     return;
                 }
 
                 if (!data.success) {
-                    throw new Error(data.message || "Media not found or has been deleted.");
-                }
-
-                robotScreen.style.display = 'none';
-                passwordScreen.style.display = 'none';
-                rootScreen.style.display = 'flex';
-
-                const { playUrl, contentType } = data;
-                
-                if (contentType.startsWith('image/')) {
-                    mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
-                    shareLabel.innerText = 'Share image';
-                    document.title = 'Pokoco - Image';
-
-                } else if (contentType.startsWith('video/')) {
-                    shareLabel.innerText = 'Share video';
-                    document.title = 'Pokoco - Video';
-                    
-                    const existingPlayer = document.getElementById('main-player');
-
-                    if (existingPlayer) { 
-                        const currentTime = existingPlayer.currentTime;
-                        const wasPlaying = !existingPlayer.paused;
-                        existingPlayer.src = playUrl;
-                        existingPlayer.load(); 
-                        
-                        existingPlayer.addEventListener('loadedmetadata', () => {
-                            existingPlayer.currentTime = currentTime;
-                            if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
-                        }, { once: true });
-
-                    } else { 
-                        const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-                        const needsOverlay = !isGenericAdDone;
-
-                        mediaWrapper.innerHTML = `
-                            <div class="relative w-full overflow-hidden media-container"> 
-                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                                ${needsOverlay ? 
-                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
-                                }
-                            </div>`;
-                        
-                         const player = document.getElementById('main-player');
-                         const overlay = document.getElementById('ad-overlay');
-
-                         player.addEventListener('error', handleMediaError); 
-
-                         let isProcessingClick = false;
-
-                         if(overlay) {
-                             overlay.addEventListener('click', function() {
-                                 if (isProcessingClick) return; 
-                                 isProcessingClick = true;
-
-                                 player.play().catch(e => console.warn("Autoplay blocked:", e));
-                                 
-                                 const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-
-                                 if (!currentGenericAdDone) {
-                                     sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
-                                     overlay.remove(); 
-                                     
-                                     let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-                                     if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
-                                     
-                                     let adNewTab = adPool[currentIdx];
-                                     let adMainTab = adPool[(currentIdx + 1) % adPool.length];
-                                     
-                                     localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
-                                     
-                                     window.open(adNewTab, '_blank');
-                                     redirectSafe(adMainTab); 
-                                     isProcessingClick = false;
-                                 } 
-                                 else {
-                                     overlay.remove();
-                                     isProcessingClick = false;
-                                 }
-                             });
-                         }
+                    if (response.status === 401) {
+                        showPasswordError();
+                    } else {
+                        mediaWrapper.innerHTML = `<div class="text-center py-20">Media not found.</div>`;
                     }
-                } else if (contentType.startsWith('audio/')) {
-                    mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
-                    shareLabel.innerText = 'Share audio';
-                    document.title = 'Pokoco - Audio';
-                    const player = document.getElementById('main-player');
-                    player.addEventListener('error', handleMediaError); 
+                    return;
                 }
+
+                toggleScreen('player');
+                const { playUrl, contentType } = data;
+
+                if (contentType.startsWith('video/')) {
+                    setupVideoPlayer(playUrl);
+                } else if (contentType.startsWith('image/')) {
+                    mediaWrapper.innerHTML = `<img src="${playUrl}" class="mx-auto" />`;
+                } else if (contentType.startsWith('audio/')) {
+                    mediaWrapper.innerHTML = `<audio src="${playUrl}" controls class="w-full"></audio>`;
+                }
+
             } catch (e) {
-                console.error("Error in fetch:", e);
-                robotScreen.style.display = 'none';
-                passwordScreen.style.display = 'none';
-                rootScreen.style.display = 'flex';
-                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or has been deleted.</div>`;
+                console.error(e);
             }
+        }
+
+        function setupVideoPlayer(url) {
+            const isAdDone = sessionStorage.getItem(`player_ad_done_${id}`);
+            
+            mediaWrapper.innerHTML = `
+                <div class="media-container">
+                    <video id="main-player" controls playsinline src="${url}"></video>
+                    ${!isAdDone ? `<div id="ad-overlay" class="absolute inset-0 z-50 cursor-pointer"></div>` : ''}
+                </div>
+            `;
+
+            const overlay = document.getElementById('ad-overlay');
+            const player = document.getElementById('main-player');
+
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    const p1 = sessionStorage.getItem(`ad_p1_${id}`);
+                    const p2 = sessionStorage.getItem(`ad_p2_${id}`);
+
+                    if (p1 && p2) {
+                        sessionStorage.setItem(`player_ad_done_${id}`, 'true');
+                        overlay.remove();
+                        player.play();
+
+                        // Iklan Player Muter: Buka satu di tab baru, satu redirect
+                        window.open(p1, '_blank');
+                        setTimeout(() => { redirectSafe(p2); }, 100);
+                    } else {
+                        // Fallback jika session hilang
+                        overlay.remove();
+                        player.play();
+                    }
+                });
+            }
+        }
+
+        // HELPER FUNCTIONS
+        function toggleScreen(screen) {
+            robotScreen.style.display = 'none';
+            passwordScreen.style.display = 'none';
+            rootScreen.style.display = 'none';
+            if (screen === 'robot') robotScreen.style.display = 'flex';
+            if (screen === 'password') passwordScreen.style.display = 'flex';
+            if (screen === 'player') rootScreen.style.display = 'flex';
+        }
+
+        function captchaSuccess() { isCaptchaVerified = true; localStorage.setItem('pokoco_daily_captcha_passed', Date.now()); }
+        
+        function hasPassedDailyCaptcha() {
+            const last = localStorage.getItem('pokoco_daily_captcha_passed');
+            return last && (Date.now() - parseInt(last) < 86400000);
+        }
+
+        function showCustomAlert(msg) {
+            const alertBox = document.getElementById('custom-alert');
+            document.getElementById('alert-message').innerText = msg;
+            alertBox.classList.remove('hidden');
+            setTimeout(() => alertBox.classList.add('opacity-100'), 10);
+            setTimeout(() => { alertBox.classList.remove('opacity-100'); setTimeout(() => alertBox.classList.add('hidden'), 300); }, 3000);
+        }
+
+        function submitPassword() {
+            currentPasswordAttempt = document.getElementById('viewer-password-input').value;
+            fetchAndUpdateMedia();
+        }
+
+        function showPasswordError() {
+            const err = document.getElementById('password-error-msg');
+            err.classList.remove('hidden');
+            document.getElementById('submit-password-btn').innerText = "Unlock Media";
         }
 
         function shareMedia() {
-            const label = document.getElementById('share-label').innerText;
             if (navigator.share) {
-                navigator.share({ title: `Pokoco - ${label}`, url: window.location.href });
+                navigator.share({ title: 'Pokoco', url: window.location.href });
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                showCustomAlert("Link copied to clipboard!");
+                showCustomAlert("Link copied!");
             }
         }
+
+        window.onload = () => {
+            if (sessionStorage.getItem(`robot_verified_${id}`)) {
+                fetchAndUpdateMedia();
+            } else {
+                toggleScreen('robot');
+                if (hasPassedDailyCaptcha()) isCaptchaVerified = true;
+            }
+        };
     </script>
 </body>
 </html>
