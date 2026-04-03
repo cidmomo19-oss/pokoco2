@@ -29,9 +29,9 @@ export async function onRequestGet(context) {
   });
 
   try {
-    // Ambil data video, termasuk password
+    // Ambil data video, termasuk password (ad_link telah dihapus)
     const videoData = await env.DB.prepare(
-      "SELECT content_type, ad_link, password FROM videos WHERE id = ?"
+      "SELECT content_type, password FROM videos WHERE id = ?"
     ).bind(videoId).first();
     
     if (!videoData) {
@@ -63,8 +63,7 @@ export async function onRequestGet(context) {
     const responseData = JSON.stringify({
       success: true,
       playUrl: signedUrl,
-      contentType: videoData.content_type,
-      adLink: videoData.ad_link 
+      contentType: videoData.content_type
     });
 
     response = new Response(responseData, { 
