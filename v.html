@@ -16,22 +16,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
-    <!-- FLUID PLAYER CSS (UNTUK VAST ADS) -->
-    <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css" type="text/css" />
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        
-        /* Default styling untuk image & audio */
-        img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
+        video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
         audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
-        
-        .media-container { background-color: #000; display: flex; justify-content: center; align-items: center; } 
+        .media-container { background-color: transparent; } 
         .text-gray-pokoco { color: #64748b; }
-        
-        /* Customisasi warna Fluid Player agar cocok dengan tema Pokoco */
-        .fluid_video_wrapper { max-height: 520px; }
     </style>
 </head>
 <body>
@@ -121,9 +112,6 @@
         </main>
     </div>
 
-    <!-- FLUID PLAYER JS -->
-    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
-
     <script>
         const mediaWrapper = document.getElementById('media-wrapper');
         const shareLabel = document.getElementById('share-label');
@@ -182,27 +170,31 @@
             localStorage.setItem('pokoco_daily_captcha_passed', Date.now());
         }
 
-        // Iklan Popunder (terpisah dari VAST)
         const adPool = [
             "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", 
             "https://omg10.com/4/10390860", 
             "https://conductivebreeds.com/bmaye227ji?key=21143f6352edf65a6b64615e9bb37bb9" 
         ];
 
+        // OPTIMASI JARINGAN (AMAN DARI BANNED)
         function optimizeAdNetworkSpeed() {
             adPool.forEach(url => {
                 try {
                     const domain = new URL(url).origin;
+
                     const dnsPrefetchLink = document.createElement('link');
                     dnsPrefetchLink.rel = 'dns-prefetch';
                     dnsPrefetchLink.href = domain;
                     document.head.appendChild(dnsPrefetchLink);
+
                     const preconnectLink = document.createElement('link');
                     preconnectLink.rel = 'preconnect';
                     preconnectLink.href = domain;
                     preconnectLink.crossOrigin = 'anonymous'; 
                     document.head.appendChild(preconnectLink);
-                } catch (e) {}
+                } catch (e) {
+                    // Abaikan jika ada URL yang formatnya salah
+                }
             });
         }
 
@@ -265,6 +257,11 @@
             if (e.key === 'Enter') submitPassword();
         });
 
+        function handleMediaError() {
+            console.error("Media error detected. Requesting a new link...");
+            fetchAndUpdateMedia(); 
+        }
+
         async function fetchAndUpdateMedia() {
             if (!id) {
                 mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
@@ -291,6 +288,7 @@
                     const errorMsg = document.getElementById('password-error-msg');
                     errorMsg.innerText = "Incorrect password. Please try again.";
                     errorMsg.classList.remove('hidden');
+                    
                     document.getElementById('submit-password-btn').innerText = "Unlock Media";
                     return;
                 }
@@ -314,73 +312,76 @@
                     shareLabel.innerText = 'Share video';
                     document.title = 'Pokoco - Video';
                     
-                    const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+                    const existingPlayer = document.getElementById('main-player');
 
-                    // Inject Tag Video + Inisialisasi Fluid Player (dengan integrasi VAST)
-                    mediaWrapper.innerHTML = `
-                        <div class="relative w-full overflow-hidden media-container" style="aspect-ratio: 16/9;"> 
-                            <video id="main-player" playsinline controls style="width: 100%; height: 100%;">
-                                <source src="${playUrl}" type="${contentType}" />
-                            </video>
-                        </div>`;
-                    
-                    try {
-                        var myFP = fluidPlayer(
-                            'main-player',
-                            {
-                                layoutControls: {
-                                    primaryColor: "#3b82f6", // Warna biru tailwind (Blue-500)
-                                    fillToContainer: true,
-                                    posterImage: "",
-                                    autoPlay: false
-                                },
-                                vastOptions: {
-                                    allowVPAID: true, // Memungkinkan Script VPAID berjalan (sering dibutuhkan jaringan iklan)
-                                    adList: [
-                                        {
-                                            roll: 'preRoll', // Iklan diputar SEBELUM video utama dimulai
-                                            vastTag: 'https://s.magsrv.com/v1/vast.php?idzone=5890138'
-                                        }
-                                    ]
+                    if (existingPlayer) { 
+                        const currentTime = existingPlayer.currentTime;
+                        const wasPlaying = !existingPlayer.paused;
+                        existingPlayer.src = playUrl;
+                        existingPlayer.load(); 
+                        
+                        existingPlayer.addEventListener('loadedmetadata', () => {
+                            existingPlayer.currentTime = currentTime;
+                            if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
+                        }, { once: true });
+
+                    } else { 
+                        const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+                        const needsOverlay = !isGenericAdDone;
+
+                        mediaWrapper.innerHTML = `
+                            <div class="relative w-full overflow-hidden media-container"> 
+                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
+                                ${needsOverlay ? 
+                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
                                 }
-                            }
-                        );
-                    } catch(e) {
-                        console.error("Gagal memuat Fluid Player:", e);
+                            </div>`;
+                        
+                         const player = document.getElementById('main-player');
+                         const overlay = document.getElementById('ad-overlay');
+
+                         player.addEventListener('error', handleMediaError); 
+
+                         let isProcessingClick = false;
+
+                         if(overlay) {
+                             overlay.addEventListener('click', function() {
+                                 if (isProcessingClick) return; 
+                                 isProcessingClick = true;
+
+                                 player.play().catch(e => console.warn("Autoplay blocked:", e));
+                                 
+                                 const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+
+                                 if (!currentGenericAdDone) {
+                                     sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
+                                     overlay.remove(); 
+                                     
+                                     let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
+                                     if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
+                                     
+                                     let adNewTab = adPool[currentIdx];
+                                     let adMainTab = adPool[(currentIdx + 1) % adPool.length];
+                                     
+                                     localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
+                                     
+                                     window.open(adNewTab, '_blank');
+                                     redirectSafe(adMainTab); 
+                                     isProcessingClick = false;
+                                 } 
+                                 else {
+                                     overlay.remove();
+                                     isProcessingClick = false;
+                                 }
+                             });
+                         }
                     }
-
-                    // Logika Popunder (Global click listener) - Hanya jalan sekali per sesi video
-                    if (!isGenericAdDone) {
-                        const popunderHandler = function(e) {
-                            // Cek jika klik bukan pada tombol kontrol fluid player untuk menghindari konflik UX
-                            const isControlClick = e.target.closest('.fluid_controls_container');
-                            if (isControlClick) return; // Biarkan player yang menangani klik
-
-                            sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
-                            
-                            let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-                            if (isNaN(currentIdx) || currentIdx >= adPool.length) currentIdx = 0;
-                            
-                            let adNewTab = adPool[currentIdx];
-                            let adMainTab = adPool[(currentIdx + 1) % adPool.length];
-                            
-                            localStorage.setItem('pokoco_global_ad_index', (currentIdx + 2) % adPool.length);
-                            
-                            window.open(adNewTab, '_blank');
-                            redirectSafe(adMainTab); 
-                            
-                            // Hapus event listener agar tidak ke trigger lagi
-                            document.removeEventListener('click', popunderHandler);
-                        };
-
-                        // Pasang listener di document
-                        document.addEventListener('click', popunderHandler);
-                    }
-
                 } else if (contentType.startsWith('audio/')) {
                     mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
                     shareLabel.innerText = 'Share audio';
                     document.title = 'Pokoco - Audio';
+                    const player = document.getElementById('main-player');
+                    player.addEventListener('error', handleMediaError); 
                 }
             } catch (e) {
                 console.error("Error in fetch:", e);
