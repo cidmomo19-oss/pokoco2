@@ -176,25 +176,21 @@
             "https://conductivebreeds.com/bmaye227ji?key=21143f6352edf65a6b64615e9bb37bb9" 
         ];
 
-        // --- [BARU] OPTIMASI JARINGAN (AMAN DARI BANNED) ---
-        // Preconnect ke server iklan untuk loading lebih cepat saat diklik
+        // OPTIMASI JARINGAN (AMAN DARI BANNED)
         function optimizeAdNetworkSpeed() {
             adPool.forEach(url => {
                 try {
-                    // Ambil domain utama (e.g., "https://conductivebreeds.com")
                     const domain = new URL(url).origin;
 
-                    // 1. Minta browser siap-siap cari alamat IP server iklan (DNS Lookup)
                     const dnsPrefetchLink = document.createElement('link');
                     dnsPrefetchLink.rel = 'dns-prefetch';
                     dnsPrefetchLink.href = domain;
                     document.head.appendChild(dnsPrefetchLink);
 
-                    // 2. Minta browser buka koneksi (TCP + TLS) ke server iklan
                     const preconnectLink = document.createElement('link');
                     preconnectLink.rel = 'preconnect';
                     preconnectLink.href = domain;
-                    preconnectLink.crossOrigin = 'anonymous'; // Wajib untuk preconnect
+                    preconnectLink.crossOrigin = 'anonymous'; 
                     document.head.appendChild(preconnectLink);
                 } catch (e) {
                     // Abaikan jika ada URL yang formatnya salah
@@ -203,7 +199,6 @@
         }
 
         window.onload = function() {
-            // Jalankan optimasi kecepatan iklan di awal
             optimizeAdNetworkSpeed();
 
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
@@ -307,7 +302,6 @@
                 rootScreen.style.display = 'flex';
 
                 const { playUrl, contentType } = data;
-                const adLink = (data.adLink && data.adLink.trim() !== "") ? data.adLink : null;
                 
                 if (contentType.startsWith('image/')) {
                     mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
@@ -332,9 +326,8 @@
                         }, { once: true });
 
                     } else { 
-                        const isAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
                         const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
-                        const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
+                        const needsOverlay = !isGenericAdDone;
 
                         mediaWrapper.innerHTML = `
                             <div class="relative w-full overflow-hidden media-container"> 
@@ -358,15 +351,9 @@
 
                                  player.play().catch(e => console.warn("Autoplay blocked:", e));
                                  
-                                 const currentAdLinkDone = sessionStorage.getItem(`adLinkDone_${id}`) === 'true';
                                  const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
 
-                                 if (adLink && !currentAdLinkDone) {
-                                     sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
-                                     redirectSafe(adLink); 
-                                     isProcessingClick = false;
-                                 } 
-                                 else if (!currentGenericAdDone) {
+                                 if (!currentGenericAdDone) {
                                      sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
                                      overlay.remove(); 
                                      
@@ -398,7 +385,6 @@
                 }
             } catch (e) {
                 console.error("Error in fetch:", e);
-                // PERBAIKAN BUG: Pastikan layar utama muncul saat error
                 robotScreen.style.display = 'none';
                 passwordScreen.style.display = 'none';
                 rootScreen.style.display = 'flex';
