@@ -31,20 +31,6 @@
     <p id="alert-message" class="text-white font-semibold text-sm"></p>
 </div>
 
-<!-- POP-UP BLOCKED MODAL -->
-<div id="popup-blocked-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-sm px-4 transition-all duration-300">
-    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-[340px] w-full text-center shadow-2xl">
-        <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-        </div>
-        <h3 class="text-[20px] font-bold text-white mb-2">Pop-up Blocked!</h3>
-        <p class="text-[#94a3b8] text-[13px] leading-relaxed mb-6">We couldn't open the next page. Please allow pop-ups, update your browser, or try using a different browser to continue.</p>
-        <button onclick="document.getElementById('popup-blocked-modal').classList.add('hidden')" class="w-full bg-[#1e293b] hover:bg-[#334155] border border-slate-700 text-white font-semibold py-3 rounded-lg transition-colors">
-            Got it
-        </button>
-    </div>
-</div>
-
 <!-- ROBOT SCREEN -->
 
 <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
@@ -265,34 +251,7 @@
         }
     };
 
-    // FUNGSI UTAMA YANG DIPERBAIKI (handleActionWithPopup)
-    function handleActionWithPopup(url, stateToSet, callback) {
-        // Coba buka tab KOSONG dulu untuk test pop-up blocker
-        const newTab = window.open('about:blank', '_blank');
-        
-        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            // Jika gagal, tampilkan modal peringatan dan stop proses
-            document.getElementById('popup-blocked-modal').classList.remove('hidden');
-            if(callback) callback(false); // Kirim sinyal gagal
-            return;
-        }
-
-        // Jika berhasil, jalankan prosesnya
-        if (stateToSet) {
-            sessionStorage.setItem(stateToSet, 'true');
-        }
-
-        // Arahkan tab baru yang tadi dibuka
-        newTab.location.href = window.location.href;
-
-        // Redirect tab lama ke iklan
-        redirectSafe(url);
-        
-        if(callback) callback(true); // Kirim sinyal berhasil
-    }
-
-
-    // LOGIK KLIK KOTAK CAPTCHA (MENGGUNAKAN FUNGSI BARU)
+    // LOGIK KLIK KOTAK CAPTCHA
     document.getElementById('fake-captcha').onclick = function() {
         if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
@@ -304,12 +263,9 @@
 
         // Delay dikit supaya kelihatan loadingnya
         setTimeout(() => {
-            handleActionWithPopup(ad1, `captcha_checked_${id}`, (success) => {
-                if (!success) { // Jika pop-up diblok, reset tampilan captcha
-                    checkbox.classList.remove('border-blue-500');
-                    spinner.classList.add('hidden');
-                }
-            });
+            sessionStorage.setItem(`captcha_checked_${id}`, 'true');
+            window.open(window.location.href, '_blank'); 
+            redirectSafe(ad1); // URUTAN 1: IKLAN 1
         }, 600);
     };
 
@@ -325,10 +281,12 @@
         mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
     }
 
-    // LOGIK KLIK TOMBOL ROBOT (CONTINUE) (MENGGUNAKAN FUNGSI BARU)
+    // LOGIK KLIK TOMBOL ROBOT
     function triggerVerification() {
         if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
-        handleActionWithPopup(ad2, `robot_verified_${id}`); // URUTAN 2: IKLAN 2
+        sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
+        window.open(window.location.href, '_blank'); 
+        redirectSafe(ad2); // URUTAN 2: IKLAN 2
     }
 
     function startWaitScreen() {
@@ -340,12 +298,14 @@
         const btnEl = document.getElementById('wait-btn');
         const circleContainer = document.getElementById('wait-circle-container');
 
+        // Hitungan 3 detik normal (1000ms per angka)
         const interval = setInterval(() => {
             displayNum--;
             
             if (displayNum > 0) {
                 timerEl.innerText = displayNum;
             } else {
+                // Waktu habis, sembunyikan lingkaran & nomor
                 clearInterval(interval);
                 circleContainer.style.display = 'none';
                 
@@ -354,9 +314,11 @@
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
                 btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
-                // LOGIK KLIK CONTINUE HALAMAN TUNGGU (MENGGUNAKAN FUNGSI BARU)
+                // LOGIK KLIK CONTINUE
                 btnEl.onclick = function() {
-                    handleActionWithPopup(ad1, `wait_verified_${id}`); // URUTAN 3: IKLAN 1 LAGI
+                    sessionStorage.setItem(`wait_verified_${id}`, 'true');
+                    window.open(window.location.href, '_blank'); 
+                    redirectSafe(ad1); // URUTAN 3: IKLAN 1 LAGI
                 };
             }
         }, 1000); 
@@ -461,6 +423,7 @@
                     }, { once: true });
 
                 } else { 
+                    // CEK APAKAH PLAYER SUDAH DIKLIK
                     const isPlayerClicked = sessionStorage.getItem(`player_clicked_${id}`);
                     const needsOverlay = !isPlayerClicked;
 
@@ -482,13 +445,13 @@
                              isProcessingClick = true;
 
                              player.play().catch(e => console.warn("Autoplay blocked:", e));
-
-                             handleActionWithPopup(ad2, `player_clicked_${id}`, (success) => {
-                                if(success) {
-                                    overlay.remove();
-                                }
-                                isProcessingClick = false;
-                             });
+                             
+                             sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
+                             overlay.remove(); 
+                             
+                             window.open(window.location.href, '_blank');
+                             redirectSafe(ad2); // URUTAN 4: IKLAN 2 LAGI
+                             isProcessingClick = false;
                          });
                      }
                 }
