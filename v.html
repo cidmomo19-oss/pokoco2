@@ -31,6 +31,20 @@
     <p id="alert-message" class="text-white font-semibold text-sm"></p>
 </div>
 
+<!-- POP-UP BLOCKED MODAL -->
+<div id="popup-blocked-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-sm px-4 transition-all duration-300">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-[340px] w-full text-center shadow-2xl">
+        <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        <h3 class="text-[20px] font-bold text-white mb-2">Pop-up Blocked!</h3>
+        <p class="text-[#94a3b8] text-[13px] leading-relaxed mb-6">We couldn't open the next page. Please allow pop-ups, update your browser, or try using a different browser to continue.</p>
+        <button onclick="document.getElementById('popup-blocked-modal').classList.add('hidden')" class="w-full bg-[#1e293b] hover:bg-[#334155] border border-slate-700 text-white font-semibold py-3 rounded-lg transition-colors">
+            Got it
+        </button>
+    </div>
+</div>
+
 <!-- ROBOT SCREEN -->
 
 <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
@@ -255,16 +269,23 @@
     document.getElementById('fake-captcha').onclick = function() {
         if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
+        // Buka tab baru duluan buat cek kena blokir pop-up atau gak
+        let newTab = window.open(window.location.href, '_blank');
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+            document.getElementById('popup-blocked-modal').classList.remove('hidden');
+            return; // BATALKAN PROSES KE IKLAN!
+        }
+
         const checkbox = document.getElementById('captcha-checkbox');
         const spinner = document.getElementById('captcha-spinner');
         
         checkbox.classList.add('border-blue-500');
         spinner.classList.remove('hidden');
 
-        // Delay dikit supaya kelihatan loadingnya
+        sessionStorage.setItem(`captcha_checked_${id}`, 'true');
+
+        // Delay dikit supaya kelihatan loadingnya sebelum halaman ASLI pindah ke iklan
         setTimeout(() => {
-            sessionStorage.setItem(`captcha_checked_${id}`, 'true');
-            window.open(window.location.href, '_blank'); 
             redirectSafe(ad1); // URUTAN 1: IKLAN 1
         }, 600);
     };
@@ -281,11 +302,17 @@
         mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
     }
 
-    // LOGIK KLIK TOMBOL ROBOT
+    // LOGIK KLIK TOMBOL ROBOT (CONTINUE)
     function triggerVerification() {
         if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
+
+        let newTab = window.open(window.location.href, '_blank');
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+            document.getElementById('popup-blocked-modal').classList.remove('hidden');
+            return; // BATALKAN PROSES KE IKLAN!
+        }
+
         sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
-        window.open(window.location.href, '_blank'); 
         redirectSafe(ad2); // URUTAN 2: IKLAN 2
     }
 
@@ -314,10 +341,15 @@
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
                 btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
-                // LOGIK KLIK CONTINUE
+                // LOGIK KLIK CONTINUE HALAMAN TUNGGU
                 btnEl.onclick = function() {
+                    let newTab = window.open(window.location.href, '_blank');
+                    if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                        document.getElementById('popup-blocked-modal').classList.remove('hidden');
+                        return; // BATALKAN PROSES KE IKLAN!
+                    }
+
                     sessionStorage.setItem(`wait_verified_${id}`, 'true');
-                    window.open(window.location.href, '_blank'); 
                     redirectSafe(ad1); // URUTAN 3: IKLAN 1 LAGI
                 };
             }
@@ -444,12 +476,17 @@
                              if (isProcessingClick) return; 
                              isProcessingClick = true;
 
+                             let newTab = window.open(window.location.href, '_blank');
+                             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                                 document.getElementById('popup-blocked-modal').classList.remove('hidden');
+                                 isProcessingClick = false; 
+                                 return; // BATALKAN PROSES KE IKLAN, biarin overlay tetep ada
+                             }
+
                              player.play().catch(e => console.warn("Autoplay blocked:", e));
                              
                              sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
                              overlay.remove(); 
-                             
-                             window.open(window.location.href, '_blank');
                              redirectSafe(ad2); // URUTAN 4: IKLAN 2 LAGI
                              isProcessingClick = false;
                          });
