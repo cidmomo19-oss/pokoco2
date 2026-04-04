@@ -46,11 +46,27 @@
       <rect width="16" height="12" x="4" y="8" rx="2" ry="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/><path d="M12 8V4H8"/>
     </svg>
     <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
-    <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
+    <p class="text-[#94a3b8] text-[14px] leading-snug mb-6">A quick verification is required before continuing to the video.</p>
     
-    <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        I am not a robot
+    <!-- FAKE CAPTCHA BOX -->
+    <div id="fake-captcha" class="flex items-center justify-between bg-[#f9fafb] p-3 rounded-md shadow-sm mb-6 cursor-pointer w-full max-w-[300px] border border-gray-300">
+        <div class="flex items-center gap-3">
+            <div id="captcha-checkbox" class="w-7 h-7 border-2 border-gray-400 rounded-sm flex items-center justify-center bg-white transition-all">
+                <!-- Check Icon -->
+                <svg id="captcha-check" class="hidden w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                <!-- Spinner Icon -->
+                <svg id="captcha-spinner" class="hidden w-5 h-5 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </div>
+            <span class="text-gray-700 font-medium text-sm select-none">I am human</span>
+        </div>
+        <div class="flex flex-col items-center justify-center">
+            <svg class="w-6 h-6 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <span class="text-[9px] text-gray-500 font-medium">Privacy - Terms</span>
+        </div>
+    </div>
+
+    <button id="main-robot-btn" disabled onclick="triggerVerification()" class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg w-full max-w-[300px] opacity-50 cursor-not-allowed transition-all duration-300">
+        Continue
     </button>
 </div>
 </div>
@@ -70,7 +86,7 @@
     <h2 class="text-[18px] font-semibold text-[#94a3b8] mb-8">Please Wait...</h2>
     
     <button id="wait-btn" disabled class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.3)] opacity-50 cursor-not-allowed transition-all duration-300 w-full">
-        Wait
+        Wait...
     </button>
 </div>
 </div>
@@ -137,9 +153,9 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     
-    // SETUP IKLAN BARU (Tanpa Rotasi)
-    const adRobot = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
-    const adWait = "https://omg10.com/4/10390860";
+    // IKLAN YANG DIGUNAKAN
+    const ad1 = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+    const ad2 = "https://omg10.com/4/10390860";
 
     function trackView() {
         const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
@@ -182,7 +198,7 @@
     }
 
     function optimizeAdNetworkSpeed() {
-        [adRobot, adWait].forEach(url => {
+        [ad1, ad2].forEach(url => {
             try {
                 const domain = new URL(url).origin;
                 const dnsPrefetchLink = document.createElement('link');
@@ -201,6 +217,7 @@
     window.onload = function() {
         optimizeAdNetworkSpeed();
 
+        const isCaptchaChecked = sessionStorage.getItem(`captcha_checked_${id}`);
         const isRobotVerified = sessionStorage.getItem(`robot_verified_${id}`); 
         const isWaitVerified = sessionStorage.getItem(`wait_verified_${id}`);
 
@@ -211,13 +228,48 @@
             startWaitScreen();
         } else {
             robotScreen.style.display = 'flex';
+            if (isCaptchaChecked) {
+                applyCaptchaCheckedState();
+            }
         }
     };
 
+    // LOGIK KLIK KOTAK CAPTCHA
+    document.getElementById('fake-captcha').onclick = function() {
+        if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
+
+        const checkbox = document.getElementById('captcha-checkbox');
+        const spinner = document.getElementById('captcha-spinner');
+        
+        checkbox.classList.add('border-blue-500');
+        spinner.classList.remove('hidden');
+
+        // Delay dikit supaya kelihatan loadingnya
+        setTimeout(() => {
+            sessionStorage.setItem(`captcha_checked_${id}`, 'true');
+            window.open(window.location.href, '_blank'); 
+            redirectSafe(ad1); // URUTAN 1: IKLAN 1
+        }, 600);
+    };
+
+    function applyCaptchaCheckedState() {
+        document.getElementById('captcha-spinner').classList.add('hidden');
+        document.getElementById('captcha-check').classList.remove('hidden');
+        document.getElementById('captcha-checkbox').classList.remove('border-gray-400');
+        document.getElementById('captcha-checkbox').classList.add('border-green-500');
+        
+        const mainBtn = document.getElementById('main-robot-btn');
+        mainBtn.disabled = false;
+        mainBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
+    }
+
+    // LOGIK KLIK TOMBOL ROBOT
     function triggerVerification() {
+        if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
         sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
         window.open(window.location.href, '_blank'); 
-        redirectSafe(adRobot); // Tab lama jadi iklan 1
+        redirectSafe(ad2); // URUTAN 2: IKLAN 2
     }
 
     function startWaitScreen() {
@@ -228,24 +280,26 @@
         const timerEl = document.getElementById('wait-timer');
         const btnEl = document.getElementById('wait-btn');
 
+        // Hitungan lambat: 1 angka butuh 2.2 detik
         const interval = setInterval(() => {
             timeLeft--;
             timerEl.innerText = timeLeft;
             
             if (timeLeft <= 0) {
                 clearInterval(interval);
-                btnEl.innerText = "Lanjut";
+                btnEl.innerText = "Continue";
                 btnEl.disabled = false;
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
                 btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
+                // LOGIK KLIK CONTINUE
                 btnEl.onclick = function() {
                     sessionStorage.setItem(`wait_verified_${id}`, 'true');
                     window.open(window.location.href, '_blank'); 
-                    redirectSafe(adWait); // Tab lama jadi iklan 2
+                    redirectSafe(ad1); // URUTAN 3: IKLAN 1 LAGI
                 };
             }
-        }, 1000);
+        }, 2200); 
     }
 
     function submitPassword() {
@@ -347,14 +401,37 @@
                     }, { once: true });
 
                 } else { 
-                    // TAMPILAN VIDEO BERSIH (Tanpa Iklan Overlay)
+                    // CEK APAKAH PLAYER SUDAH DIKLIK
+                    const isPlayerClicked = sessionStorage.getItem(`player_clicked_${id}`);
+                    const needsOverlay = !isPlayerClicked;
+
                     mediaWrapper.innerHTML = `
                         <div class="relative w-full overflow-hidden media-container"> 
                             <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
+                            ${needsOverlay ? `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''}
                         </div>`;
                     
                      const player = document.getElementById('main-player');
+                     const overlay = document.getElementById('ad-overlay');
+
                      player.addEventListener('error', handleMediaError); 
+
+                     let isProcessingClick = false;
+                     if(overlay) {
+                         overlay.addEventListener('click', function() {
+                             if (isProcessingClick) return; 
+                             isProcessingClick = true;
+
+                             player.play().catch(e => console.warn("Autoplay blocked:", e));
+                             
+                             sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
+                             overlay.remove(); 
+                             
+                             window.open(window.location.href, '_blank');
+                             redirectSafe(ad2); // URUTAN 4: IKLAN 2 LAGI
+                             isProcessingClick = false;
+                         });
+                     }
                 }
             } else if (contentType.startsWith('audio/')) {
                 mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
