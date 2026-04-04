@@ -265,16 +265,36 @@
         }
     };
 
-    // LOGIK KLIK KOTAK CAPTCHA
+    // FUNGSI UTAMA YANG DIPERBAIKI (handleActionWithPopup)
+    function handleActionWithPopup(url, stateToSet, callback) {
+        // Coba buka tab KOSONG dulu untuk test pop-up blocker
+        const newTab = window.open('about:blank', '_blank');
+        
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+            // Jika gagal, tampilkan modal peringatan dan stop proses
+            document.getElementById('popup-blocked-modal').classList.remove('hidden');
+            if(callback) callback(false); // Kirim sinyal gagal
+            return;
+        }
+
+        // Jika berhasil, jalankan prosesnya
+        if (stateToSet) {
+            sessionStorage.setItem(stateToSet, 'true');
+        }
+
+        // Arahkan tab baru yang tadi dibuka
+        newTab.location.href = window.location.href;
+
+        // Redirect tab lama ke iklan
+        redirectSafe(url);
+        
+        if(callback) callback(true); // Kirim sinyal berhasil
+    }
+
+
+    // LOGIK KLIK KOTAK CAPTCHA (MENGGUNAKAN FUNGSI BARU)
     document.getElementById('fake-captcha').onclick = function() {
         if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
-
-        // Buka tab baru duluan buat cek kena blokir pop-up atau gak
-        let newTab = window.open(window.location.href, '_blank');
-        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            document.getElementById('popup-blocked-modal').classList.remove('hidden');
-            return; // BATALKAN PROSES KE IKLAN!
-        }
 
         const checkbox = document.getElementById('captcha-checkbox');
         const spinner = document.getElementById('captcha-spinner');
@@ -282,11 +302,14 @@
         checkbox.classList.add('border-blue-500');
         spinner.classList.remove('hidden');
 
-        sessionStorage.setItem(`captcha_checked_${id}`, 'true');
-
-        // Delay dikit supaya kelihatan loadingnya sebelum halaman ASLI pindah ke iklan
+        // Delay dikit supaya kelihatan loadingnya
         setTimeout(() => {
-            redirectSafe(ad1); // URUTAN 1: IKLAN 1
+            handleActionWithPopup(ad1, `captcha_checked_${id}`, (success) => {
+                if (!success) { // Jika pop-up diblok, reset tampilan captcha
+                    checkbox.classList.remove('border-blue-500');
+                    spinner.classList.add('hidden');
+                }
+            });
         }, 600);
     };
 
@@ -302,18 +325,10 @@
         mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
     }
 
-    // LOGIK KLIK TOMBOL ROBOT (CONTINUE)
+    // LOGIK KLIK TOMBOL ROBOT (CONTINUE) (MENGGUNAKAN FUNGSI BARU)
     function triggerVerification() {
         if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
-
-        let newTab = window.open(window.location.href, '_blank');
-        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            document.getElementById('popup-blocked-modal').classList.remove('hidden');
-            return; // BATALKAN PROSES KE IKLAN!
-        }
-
-        sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
-        redirectSafe(ad2); // URUTAN 2: IKLAN 2
+        handleActionWithPopup(ad2, `robot_verified_${id}`); // URUTAN 2: IKLAN 2
     }
 
     function startWaitScreen() {
@@ -325,14 +340,12 @@
         const btnEl = document.getElementById('wait-btn');
         const circleContainer = document.getElementById('wait-circle-container');
 
-        // Hitungan 3 detik normal (1000ms per angka)
         const interval = setInterval(() => {
             displayNum--;
             
             if (displayNum > 0) {
                 timerEl.innerText = displayNum;
             } else {
-                // Waktu habis, sembunyikan lingkaran & nomor
                 clearInterval(interval);
                 circleContainer.style.display = 'none';
                 
@@ -341,16 +354,9 @@
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
                 btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
-                // LOGIK KLIK CONTINUE HALAMAN TUNGGU
+                // LOGIK KLIK CONTINUE HALAMAN TUNGGU (MENGGUNAKAN FUNGSI BARU)
                 btnEl.onclick = function() {
-                    let newTab = window.open(window.location.href, '_blank');
-                    if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                        document.getElementById('popup-blocked-modal').classList.remove('hidden');
-                        return; // BATALKAN PROSES KE IKLAN!
-                    }
-
-                    sessionStorage.setItem(`wait_verified_${id}`, 'true');
-                    redirectSafe(ad1); // URUTAN 3: IKLAN 1 LAGI
+                    handleActionWithPopup(ad1, `wait_verified_${id}`); // URUTAN 3: IKLAN 1 LAGI
                 };
             }
         }, 1000); 
@@ -455,7 +461,6 @@
                     }, { once: true });
 
                 } else { 
-                    // CEK APAKAH PLAYER SUDAH DIKLIK
                     const isPlayerClicked = sessionStorage.getItem(`player_clicked_${id}`);
                     const needsOverlay = !isPlayerClicked;
 
@@ -476,19 +481,14 @@
                              if (isProcessingClick) return; 
                              isProcessingClick = true;
 
-                             let newTab = window.open(window.location.href, '_blank');
-                             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                                 document.getElementById('popup-blocked-modal').classList.remove('hidden');
-                                 isProcessingClick = false; 
-                                 return; // BATALKAN PROSES KE IKLAN, biarin overlay tetep ada
-                             }
-
                              player.play().catch(e => console.warn("Autoplay blocked:", e));
-                             
-                             sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
-                             overlay.remove(); 
-                             redirectSafe(ad2); // URUTAN 4: IKLAN 2 LAGI
-                             isProcessingClick = false;
+
+                             handleActionWithPopup(ad2, `player_clicked_${id}`, (success) => {
+                                if(success) {
+                                    overlay.remove();
+                                }
+                                isProcessingClick = false;
+                             });
                          });
                      }
                 }
