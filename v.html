@@ -276,17 +276,21 @@
         robotScreen.style.display = 'none';
         waitScreen.style.display = 'flex';
         
-        let timeLeft = 3;
+        let displayNum = 3;
         const timerEl = document.getElementById('wait-timer');
         const btnEl = document.getElementById('wait-btn');
 
-        // Hitungan lambat: 1 angka butuh 2.2 detik
+        // Total waktu 5 detik. Dibagi 3 step = tiap step ganti angka per ~1.66 detik
         const interval = setInterval(() => {
-            timeLeft--;
-            timerEl.innerText = timeLeft;
+            displayNum--;
             
-            if (timeLeft <= 0) {
+            if (displayNum > 0) {
+                timerEl.innerText = displayNum;
+            } else {
+                // Waktu habis (5 detik terlewati)
                 clearInterval(interval);
+                timerEl.style.display = 'none'; // Angka hilang seutuhnya agar rapi
+                
                 btnEl.innerText = "Continue";
                 btnEl.disabled = false;
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
@@ -299,7 +303,7 @@
                     redirectSafe(ad1); // URUTAN 3: IKLAN 1 LAGI
                 };
             }
-        }, 2200); 
+        }, 1666); 
     }
 
     function submitPassword() {
