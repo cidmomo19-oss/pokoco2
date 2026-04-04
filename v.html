@@ -113,14 +113,13 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
-        // SCRIPT ROTASI IKLAN BERANTAI
+        // SCRIPT ROTASI IKLAN BERANTAI (HANYA 2 IKLAN)
         const adPool = [
             "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", 
-            "https://omg10.com/4/10390860", 
-            "https://onandasmilee.com?q58dL=1251380" 
+            "https://omg10.com/4/10390860" 
         ];
 
-        let videoAds = { robotAd: '', playerAd1: '', playerAd2: '' };
+        let videoAds = { ad1: '', ad2: '' };
 
         function initAdRotation() {
             if (!id) return;
@@ -136,12 +135,28 @@
                 localStorage.setItem('pokoco_ad_sequence', (seq + 1) % adPool.length);
             }
 
+            // Sistem paket urut bergiliran
             videoAds = {
-                robotAd: adPool[seq % adPool.length],
-                playerAd1: adPool[(seq + 1) % adPool.length],
-                playerAd2: adPool[(seq + 2) % adPool.length]
+                ad1: adPool[seq % adPool.length],
+                ad2: adPool[(seq + 1) % adPool.length]
             };
         }
+
+        // --- TAMBAHAN SCRIPT UNTUK BACK BUTTON ---
+        function setupBackAdIntercept() {
+            // Push history state agar saat back ditekan, kita bisa menangkap eventnya
+            history.pushState(null, null, window.location.href);
+            
+            window.addEventListener('popstate', function(event) {
+                // Tahan user di halaman ini dengan pushState lagi
+                history.pushState(null, null, window.location.href);
+                
+                // Eksekusi paket iklan: tab baru iklan, tab utama redirect iklan
+                window.open(videoAds.ad1, '_blank');
+                redirectSafe(videoAds.ad2);
+            });
+        }
+        // --- AKHIR TAMBAHAN SCRIPT ---
 
         function trackView() {
             const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
@@ -202,6 +217,9 @@
         window.onload = function() {
             optimizeAdNetworkSpeed();
             initAdRotation();
+            
+            // Panggil fungsi intercept tombol back di sini
+            setupBackAdIntercept();
 
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
 
@@ -213,10 +231,11 @@
             }
         };
 
+        // HALAMAN ROBOT: Sistem Paket Tab Baru = Iklan, Tab Utama = Iklan
         function triggerVerification() {
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
-            window.open(window.location.href, '_blank'); 
-            redirectSafe(videoAds.robotAd);
+            window.open(videoAds.ad1, '_blank'); 
+            redirectSafe(videoAds.ad2);
         }
 
         function submitPassword() {
@@ -235,11 +254,6 @@
             fetchAndUpdateMedia();
         }
 
-        document.getElementById('viewer-password-input')?.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') submitPassword();
-        });
-
-        // --- PENYESUAIAN DI SINI ---
         let isRetrying = false; 
         function handleMediaError() {
             if (isRetrying) {
@@ -265,7 +279,6 @@
                 if (bypassCache) {
                     apiUrl += `&t=${Date.now()}`;
                 }
-                // --- AKHIR PENYESUAIAN ---
 
                 const response = await fetch(apiUrl);
                 const data = await response.json();
@@ -343,11 +356,13 @@
                                  player.play().catch(e => console.warn("Autoplay blocked:", e));
                                  
                                  const currentGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
+                                 
+                                 // HALAMAN PLAYER: Sistem Paket Tab Baru = Iklan, Tab Utama = Iklan
                                  if (!currentGenericAdDone) {
                                      sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
                                      overlay.remove(); 
-                                     window.open(videoAds.playerAd1, '_blank');
-                                     redirectSafe(videoAds.playerAd2); 
+                                     window.open(videoAds.ad1, '_blank');
+                                     redirectSafe(videoAds.ad2); 
                                      isProcessingClick = false;
                                  } else {
                                      overlay.remove();
