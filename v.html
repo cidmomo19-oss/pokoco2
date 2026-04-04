@@ -81,11 +81,28 @@
         </div>
     </header>
 
-<div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10 mt-16">
-    <h1 id="wait-timer" class="text-[70px] leading-none font-bold text-white mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]">3</h1>
-    <h2 class="text-[18px] font-semibold text-[#94a3b8] mb-8">Please Wait...</h2>
+<div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10 mt-16 overflow-hidden">
+    <!-- Decorative Blurs -->
+    <div class="absolute -top-12 -right-12 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Hourglass Icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] relative z-10">
+        <path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>
+    </svg>
     
-    <button id="wait-btn" disabled class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.3)] opacity-50 cursor-not-allowed transition-all duration-300 w-full">
+    <h2 class="text-[22px] font-bold text-white mb-2 relative z-10">Preparing Link</h2>
+    <p class="text-[#94a3b8] text-[14px] leading-snug mb-8 relative z-10">Please wait a moment while we process your request.</p>
+    
+    <!-- Timer Display -->
+    <div id="wait-circle-container" class="relative flex items-center justify-center w-24 h-24 mb-8">
+        <!-- Spinning border -->
+        <div class="absolute inset-0 border-[3px] border-slate-700 border-t-blue-500 rounded-full animate-spin"></div>
+        <!-- Number -->
+        <h1 id="wait-timer" class="text-[38px] font-bold text-white relative z-10 drop-shadow-md">3</h1>
+    </div>
+
+    <button id="wait-btn" disabled class="relative z-10 flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.3)] opacity-50 cursor-not-allowed transition-all duration-300 w-full">
         Wait...
     </button>
 </div>
@@ -279,17 +296,18 @@
         let displayNum = 3;
         const timerEl = document.getElementById('wait-timer');
         const btnEl = document.getElementById('wait-btn');
+        const circleContainer = document.getElementById('wait-circle-container');
 
-        // Total waktu 5 detik. Dibagi 3 step = tiap step ganti angka per ~1.66 detik
+        // Hitungan 3 detik normal (1000ms per angka)
         const interval = setInterval(() => {
             displayNum--;
             
             if (displayNum > 0) {
                 timerEl.innerText = displayNum;
             } else {
-                // Waktu habis (5 detik terlewati)
+                // Waktu habis, sembunyikan lingkaran & nomor
                 clearInterval(interval);
-                timerEl.style.display = 'none'; // Angka hilang seutuhnya agar rapi
+                circleContainer.style.display = 'none';
                 
                 btnEl.innerText = "Continue";
                 btnEl.disabled = false;
@@ -303,7 +321,7 @@
                     redirectSafe(ad1); // URUTAN 3: IKLAN 1 LAGI
                 };
             }
-        }, 1666); 
+        }, 1000); 
     }
 
     function submitPassword() {
