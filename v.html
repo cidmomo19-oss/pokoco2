@@ -16,7 +16,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
     body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
     video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
     audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
@@ -41,27 +41,16 @@
         </div>
     </header>
 
-<div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center shadow-2xl relative z-10 mt-16">
-    <h2 class="text-[20px] font-bold text-white mb-6 w-full text-left">Security Check</h2>
+<div class="bg-[#111827] border border-slate-800 rounded-2xl p-8 w-[90%] max-w-[420px] flex flex-col items-center text-center shadow-2xl relative z-10 mt-16">
+    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-5 drop-shadow-[0_0_12px_rgba(255,255,255,0.6)]">
+      <rect width="16" height="12" x="4" y="8" rx="2" ry="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/><path d="M12 8V4H8"/>
+    </svg>
+    <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
+    <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
     
-    <!-- Kotak Fake Captcha -->
-    <div class="bg-[#1e293b] border border-slate-700 p-3 rounded-md flex items-center justify-between w-full h-[76px] mb-6 shadow-inner cursor-pointer" onclick="clickCaptcha()" id="captcha-box-wrap">
-        <div class="flex items-center gap-4 pl-1">
-            <div id="captcha-trigger" class="w-7 h-7 border-[2px] border-[#94a3b8] rounded-[3px] bg-[#0f172a] flex items-center justify-center transition-all">
-                <div id="captcha-spinner" class="hidden w-4 h-4 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
-                <svg id="captcha-checked" class="hidden w-5 h-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </div>
-            <span class="text-white font-medium text-[14px]">I am not a robot</span>
-        </div>
-        <div class="flex flex-col items-center justify-center pr-1 opacity-80">
-            <svg class="w-7 h-7 text-blue-500 mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
-            <span class="text-[#64748b] text-[10px] font-semibold tracking-wide">reCAPTCHA</span>
-        </div>
-    </div>
-
-    <!-- Tombol Submit (Mati sampai captcha di-klik) -->
-    <button id="main-robot-btn" onclick="submitRobot()" disabled class="w-full flex justify-center items-center gap-3 bg-[#1e293b] text-[#64748b] text-[16px] font-bold py-3.5 px-8 rounded-lg opacity-60 cursor-not-allowed transition-all duration-300">
-        Verify
+    <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        I am not a robot
     </button>
 </div>
 </div>
@@ -81,7 +70,7 @@
     <h2 class="text-[18px] font-semibold text-[#94a3b8] mb-8">Please Wait...</h2>
     
     <button id="wait-btn" disabled class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.3)] opacity-50 cursor-not-allowed transition-all duration-300 w-full">
-        Wait...
+        Wait
     </button>
 </div>
 </div>
@@ -148,9 +137,9 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     
-    // SETUP 2 IKLAN
-    const ad1 = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
-    const ad2 = "https://omg10.com/4/10390860";
+    // SETUP IKLAN BARU (Tanpa Rotasi)
+    const adRobot = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
+    const adWait = "https://omg10.com/4/10390860";
 
     function trackView() {
         const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
@@ -166,6 +155,11 @@
                 }).catch(err => console.error("View track failed"));
             }, 5000); 
         }
+    }
+
+    function redirectSafe(url) {
+        const a = document.createElement('a'); a.href = url; a.rel = 'noreferrer noopener'; 
+        document.body.appendChild(a); a.click(); document.body.removeChild(a); 
     }
 
     const robotScreen = document.getElementById('robot-screen');
@@ -188,7 +182,7 @@
     }
 
     function optimizeAdNetworkSpeed() {
-        [ad1, ad2].forEach(url => {
+        [adRobot, adWait].forEach(url => {
             try {
                 const domain = new URL(url).origin;
                 const dnsPrefetchLink = document.createElement('link');
@@ -207,7 +201,6 @@
     window.onload = function() {
         optimizeAdNetworkSpeed();
 
-        const isCaptchaClicked = sessionStorage.getItem(`captcha_clicked_${id}`);
         const isRobotVerified = sessionStorage.getItem(`robot_verified_${id}`); 
         const isWaitVerified = sessionStorage.getItem(`wait_verified_${id}`);
 
@@ -218,57 +211,13 @@
             startWaitScreen();
         } else {
             robotScreen.style.display = 'flex';
-            
-            if (isCaptchaClicked) {
-                // UI setelah klik fake captcha (Centang nyala, Tombol aktif)
-                const trigger = document.getElementById('captcha-trigger');
-                trigger.classList.add('border-transparent');
-                trigger.classList.remove('border-[#94a3b8]');
-                document.getElementById('captcha-checked').classList.remove('hidden');
-                document.getElementById('captcha-box-wrap').classList.remove('cursor-pointer');
-                
-                const btn = document.getElementById('main-robot-btn');
-                btn.disabled = false;
-                btn.classList.remove('bg-[#1e293b]', 'text-[#64748b]', 'opacity-60', 'cursor-not-allowed');
-                btn.classList.add('bg-white', 'text-black', 'shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
-            }
         }
     };
 
-    function clickCaptcha() {
-        if (sessionStorage.getItem(`captcha_clicked_${id}`)) return;
-        
-        // Deteksi popup blocker: Buka tab SEGERA saat diklik
-        let newWindow = window.open(window.location.href, '_blank');
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            showCustomAlert("Please update your browser, or use another browser.");
-            return; // BATALKAN eksekusi iklan dan proses kalau gagal
-        }
-
-        // Kalau lolos, putar icon loading (spinner)
-        const trigger = document.getElementById('captcha-trigger');
-        trigger.classList.add('border-transparent');
-        trigger.classList.remove('border-[#94a3b8]');
-        document.getElementById('captcha-spinner').classList.remove('hidden');
-        
-        setTimeout(() => {
-            sessionStorage.setItem(`captcha_clicked_${id}`, 'true');
-            window.location.href = ad1; // IKLAN 1 (Tab lama)
-        }, 800);
-    }
-
-    function submitRobot() {
-        if (!sessionStorage.getItem(`captcha_clicked_${id}`)) return;
-
-        // Deteksi popup blocker
-        let newWindow = window.open(window.location.href, '_blank');
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            showCustomAlert("Please update your browser, or use another browser.");
-            return;
-        }
-
+    function triggerVerification() {
         sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
-        window.location.href = ad2; // IKLAN 2 (Tab lama)
+        window.open(window.location.href, '_blank'); 
+        redirectSafe(adRobot); // Tab lama jadi iklan 1
     }
 
     function startWaitScreen() {
@@ -279,31 +228,24 @@
         const timerEl = document.getElementById('wait-timer');
         const btnEl = document.getElementById('wait-btn');
 
-        // Diperlambat. intervalnya di set ke 1800ms (Hampir 2 detik asli per 1 detik hitungan)
         const interval = setInterval(() => {
             timeLeft--;
             timerEl.innerText = timeLeft;
             
             if (timeLeft <= 0) {
                 clearInterval(interval);
-                btnEl.innerText = "Continue";
+                btnEl.innerText = "Lanjut";
                 btnEl.disabled = false;
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
                 btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
                 btnEl.onclick = function() {
-                    // Deteksi popup blocker
-                    let newWindow = window.open(window.location.href, '_blank');
-                    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                        showCustomAlert("Please update your browser, or use another browser.");
-                        return;
-                    }
-
                     sessionStorage.setItem(`wait_verified_${id}`, 'true');
-                    window.location.href = ad1; // IKLAN 1 (Tab lama)
+                    window.open(window.location.href, '_blank'); 
+                    redirectSafe(adWait); // Tab lama jadi iklan 2
                 };
             }
-        }, 1800); 
+        }, 1000);
     }
 
     function submitPassword() {
@@ -405,44 +347,14 @@
                     }, { once: true });
 
                 } else { 
-                    // Menambahkan Overlay untuk Popunder Player
-                    const isPlayerAdDone = sessionStorage.getItem(`player_ad_done_${id}`) === 'true';
-                    const needsOverlay = !isPlayerAdDone;
-
+                    // TAMPILAN VIDEO BERSIH (Tanpa Iklan Overlay)
                     mediaWrapper.innerHTML = `
                         <div class="relative w-full overflow-hidden media-container"> 
                             <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
-                            ${needsOverlay ? 
-                                `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
-                            }
                         </div>`;
                     
                      const player = document.getElementById('main-player');
-                     const overlay = document.getElementById('ad-overlay');
-
                      player.addEventListener('error', handleMediaError); 
-
-                     let isProcessingClick = false;
-                     if(overlay) {
-                         overlay.addEventListener('click', function() {
-                             if (isProcessingClick) return; 
-                             isProcessingClick = true;
-
-                             // Deteksi popup blocker
-                             let newWindow = window.open(window.location.href, '_blank');
-                             if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                                 showCustomAlert("Please update your browser, or use another browser.");
-                                 isProcessingClick = false; // reset
-                                 return;
-                             }
-
-                             player.play().catch(e => console.warn("Autoplay blocked:", e));
-                             
-                             sessionStorage.setItem(`player_ad_done_${id}`, 'true'); 
-                             overlay.remove(); 
-                             window.location.href = ad2; // IKLAN 2 (Tab lama)
-                         });
-                     }
                 }
             } else if (contentType.startsWith('audio/')) {
                 mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
