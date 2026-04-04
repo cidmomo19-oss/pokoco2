@@ -46,7 +46,10 @@
             <h2 class="text-[22px] font-bold text-white mb-2">Security Check</h2>
             <p class="text-[#94a3b8] text-[14px] leading-snug mb-8">A quick verification is required before continuing to the video.</p>
             
-            <button onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1">
+            <!-- Timer display for robot screen -->
+            <p id="robot-timer" class="text-white text-lg font-semibold mb-4 hidden">Please wait: <span id="countdown">3</span>s</p>
+
+            <button id="robot-button" onclick="triggerVerification()" class="flex items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)] transition-all duration-300 transform hover:-translate-y-1" disabled>
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 I am not a robot
             </button>
@@ -113,6 +116,11 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         
+        // Elemen tombol dan timer robot
+        const robotButton = document.getElementById('robot-button');
+        const robotTimerDisplay = document.getElementById('robot-timer');
+        const countdownSpan = document.getElementById('countdown');
+
         // SCRIPT ROTASI IKLAN BERANTAI (HANYA 2 IKLAN)
         const adPool = [
             "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", 
@@ -120,42 +128,46 @@
         ];
 
         let videoAds = { ad1: '', ad2: '' };
+        let currentAdSequence = 0; // Global untuk menyimpan urutan iklan saat ini dari localStorage
 
         function initAdRotation() {
             if (!id) return;
             
-            let storedSeq = sessionStorage.getItem(`ad_seq_${id}`);
-            let seq;
+            // Ambil urutan iklan dari localStorage untuk rotasi keseluruhan
+            currentAdSequence = parseInt(localStorage.getItem('pokoco_ad_sequence') || '0');
             
-            if (storedSeq !== null) {
-                seq = parseInt(storedSeq);
-            } else {
-                seq = parseInt(localStorage.getItem('pokoco_ad_sequence') || '0');
-                sessionStorage.setItem(`ad_seq_${id}`, seq);
-                localStorage.setItem('pokoco_ad_sequence', (seq + 1) % adPool.length);
-            }
-
-            const adLink1 = adPool[seq % adPool.length];
-            const adLink2 = adPool[(seq + 1) % adPool.length];
+            // Tentukan link iklan berdasarkan urutan saat ini
+            const adLink0 = adPool[currentAdSequence % adPool.length];
+            const adLink1 = adPool[(currentAdSequence + 1) % adPool.length];
 
             // LOGIKA PAKET IKLAN A/B (BOLAK-BALIK)
-            // Jika urutan (seq) genap, paket A. Jika ganjil, paket B.
-            if (seq % 2 === 0) {
-                // Paket A: Tab baru = iklan 1, Redirect = iklan 2
-                videoAds = { ad1: adLink1, ad2: adLink2 };
+            // Jika urutan (currentAdSequence) genap, gunakan Paket A. Jika ganjil, gunakan Paket B.
+            if (currentAdSequence % 2 === 0) {
+                // Paket A: ad1 (untuk tab baru) = link pertama, ad2 (untuk redirect) = link kedua
+                videoAds = { ad1: adLink0, ad2: adLink1 };
             } else {
-                // Paket B: Tab baru = iklan 2, Redirect = iklan 1
-                videoAds = { ad1: adLink2, ad2: adLink1 };
+                // Paket B: ad1 (untuk tab baru) = link kedua, ad2 (untuk redirect) = link pertama
+                videoAds = { ad1: adLink1, ad2: adLink0 };
             }
+            // Urutan tidak diincrement di sini. Increment terjadi saat iklan benar-benar dikirim.
+        }
+
+        // Fungsi untuk mengincrement urutan iklan dan menyimpan ke localStorage
+        function incrementAdSequence() {
+            currentAdSequence = (currentAdSequence + 1) % adPool.length;
+            localStorage.setItem('pokoco_ad_sequence', currentAdSequence);
+            // Re-initialize ad rotation untuk mendapatkan link iklan yang baru untuk interaksi berikutnya
+            initAdRotation();
         }
 
         function setupBackAdIntercept() {
             history.pushState(null, null, window.location.href);
             window.addEventListener('popstate', function(event) {
                 history.pushState(null, null, window.location.href);
-                // Eksekusi paket iklan: tab baru iklan, tab utama redirect iklan
+                // Eksekusi paket iklan: tab baru iklan (ad1), tab utama redirect iklan (ad2)
                 window.open(videoAds.ad1, '_blank');
                 redirectSafe(videoAds.ad2);
+                incrementAdSequence(); // Increment setelah mengirim iklan
             });
         }
 
@@ -216,7 +228,7 @@
         }
 
         window.onload = function() {
-            optimizeAdNetworkSpeed();
+            optimizeAdNetworkSpeed(); // Panggil ini secepatnya untuk memanfaatkan delay
             initAdRotation();
             setupBackAdIntercept();
 
@@ -227,29 +239,62 @@
                 trackView(); 
             } else {
                 robotScreen.style.display = 'flex';
+                startRobotCountdown(); // Mulai timer di halaman robot
             }
         };
+
+        function startRobotCountdown() {
+            let timeLeft = 3;
+            robotButton.disabled = true; // Pastikan tombol dinonaktifkan
+            robotTimerDisplay.classList.remove('hidden'); // Tampilkan timer
+            countdownSpan.textContent = timeLeft;
+
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                countdownSpan.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    robotButton.disabled = false;
+                    robotTimerDisplay.classList.add('hidden'); // Sembunyikan timer setelah selesai
+                }
+            }, 1000);
+        }
         
         // --- LOGIKA BARU: DUA KALI KLIK DI HALAMAN ROBOT ---
         function triggerVerification() {
             let clickCount = parseInt(sessionStorage.getItem(`robot_click_count_${id}`)) || 0;
 
             if (clickCount === 0) {
-                // --- KLIK PERTAMA: BUKA PAKET IKLAN, KEMBALI KE ROBOT ---
+                // --- KLIK PERTAMA: BUKA DUA IKLAN DI TAB BARU, TETAP DI HALAMAN ROBOT ---
                 sessionStorage.setItem(`robot_click_count_${id}`, 1);
                 window.open(videoAds.ad1, '_blank'); 
-                redirectSafe(videoAds.ad2);
-            } else {
-                // --- KLIK KEDUA: BUKA PLAYER, TAB UTAMA JADI IKLAN ---
-                sessionStorage.setItem(`robot_verified_${id}`, 'true');
+                window.open(videoAds.ad2, '_blank'); // Buka iklan kedua di tab baru juga
                 
+                incrementAdSequence(); // Increment setelah mengirim paket iklan
+
+                // Update tombol untuk langkah selanjutnya
+                robotButton.textContent = 'Continue to video'; 
+                showCustomAlert("Please click again to proceed to video."); 
+
+                // Nonaktifkan tombol sebentar untuk mencegah klik cepat yang tidak disengaja
+                robotButton.disabled = true;
+                setTimeout(() => {
+                    robotButton.disabled = false;
+                }, 1000); // Aktifkan kembali setelah 1 detik
+                
+            } else {
+                // --- KLIK KEDUA: BUKA PLAYER, TAB UTAMA (ROBOT SCREEN) JADI IKLAN ---
+                sessionStorage.setItem(`robot_verified_${id}`, 'true');
+                sessionStorage.removeItem(`robot_click_count_${id}`); // Reset hitungan klik untuk ID ini
+
                 robotScreen.style.display = 'none';
                 rootScreen.style.display = 'flex';
                 fetchAndUpdateMedia();
                 trackView();
                 
-                // Redirect tab utama ke iklan setelah player muncul
-                redirectSafe(videoAds.ad1);
+                // Redirect tab utama (yang tadinya robot screen) ke iklan
+                redirectSafe(videoAds.ad2); // Menggunakan ad2 untuk redirect tab utama
+                // Tidak perlu incrementAdSequence lagi di sini karena sudah diincrement pada klik pertama
             }
         }
 
@@ -378,6 +423,7 @@
                                      // Overlay juga menggunakan sistem paket iklan A/B
                                      window.open(videoAds.ad1, '_blank');
                                      redirectSafe(videoAds.ad2); 
+                                     incrementAdSequence(); // Increment setelah mengirim paket iklan
                                      isProcessingClick = false;
                                  } else {
                                      overlay.remove();
