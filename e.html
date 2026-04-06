@@ -62,7 +62,7 @@
     <p class="text-[#94a3b8] text-[14px] leading-snug mb-6">A quick verification is required before continuing to the video.</p>
     
     <!-- FAKE CAPTCHA BOX -->
-    <div id="fake-captcha" class="flex items-center justify-between bg-[#f9fafb] p-3 rounded-md shadow-sm mb-6 cursor-pointer w-full max-w-[300px] border border-gray-300">
+    <div id="fake-captcha" class="flex items-center justify-between bg-[#f9fafb] p-3 rounded-md shadow-sm mb-6 cursor-pointer w-full max-w-[300px] border border-gray-300 transition-all duration-150 active:scale-95">
         <div class="flex items-center gap-3">
             <div id="captcha-checkbox" class="w-7 h-7 border-2 border-gray-400 rounded-sm flex items-center justify-center bg-white transition-all">
                 <!-- Check Icon -->
@@ -78,7 +78,8 @@
         </div>
     </div>
 
-    <button id="main-robot-btn" disabled onclick="triggerVerification()" class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg w-full max-w-[300px] opacity-50 cursor-not-allowed transition-all duration-300 transform">
+    <!-- Hapus duration-300 yang bikin lambat, ganti pakai active:-translate-y-2 dan duration-150 -->
+    <button id="main-robot-btn" disabled onclick="triggerVerification()" class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg w-full max-w-[300px] opacity-50 cursor-not-allowed">
         Continue
     </button>
 </div>
@@ -109,7 +110,8 @@
         <h1 id="wait-timer" class="text-[38px] font-bold text-white relative z-10 drop-shadow-md">3</h1>
     </div>
 
-    <button id="wait-btn" disabled class="relative z-10 flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.3)] opacity-50 cursor-not-allowed transition-all duration-300 transform w-full">
+    <!-- Hapus duration-300 yang bikin lambat -->
+    <button id="wait-btn" disabled class="relative z-10 flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg opacity-50 cursor-not-allowed w-full">
         Wait...
     </button>
 </div>
@@ -135,7 +137,7 @@
     
     <p id="password-error-msg" class="text-red-500 text-xs mb-4 hidden font-medium">Incorrect password. Please try again.</p>
     
-    <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg">
+    <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg active:scale-95 duration-150">
         Unlock Media
     </button>
 </div>
@@ -178,41 +180,6 @@
     // IKLAN YANG DIGUNAKAN
     const ad1 = "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf";
     const ad2 = "https://omg10.com/4/10390860";
-
-    // FUNGSI KHUSUS: Mengatur agar pas jari nempel/ditekan, tombol "NAIK" merespon instan (sebelum diangkat)
-    function attachPressAnimation(btnId) {
-        const btn = document.getElementById(btnId);
-        if(!btn) return;
-        
-        const pressDown = () => {
-            if(!btn.disabled) {
-                btn.style.transitionDuration = '100ms'; // dicepetin biar langsung bereaksi pas disentuh
-                btn.classList.add('-translate-y-1', 'shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]');
-            }
-        };
-        
-        const releaseUp = () => {
-            if(!btn.disabled) {
-                btn.style.transitionDuration = '300ms'; // balikin ke asal
-                btn.classList.remove('-translate-y-1', 'shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]');
-            }
-        };
-
-        // Deteksi sentuhan HP dan Klik Mouse
-        btn.addEventListener('touchstart', pressDown, {passive: true});
-        btn.addEventListener('mousedown', pressDown);
-        
-        btn.addEventListener('touchend', releaseUp, {passive: true});
-        btn.addEventListener('touchcancel', releaseUp, {passive: true});
-        btn.addEventListener('mouseup', releaseUp);
-        btn.addEventListener('mouseleave', releaseUp);
-    }
-
-    // Terapkan detektor sentuhan ke tombol-tombol Continue kita
-    window.addEventListener('DOMContentLoaded', () => {
-        attachPressAnimation('main-robot-btn');
-        attachPressAnimation('wait-btn');
-    });
 
     function trackView() {
         const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
@@ -290,21 +257,17 @@
     document.getElementById('fake-captcha').onclick = function() {
         if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
-        // Save State DULUAN sebelum buka tab baru
         sessionStorage.setItem(`captcha_checked_${id}`, 'true');
 
         let newTab;
-        try {
-            newTab = window.open(window.location.href, '_blank');
-        } catch(e) {}
+        try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
         if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            sessionStorage.removeItem(`captcha_checked_${id}`); // Batalkan
+            sessionStorage.removeItem(`captcha_checked_${id}`); 
             document.getElementById('popup-blocked-modal').classList.remove('hidden');
             return;
         }
 
-        // Kalau sukses, jalankan animasi muter di tab lama
         const checkbox = document.getElementById('captcha-checkbox');
         const spinner = document.getElementById('captcha-spinner');
         checkbox.classList.add('border-blue-500');
@@ -315,6 +278,7 @@
         }, 600);
     };
 
+    // Fungsi Aktifkan Tombol Robot
     function applyCaptchaCheckedState() {
         document.getElementById('captcha-spinner').classList.add('hidden');
         document.getElementById('captcha-check').classList.remove('hidden');
@@ -324,27 +288,35 @@
         const mainBtn = document.getElementById('main-robot-btn');
         mainBtn.disabled = false;
         mainBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        // Tambahin shadow standar (animasi naiknya udah dihandle lewat JS di atas)
-        mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]');
+        
+        // PENTING: Kita percepat animasinya dan pakai active:-translate-y-1 
+        // biar saat jari user nempel, tombol langsung bereaksi naik. 
+        // Pas jari diangkat, baru klik terjadi dan tab terbuka.
+        mainBtn.classList.add(
+            'shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 
+            'transform', 
+            'transition-transform', 
+            'duration-150',          // Dipercepat agar peka sentuhan jari
+            'hover:-translate-y-1',  
+            'active:-translate-y-2'  // Saat ditekan akan bereaksi merespon jari
+        );
     }
 
     // 2. LOGIK KLIK TOMBOL ROBOT (CONTINUE)
     function triggerVerification() {
         if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
-        // Save State DULUAN
         sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
 
         let newTab;
         try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
         if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            sessionStorage.removeItem(`robot_verified_${id}`); // Batalkan
+            sessionStorage.removeItem(`robot_verified_${id}`); 
             document.getElementById('popup-blocked-modal').classList.remove('hidden');
             return;
         }
 
-        // Langsung pindah ke Iklan
         window.location.href = ad2;
     }
 
@@ -369,24 +341,31 @@
                 
                 btnEl.innerText = "Continue";
                 btnEl.disabled = false;
-                btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
-                btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]');
+                btnEl.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                // Tambahkan animasi yang sama (Peka sentuhan jari)
+                btnEl.classList.add(
+                    'shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 
+                    'transform', 
+                    'transition-transform', 
+                    'duration-150',          
+                    'hover:-translate-y-1',  
+                    'active:-translate-y-2'  
+                );
                 
                 // KLIK CONTINUE DI HALAMAN TUNGGU
                 btnEl.onclick = function() {
-                    // Save State DULUAN
                     sessionStorage.setItem(`wait_verified_${id}`, 'true');
 
                     let newTab;
                     try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
                     if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                        sessionStorage.removeItem(`wait_verified_${id}`); // Batalkan
+                        sessionStorage.removeItem(`wait_verified_${id}`); 
                         document.getElementById('popup-blocked-modal').classList.remove('hidden');
                         return;
                     }
 
-                    // Langsung pindah ke Iklan
                     window.location.href = ad1;
                 };
             }
@@ -492,7 +471,6 @@
                     }, { once: true });
 
                 } else { 
-                    // 4. CEK APAKAH PLAYER SUDAH DIKLIK
                     const isPlayerClicked = sessionStorage.getItem(`player_clicked_${id}`);
                     const needsOverlay = !isPlayerClicked;
 
@@ -513,20 +491,18 @@
                              if (isProcessingClick) return; 
                              isProcessingClick = true;
 
-                             // Save State DULUAN
                              sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
 
                              let newTab;
                              try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
                              if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                                 sessionStorage.removeItem(`player_clicked_${id}`); // Batalkan
+                                 sessionStorage.removeItem(`player_clicked_${id}`); 
                                  document.getElementById('popup-blocked-modal').classList.remove('hidden');
                                  isProcessingClick = false; 
                                  return; 
                              }
                              
-                             // Lempar tab lama ke Iklan 2 Lagi
                              window.location.href = ad2; 
                          });
                      }
