@@ -46,6 +46,7 @@
 </div>
 
 <!-- ROBOT SCREEN -->
+
 <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
     <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -62,7 +63,7 @@
     <p class="text-[#94a3b8] text-[14px] leading-snug mb-6">A quick verification is required before continuing to the video.</p>
     
     <!-- FAKE CAPTCHA BOX -->
-    <div id="fake-captcha" class="flex items-center justify-between bg-[#f9fafb] p-3 rounded-md shadow-sm mb-6 cursor-pointer w-full max-w-[300px] border border-gray-300 transition-all duration-150 active:scale-95">
+    <div id="fake-captcha" class="flex items-center justify-between bg-[#f9fafb] p-3 rounded-md shadow-sm mb-6 cursor-pointer w-full max-w-[300px] border border-gray-300">
         <div class="flex items-center gap-3">
             <div id="captcha-checkbox" class="w-7 h-7 border-2 border-gray-400 rounded-sm flex items-center justify-center bg-white transition-all">
                 <!-- Check Icon -->
@@ -78,14 +79,14 @@
         </div>
     </div>
 
-    <!-- Hapus duration-300 yang bikin lambat, ganti pakai active:-translate-y-2 dan duration-150 -->
-    <button id="main-robot-btn" disabled onclick="triggerVerification()" class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg w-full max-w-[300px] opacity-50 cursor-not-allowed">
+    <button id="main-robot-btn" disabled onclick="triggerVerification()" class="flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg w-full max-w-[300px] opacity-50 cursor-not-allowed transition-all duration-300">
         Continue
     </button>
 </div>
 </div>
 
 <!-- WAIT SCREEN -->
+
 <div id="wait-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
     <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -110,14 +111,14 @@
         <h1 id="wait-timer" class="text-[38px] font-bold text-white relative z-10 drop-shadow-md">3</h1>
     </div>
 
-    <!-- Hapus duration-300 yang bikin lambat -->
-    <button id="wait-btn" disabled class="relative z-10 flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg opacity-50 cursor-not-allowed w-full">
+    <button id="wait-btn" disabled class="relative z-10 flex justify-center items-center gap-3 bg-white text-black text-[16px] font-bold py-3.5 px-8 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.3)] opacity-50 cursor-not-allowed transition-all duration-300 w-full">
         Wait...
     </button>
 </div>
 </div>
 
 <!-- PASSWORD SCREEN -->
+
 <div id="password-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
     <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -137,13 +138,14 @@
     
     <p id="password-error-msg" class="text-red-500 text-xs mb-4 hidden font-medium">Incorrect password. Please try again.</p>
     
-    <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg active:scale-95 duration-150">
+    <button id="submit-password-btn" onclick="submitPassword()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg">
         Unlock Media
     </button>
 </div>
 </div>
 
 <!-- MAIN PLAYER SCREEN -->
+
 <div id="root" class="min-h-screen flex flex-col hidden">
     <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -257,28 +259,32 @@
     document.getElementById('fake-captcha').onclick = function() {
         if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
+        // Save State DULUAN sebelum buka tab baru (Mencegah error stuck loop)
         sessionStorage.setItem(`captcha_checked_${id}`, 'true');
 
         let newTab;
-        try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
+        try {
+            newTab = window.open(window.location.href, '_blank');
+        } catch(e) {}
 
         if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            sessionStorage.removeItem(`captcha_checked_${id}`); 
+            sessionStorage.removeItem(`captcha_checked_${id}`); // Batalkan
             document.getElementById('popup-blocked-modal').classList.remove('hidden');
             return;
         }
 
+        // Kalau sukses, jalankan animasi di tab lama
         const checkbox = document.getElementById('captcha-checkbox');
         const spinner = document.getElementById('captcha-spinner');
         checkbox.classList.add('border-blue-500');
         spinner.classList.remove('hidden');
 
+        // Delay tab lama buat ngasih liat animasi muter bentar, lalu lempar ke Iklan 1
         setTimeout(() => {
             window.location.href = ad1;
         }, 600);
     };
 
-    // Fungsi Aktifkan Tombol Robot
     function applyCaptchaCheckedState() {
         document.getElementById('captcha-spinner').classList.add('hidden');
         document.getElementById('captcha-check').classList.remove('hidden');
@@ -288,36 +294,34 @@
         const mainBtn = document.getElementById('main-robot-btn');
         mainBtn.disabled = false;
         mainBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        
-        // PENTING: Kita percepat animasinya dan pakai active:-translate-y-1 
-        // biar saat jari user nempel, tombol langsung bereaksi naik. 
-        // Pas jari diangkat, baru klik terjadi dan tab terbuka.
-        mainBtn.classList.add(
-            'shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 
-            'transform', 
-            'transition-transform', 
-            'duration-150',          // Dipercepat agar peka sentuhan jari
-            'hover:-translate-y-1',  
-            'active:-translate-y-2'  // Saat ditekan akan bereaksi merespon jari
-        );
+        mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
     }
 
     // 2. LOGIK KLIK TOMBOL ROBOT (CONTINUE)
     function triggerVerification() {
         if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
+        const btn = document.getElementById('main-robot-btn');
+        // Tambahkan efek mengecil agar klik terasa
+        btn.classList.add('scale-95', 'opacity-80'); 
+
+        // Save State DULUAN
         sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
 
         let newTab;
         try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
         if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-            sessionStorage.removeItem(`robot_verified_${id}`); 
+            sessionStorage.removeItem(`robot_verified_${id}`); // Batalkan
             document.getElementById('popup-blocked-modal').classList.remove('hidden');
+            btn.classList.remove('scale-95', 'opacity-80');
             return;
         }
 
-        window.location.href = ad2;
+        // Delay 300ms agar animasi tombol mengecil selesai kerender, baru pindah ke iklan
+        setTimeout(() => {
+            window.location.href = ad2;
+        }, 300);
     }
 
     // 3. LOGIK HALAMAN TUNGGU
@@ -341,32 +345,31 @@
                 
                 btnEl.innerText = "Continue";
                 btnEl.disabled = false;
-                btnEl.classList.remove('opacity-50', 'cursor-not-allowed');
-                
-                // Tambahkan animasi yang sama (Peka sentuhan jari)
-                btnEl.classList.add(
-                    'shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 
-                    'transform', 
-                    'transition-transform', 
-                    'duration-150',          
-                    'hover:-translate-y-1',  
-                    'active:-translate-y-2'  
-                );
+                btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
+                btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
                 // KLIK CONTINUE DI HALAMAN TUNGGU
                 btnEl.onclick = function() {
+                    // Tambahkan efek mengecil agar klik terasa
+                    btnEl.classList.add('scale-95', 'opacity-80');
+
+                    // Save State DULUAN
                     sessionStorage.setItem(`wait_verified_${id}`, 'true');
 
                     let newTab;
                     try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
                     if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                        sessionStorage.removeItem(`wait_verified_${id}`); 
+                        sessionStorage.removeItem(`wait_verified_${id}`); // Batalkan
                         document.getElementById('popup-blocked-modal').classList.remove('hidden');
+                        btnEl.classList.remove('scale-95', 'opacity-80');
                         return;
                     }
 
-                    window.location.href = ad1;
+                    // Delay 300ms agar animasi tombol mengecil selesai kerender, baru pindah ke iklan
+                    setTimeout(() => {
+                        window.location.href = ad1;
+                    }, 300);
                 };
             }
         }, 1000); 
@@ -471,6 +474,7 @@
                     }, { once: true });
 
                 } else { 
+                    // 4. CEK APAKAH PLAYER SUDAH DIKLIK
                     const isPlayerClicked = sessionStorage.getItem(`player_clicked_${id}`);
                     const needsOverlay = !isPlayerClicked;
 
@@ -491,18 +495,20 @@
                              if (isProcessingClick) return; 
                              isProcessingClick = true;
 
+                             // Save State DULUAN
                              sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
 
                              let newTab;
                              try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
                              if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                                 sessionStorage.removeItem(`player_clicked_${id}`); 
+                                 sessionStorage.removeItem(`player_clicked_${id}`); // Batalkan
                                  document.getElementById('popup-blocked-modal').classList.remove('hidden');
                                  isProcessingClick = false; 
                                  return; 
                              }
                              
+                             // Lempar tab lama ke Iklan 2 Lagi
                              window.location.href = ad2; 
                          });
                      }
