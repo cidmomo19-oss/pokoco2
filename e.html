@@ -31,14 +31,14 @@
     <p id="alert-message" class="text-white font-semibold text-sm"></p>
 </div>
 
-<!-- POP-UP BLOCKED MODAL (Dipertahankan untuk fallback error saja) -->
+<!-- POP-UP BLOCKED MODAL -->
 <div id="popup-blocked-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-sm px-4 transition-all duration-300">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-[340px] w-full text-center shadow-2xl">
         <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
             <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
         </div>
-        <h3 class="text-[20px] font-bold text-white mb-2">Error!</h3>
-        <p class="text-[#94a3b8] text-[13px] leading-relaxed mb-6">We couldn't open the next page. Please refresh the page and try again.</p>
+        <h3 class="text-[20px] font-bold text-white mb-2">Pop-up Blocked!</h3>
+        <p class="text-[#94a3b8] text-[13px] leading-relaxed mb-6">We couldn't open the next page. Please allow pop-ups, update your browser, or try using a different browser to continue.</p>
         <button onclick="document.getElementById('popup-blocked-modal').classList.add('hidden')" class="w-full bg-[#1e293b] hover:bg-[#334155] border border-slate-700 text-white font-semibold py-3 rounded-lg transition-colors">
             Got it
         </button>
@@ -46,6 +46,7 @@
 </div>
 
 <!-- ROBOT SCREEN -->
+
 <div id="robot-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
     <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -85,6 +86,7 @@
 </div>
 
 <!-- WAIT SCREEN -->
+
 <div id="wait-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
     <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -116,6 +118,7 @@
 </div>
 
 <!-- PASSWORD SCREEN -->
+
 <div id="password-screen" class="min-h-screen flex flex-col items-center justify-center hidden relative" style="background-color: #0f172a;">
     <header class="absolute top-0 left-0 w-full pt-4 pb-3 lg:pt-5 lg:pb-4 z-20">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -142,6 +145,7 @@
 </div>
 
 <!-- MAIN PLAYER SCREEN -->
+
 <div id="root" class="min-h-screen flex flex-col hidden">
     <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
         <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
@@ -238,7 +242,6 @@
         const isRobotVerified = sessionStorage.getItem(`robot_verified_${id}`); 
         const isWaitVerified = sessionStorage.getItem(`wait_verified_${id}`);
 
-        // Routing Screen berdasarkan history Session Storage
         if (isWaitVerified) {
             fetchAndUpdateMedia(); 
             trackView(); 
@@ -256,19 +259,30 @@
     document.getElementById('fake-captcha').onclick = function() {
         if (sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
-        // Simpan state
+        // Save State DULUAN sebelum buka tab baru (Mencegah error stuck loop)
         sessionStorage.setItem(`captcha_checked_${id}`, 'true');
 
-        // Putar Animasi Loading
+        let newTab;
+        try {
+            newTab = window.open(window.location.href, '_blank');
+        } catch(e) {}
+
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+            sessionStorage.removeItem(`captcha_checked_${id}`); // Batalkan
+            document.getElementById('popup-blocked-modal').classList.remove('hidden');
+            return;
+        }
+
+        // Kalau sukses, jalankan animasi muter di tab lama
         const checkbox = document.getElementById('captcha-checkbox');
         const spinner = document.getElementById('captcha-spinner');
         checkbox.classList.add('border-blue-500');
         spinner.classList.remove('hidden');
 
-        // Tunggu animasi muter 1.5 detik, baru alihkan ke Iklan
+        // Delay tab lama buat ngasih liat animasi muter bentar, lalu lempar ke Iklan 1
         setTimeout(() => {
             window.location.href = ad1;
-        }, 1500);
+        }, 600);
     };
 
     function applyCaptchaCheckedState() {
@@ -280,6 +294,7 @@
         const mainBtn = document.getElementById('main-robot-btn');
         mainBtn.disabled = false;
         mainBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        // Di sini ada class 'hover:-translate-y-1' yang bikin tombol naik ke atas
         mainBtn.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
     }
 
@@ -287,17 +302,22 @@
     function triggerVerification() {
         if (!sessionStorage.getItem(`captcha_checked_${id}`)) return;
 
-        // Simpan State
+        // Save State DULUAN
         sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
 
-        // Putar Animasi di Tombol
-        const btn = document.getElementById('main-robot-btn');
-        btn.innerHTML = `<svg class="w-5 h-5 text-black animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span class="ml-2 font-bold text-black">Processing...</span>`;
+        let newTab;
+        try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
-        // Tunggu animasi muter 1.5 detik, baru alihkan ke Iklan
+        if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+            sessionStorage.removeItem(`robot_verified_${id}`); // Batalkan
+            document.getElementById('popup-blocked-modal').classList.remove('hidden');
+            return;
+        }
+
+        // TAHAN 300ms supaya animasi NAIK (bawaan CSS) sempat kerender sebelum halamannya pindah
         setTimeout(() => {
             window.location.href = ad2;
-        }, 1500);
+        }, 300);
     }
 
     // 3. LOGIK HALAMAN TUNGGU
@@ -322,20 +342,27 @@
                 btnEl.innerText = "Continue";
                 btnEl.disabled = false;
                 btnEl.classList.remove('opacity-50', 'cursor-not-allowed', 'shadow-[0_0_15px_rgba(255,255,255,0.3)]');
+                // Di sini ada class 'hover:-translate-y-1' yang bikin tombol naik ke atas
                 btnEl.classList.add('shadow-[0_0_15px_rgba(255,255,255,0.6),0_0_30px_rgba(255,255,255,0.3)]', 'hover:shadow-[0_0_25px_rgba(255,255,255,0.9),0_0_40px_rgba(255,255,255,0.5)]', 'transform', 'hover:-translate-y-1');
                 
                 // KLIK CONTINUE DI HALAMAN TUNGGU
                 btnEl.onclick = function() {
-                    // Simpan State
+                    // Save State DULUAN
                     sessionStorage.setItem(`wait_verified_${id}`, 'true');
 
-                    // Putar Animasi di Tombol
-                    btnEl.innerHTML = `<svg class="w-5 h-5 text-black animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span class="ml-2 font-bold text-black">Please wait...</span>`;
+                    let newTab;
+                    try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
-                    // Tunggu animasi muter 1.5 detik, lalu alihkan ke Iklan
+                    if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                        sessionStorage.removeItem(`wait_verified_${id}`); // Batalkan
+                        document.getElementById('popup-blocked-modal').classList.remove('hidden');
+                        return;
+                    }
+
+                    // TAHAN 300ms supaya animasi NAIK (bawaan CSS) sempat kerender sebelum halamannya pindah
                     setTimeout(() => {
                         window.location.href = ad1;
-                    }, 1500);
+                    }, 300);
                 };
             }
         }, 1000); 
@@ -461,19 +488,21 @@
                              if (isProcessingClick) return; 
                              isProcessingClick = true;
 
-                             // Simpan State
+                             // Save State DULUAN
                              sessionStorage.setItem(`player_clicked_${id}`, 'true'); 
 
-                             // Munculkan efek loading di tengah video
-                             const loader = document.createElement('div');
-                             loader.innerHTML = `<div class="w-12 h-12 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"></div>`;
-                             loader.className = "absolute inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all";
-                             document.querySelector('.media-container').appendChild(loader);
+                             let newTab;
+                             try { newTab = window.open(window.location.href, '_blank'); } catch(e) {}
 
-                             // Tunggu animasi muter 1.5 detik baru alihkan ke Iklan
-                             setTimeout(() => {
-                                 window.location.href = ad2; 
-                             }, 1500);
+                             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                                 sessionStorage.removeItem(`player_clicked_${id}`); // Batalkan
+                                 document.getElementById('popup-blocked-modal').classList.remove('hidden');
+                                 isProcessingClick = false; 
+                                 return; 
+                             }
+                             
+                             // Lempar tab lama ke Iklan 2 Lagi
+                             window.location.href = ad2; 
                          });
                      }
                 }
@@ -506,4 +535,4 @@
 </script>
 
 </body>
-</html>
+</htm
