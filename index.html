@@ -89,16 +89,16 @@
                 <p class="text-slate-400 text-sm mb-10">Free, simple, private, fast, and secure. Up to 500MB file size.</p>
 
                 <div id="drop-area" class="upload-card rounded-2xl p-12 border-dashed border-2 border-slate-700 cursor-pointer group">
-                    <input type="file" id="file-input" class="hidden" 
-                           accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/x-flv,video/x-matroska,
-                                   image/jpeg,image/png,image/gif,image/webp,image/avif,
-                                   audio/mpeg,audio/wav,audio/ogg,audio/aac,audio/flac">
+                    <!-- DIRUBAH: accept="*/*" agar semua file HP dan PC terbaca -->
+                    <input type="file" id="file-input" class="hidden" accept="*/*">
+                    
                     <div class="flex flex-col items-center pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-500 group-hover:text-blue-400 transition-colors mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                         <p class="text-white font-medium">Drag & drop your files here, or click to browse</p>
-                        <p class="text-slate-500 text-xs mt-1">Videos (MP4, MOV, MKV, AVI), Images (JPG, PNG, GIF, WebP, AVIF), Audio (MP3, WAV, FLAC).</p>
+                        <!-- DIRUBAH: Deskripsi menyesuaikan agar support semuanya -->
+                        <p class="text-slate-500 text-xs mt-1">Supports all types of Videos, Images, Audio, and other files.</p>
                     </div>
                 </div>
             </div>
@@ -262,17 +262,11 @@
             if(e.dataTransfer.files[0]) handleFileSelection(e.dataTransfer.files[0]);
         });
 
+        // DIRUBAH: Validasi file Universal (tanpa diblokir tipe apa pun)
         function handleFileSelection(file) {
             // --- VALIDASI LIMIT 500MB DI FRONTEND ---
             if (file.size > 500 * 1024 * 1024) { 
                 showNotification('File is too large! Maximum 500MB is allowed.', 'error');
-                return;
-            }
-            
-            const allowedTypes = ['video/', 'image/', 'audio/'];
-            const isAllowed = allowedTypes.some(typePrefix => file.type.startsWith(typePrefix));
-            if (!isAllowed) {
-                showNotification('Unsupported file type. Only video, image, or audio files are allowed.', 'error');
                 return;
             }
 
@@ -287,12 +281,20 @@
             const previewContent = document.getElementById('file-preview-content');
             const fileUrl = URL.createObjectURL(file);
 
+            // LOGIKA PREVIEW UNIVERSAL: Jika bukan gambar/video/audio akan menampilkan ikon box biasa
             if (file.type.startsWith('image/')) {
                 previewContent.innerHTML = `<img src="${fileUrl}" alt="Preview Image">`;
             } else if (file.type.startsWith('video/')) {
                 previewContent.innerHTML = `<video src="${fileUrl}" controls playsinline muted></video>`;
-            } else { 
+            } else if (file.type.startsWith('audio/')) { 
                 previewContent.innerHTML = `<audio src="${fileUrl}" controls></audio>`;
+            } else { 
+                // Tampilan (Preview) jika file bukan gambar/video/audio
+                previewContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-8 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <span class="text-xs font-bold uppercase tracking-widest text-slate-300">File Ready to Upload</span>
+                    </div>`;
             } 
             
             if (isPasswordFieldVisible) togglePasswordInput();
@@ -310,7 +312,9 @@
             document.getElementById('progress-container').classList.remove('hidden');
 
             try {
-                let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(selectedFile.type)}&size=${selectedFile.size}`;
+                // Default ke "application/octet-stream" jika file tidak terbaca tipe MIME-nya (file aneh/langka)
+                const safeFileType = selectedFile.type || "application/octet-stream";
+                let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeFileType)}&size=${selectedFile.size}`;
                 
                 if (password) apiUrl += `&password=${encodeURIComponent(password)}`;
 
@@ -323,7 +327,7 @@
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', selectedFile.type);
+                xhr.setRequestHeader('Content-Type', safeFileType);
 
                 xhr.upload.onprogress = (e) => {
                     const percent = Math.round((e.loaded / e.total) * 100);
@@ -335,7 +339,7 @@
                     if (xhr.status >= 200 && xhr.status < 300) {
                         document.getElementById('progress-text').innerText = "Finishing up...";
                         
-                        saveToHistory(data.videoId, selectedFile.name, selectedFile.type); 
+                        saveToHistory(data.videoId, selectedFile.name, safeFileType); 
                         
                         showNotification('Upload successful! Redirecting to your file...', 'success');
                         setTimeout(() => {
