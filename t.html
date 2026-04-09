@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokoco - Secret Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="w-full max-w-[450px] bg-[#1e293b] border border-slate-700 rounded-2xl p-8 shadow-2xl">
+        <h1 class="text-2xl font-bold mb-1 text-white text-center tracking-tight">Create Secret Embed</h1>
+        <p class="text-slate-400 text-sm mb-6 text-center">Bypass upload, use direct iframe & download links.</p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1 block">Iframe URL (Required)</label>
+                <input type="url" id="embed-url" placeholder="https://..." class="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+            
+            <div>
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1 block">Download URL (Optional)</label>
+                <input type="url" id="dl-url" placeholder="https://..." class="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1 block">Password (Optional)</label>
+                <input type="text" id="pwd" placeholder="Leave blank if none" class="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+            </div>
+
+            <button onclick="generateLink()" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg mt-2">
+                Generate Link
+            </button>
+        </div>
+
+        <div id="result" class="hidden mt-6 p-4 bg-green-900/30 border border-green-500/50 rounded-xl text-center transition-all">
+            <p class="text-green-400 text-sm font-semibold mb-2">Link Created Successfully!</p>
+            <input type="text" id="result-link" readonly class="w-full bg-black/50 border border-green-700 rounded p-2 text-xs text-white text-center mb-2 focus:outline-none">
+            <button onclick="copyLink()" class="text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded transition">Copy Link</button>
+        </div>
+    </div>
+
+    <script>
+        async function generateLink() {
+            const embedUrl = document.getElementById('embed-url').value;
+            const dlUrl = document.getElementById('dl-url').value;
+            const pwd = document.getElementById('pwd').value;
+            const btn = document.getElementById('btn-submit');
+
+            if (!embedUrl) {
+                alert("Iframe URL is required!");
+                return;
+            }
+
+            btn.innerText = "Creating...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/create-embed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ embedUrl, downloadUrl: dlUrl, password: pwd })
+                });
+
+                const data = await res.json();
+                
+                if (data.success) {
+                    const finalLink = window.location.origin + '/e?id=' + data.videoId;
+                    document.getElementById('result-link').value = finalLink;
+                    document.getElementById('result').classList.remove('hidden');
+                    
+                    document.getElementById('embed-url').value = '';
+                    document.getElementById('dl-url').value = '';
+                    document.getElementById('pwd').value = '';
+                } else {
+                    alert("Failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Error connecting to server.");
+            } finally {
+                btn.innerText = "Generate Link";
+                btn.disabled = false;
+            }
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('result-link');
+            linkInput.select();
+            document.execCommand('copy');
+            alert("Link copied!");
+        }
+    </script>
+</body>
+</html>
