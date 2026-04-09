@@ -25,10 +25,6 @@
 </head>
 <body>
 
-<div id="custom-alert" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-lg shadow-xl bg-red-900/50 border border-red-500/50 backdrop-blur-sm transition-all duration-300 opacity-0">
-    <p id="alert-message" class="text-white font-semibold text-sm"></p>
-</div>
-
 <!-- POP-UP BLOCKED MODAL -->
 <div id="popup-blocked-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-sm px-4 transition-all duration-300">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-[340px] w-full text-center shadow-2xl">
@@ -146,10 +142,6 @@
         </div>
 
         <div class="w-full flex justify-center items-center gap-4 mt-6 mb-0" id="action-buttons">
-            <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-                <span>Share link</span>
-            </button>
             <!-- Tombol download akan muncul di sini secara dinamis jika ada -->
         </div>
     </main>
@@ -318,7 +310,7 @@
 
             // TAMBAHKAN TOMBOL DOWNLOAD JIKA ADA
             if (downloadUrl) {
-                document.getElementById('action-buttons').innerHTML += `
+                document.getElementById('action-buttons').innerHTML = `
                     <a href="${downloadUrl}" target="_blank" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-blue-600 hover:bg-blue-700 font-semibold shadow-lg transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                         <span>Download</span>
@@ -346,15 +338,6 @@
             robotScreen.style.display = 'none'; waitScreen.style.display = 'none'; passwordScreen.style.display = 'none'; rootScreen.style.display = 'flex';
             mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Link not found or has been deleted.</div>`;
         }
-    }
-
-    function shareMedia() {
-        navigator.clipboard.writeText(window.location.href);
-        const alertBox = document.getElementById('custom-alert');
-        document.getElementById('alert-message').innerText = "Link copied to clipboard!";
-        alertBox.classList.remove('hidden', 'opacity-0');
-        setTimeout(() => alertBox.classList.add('opacity-0'), 2500);
-        setTimeout(() => alertBox.classList.add('hidden'), 2800);
     }
 </script>
 
