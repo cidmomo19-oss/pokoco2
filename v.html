@@ -352,4 +352,86 @@
                     waitingScreen.style.display = 'none';
                     rootScreen.style.display = 'none';
                     passwordScreen.style.display = 'flex';
-                   
+                    return; 
+                }
+
+                if (data.success === false && response.status === 401) {
+                    const errorMsg = document.getElementById('password-error-msg');
+                    errorMsg.innerText = "Incorrect password. Please try again.";
+                    errorMsg.classList.remove('hidden');
+                    document.getElementById('submit-password-btn').innerText = "Unlock Media";
+                    return;
+                }
+
+                if (!data.success) {
+                    throw new Error(data.message || "Media not found or has been deleted.");
+                }
+
+                robotScreen.style.display = 'none';
+                waitingScreen.style.display = 'none';
+                passwordScreen.style.display = 'none';
+                rootScreen.style.display = 'flex';
+
+                const { playUrl, contentType } = data;
+                
+                if (contentType.startsWith('image/')) {
+                    mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
+                    shareLabel.innerText = 'Share image';
+                    document.title = 'Pokoco - Image';
+
+                } else if (contentType.startsWith('video/')) {
+                    shareLabel.innerText = 'Share video';
+                    document.title = 'Pokoco - Video';
+                    
+                    const existingPlayer = document.getElementById('main-player');
+
+                    if (existingPlayer) { 
+                        const currentTime = existingPlayer.currentTime;
+                        const wasPlaying = !existingPlayer.paused;
+                        existingPlayer.src = playUrl;
+                        existingPlayer.load(); 
+                        
+                        existingPlayer.addEventListener('loadedmetadata', () => {
+                            existingPlayer.currentTime = currentTime;
+                            if (wasPlaying) existingPlayer.play().catch(e => console.warn("Autoplay blocked:", e));
+                        }, { once: true });
+
+                    } else { 
+                        // KARENA UDAH LEWAT 2 IKLAN DI DEPAN, PLAYER SEKARANG BERSIH TANPA OVERLAY
+                        mediaWrapper.innerHTML = `
+                            <div class="relative w-full overflow-hidden media-container"> 
+                                <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
+                            </div>`;
+                        
+                         const player = document.getElementById('main-player');
+                         player.addEventListener('error', handleMediaError); 
+                    }
+                } else if (contentType.startsWith('audio/')) {
+                    mediaWrapper.innerHTML = `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
+                    shareLabel.innerText = 'Share audio';
+                    document.title = 'Pokoco - Audio';
+                    const player = document.getElementById('main-player');
+                    player.addEventListener('error', handleMediaError); 
+                }
+            } catch (e) {
+                console.error("Error in fetch:", e);
+                robotScreen.style.display = 'none';
+                waitingScreen.style.display = 'none';
+                passwordScreen.style.display = 'none';
+                rootScreen.style.display = 'flex';
+                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or has been deleted.</div>`;
+            }
+        }
+
+        function shareMedia() {
+            const label = document.getElementById('share-label').innerText;
+            if (navigator.share) {
+                navigator.share({ title: `Pokoco - ${label}`, url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showCustomAlert("Link copied to clipboard!");
+            }
+        }
+    </script>
+</body>
+</html>
