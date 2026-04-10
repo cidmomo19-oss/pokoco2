@@ -134,8 +134,10 @@
             }
         }
 
-        // Redirect yang lebih dioptimasi dan terukur
+        // FUNGSI REDIRECT YANG LEBIH NGEBUT
         function fastRedirect(url) {
+            // Langsung inject ke window.location.assign lebih cepet beberapa milidetik
+            // daripada memanipulasi DOM (bikin elemen <a>). Ini ngakalin user yg cepet pencet back.
             window.location.assign(url);
         }
 
@@ -175,16 +177,20 @@
             "https://omg10.com/4/10390860"
         ];
 
-        // Optimasi jaringan untuk iklan
+        // OPTIMASI TINGKAT DEWA BIAR REDIRECT KILAT (100% LEGAL & AMAN DARI BANNED)
         function superChargeAdSpeed() {
             adPool.forEach(url => {
                 try {
                     const domain = new URL(url).origin;
+                    
+                    // 1. Suruh Browser nyari IP (DNS) di background dari awal web kebuka
                     const dnsPrefetch = document.createElement('link');
                     dnsPrefetch.rel = 'dns-prefetch';
                     dnsPrefetch.href = domain;
                     document.head.appendChild(dnsPrefetch);
 
+                    // 2. Suruh browser 'jabat tangan' (TCP/TLS handshake) duluan ke server iklan
+                    // Jadi pas user nge-klik, tinggal kirim data doang, ga pake nunggu konek lagi.
                     const preconnect = document.createElement('link');
                     preconnect.rel = 'preconnect';
                     preconnect.href = domain;
@@ -194,18 +200,8 @@
             });
         }
 
-        // Trik biar pas user tekan Back dari iklan, loading/overlay palsunya langsung hilang (bfcache fix)
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted || sessionStorage.getItem(`genericAdDone_${id}`) === 'true') {
-                const fakeBuffer = document.getElementById('fake-buffer-overlay');
-                const adOverlay = document.getElementById('ad-overlay');
-                if (fakeBuffer) fakeBuffer.classList.add('hidden');
-                if (adOverlay) adOverlay.remove();
-            }
-        });
-
         window.onload = function() {
-            superChargeAdSpeed(); 
+            superChargeAdSpeed(); // Panggil fungsi optimasi jaringan di awal banget
 
             const isVerifiedSession = sessionStorage.getItem(`robot_verified_${id}`); 
 
@@ -222,7 +218,6 @@
             }
         };
 
-        // HALAMAN ROBOT DIBIARKAN SAMA (Tab baru buat video, tab lama ke iklan)
         function triggerVerification() {
             if (!isCaptchaVerified) { 
                 showCustomAlert("Please complete the security check first.");
@@ -239,10 +234,9 @@
             localStorage.setItem('pokoco_global_ad_index', (currentIdx + 1) % adPool.length);
             sessionStorage.setItem(`robot_verified_${id}`, 'true'); 
             
+            // Buka video tab baru, tab ini redirect kilat
             window.open(window.location.href, '_blank'); 
-            
-            const a = document.createElement('a'); a.href = robotAd; a.rel = 'noreferrer noopener'; 
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); 
+            fastRedirect(robotAd);
         }
 
         function submitPassword() {
@@ -338,22 +332,16 @@
                         const isGenericAdDone = sessionStorage.getItem(`genericAdDone_${id}`) === 'true';
                         const needsOverlay = (adLink && !isAdLinkDone) || !isGenericAdDone;
 
-                        // [BARU] Tambahan layer "fake-buffer-overlay" buat trik psikologi
                         mediaWrapper.innerHTML = `
-                            <div class="relative w-full overflow-hidden media-container bg-black"> 
+                            <div class="relative w-full overflow-hidden media-container"> 
                                 <video id="main-player" class="w-full" playsinline controls src="${playUrl}"></video>
                                 ${needsOverlay ? 
-                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>
-                                     <div id="fake-buffer-overlay" class="absolute inset-0 z-[60] bg-[#0f172a]/95 backdrop-blur flex flex-col items-center justify-center hidden">
-                                        <div class="w-10 h-10 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-                                        <span class="text-white font-medium text-[15px] animate-pulse">Connecting to media server...</span>
-                                     </div>` : ''
+                                    `<div id="ad-overlay" class="absolute inset-0 z-50 flex items-center justify-center cursor-pointer" style="background: rgba(0, 0, 0, 0.0);"></div>` : ''
                                 }
                             </div>`;
                         
                          const player = document.getElementById('main-player');
                          const overlay = document.getElementById('ad-overlay');
-                         const fakeBuffer = document.getElementById('fake-buffer-overlay');
 
                          player.addEventListener('error', handleMediaError); 
 
@@ -369,16 +357,11 @@
 
                                  if (adLink && !currentAdLinkDone) {
                                      sessionStorage.setItem(`adLinkDone_${id}`, 'true'); 
-                                     
-                                     // Munculin layar loading buatan
-                                     if (fakeBuffer) fakeBuffer.classList.remove('hidden');
-                                     
-                                     // Tunda redirect 1.5 detik buat ngerileksin jari user
-                                     setTimeout(() => {
-                                        fastRedirect(adLink); 
-                                     }, 1500);
+                                     fastRedirect(adLink); 
+                                     isProcessingClick = false;
                                  } 
                                  else if (!currentGenericAdDone) {
+                                     // Pasang flag biar pas user klik Back, overlay ini udah ilang dan video bisa diplay
                                      sessionStorage.setItem(`genericAdDone_${id}`, 'true'); 
                                      
                                      let adMainTab = sessionStorage.getItem(`assigned_player_ad_${id}`);
@@ -387,17 +370,13 @@
                                          adMainTab = adPool[currentIdx % adPool.length];
                                      }
                                      
-                                     // Trik Psikologi: Munculin layar loading buatan
-                                     if (fakeBuffer) fakeBuffer.classList.remove('hidden');
+                                     // Murni redirect kilat di tab yang sama
+                                     fastRedirect(adMainTab); 
                                      
-                                     // Tunda redirect 1.5 detik biar reflek nekan Back mereka mati
-                                     setTimeout(() => {
-                                        fastRedirect(adMainTab); 
-                                     }, 1500);
+                                     isProcessingClick = false;
                                  } 
                                  else {
                                      overlay.remove();
-                                     if (fakeBuffer) fakeBuffer.remove();
                                      player.play().catch(e => console.warn("Autoplay blocked:", e));
                                      isProcessingClick = false;
                                  }
