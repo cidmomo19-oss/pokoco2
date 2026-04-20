@@ -15,33 +15,29 @@ export async function onRequestGet(context) {
   const contentType = url.searchParams.get("type") || "application/octet-stream";
   const password = url.searchParams.get("password") || null;
   const fileSizeStr = url.searchParams.get("size");
+  
+  // DATA BARU UNTUK HISTORY AKUN:
+  const userId = url.searchParams.get("userId") || "anonymous"; 
+  const fileName = url.searchParams.get("name") || "Untitled Media"; 
 
-  // --- VALIDASI LIMIT 500MB DI BACKEND ---
-  const MAX_SIZE = 500 * 1024 * 1024; // 500 MB dalam bytes
+  const MAX_SIZE = 500 * 1024 * 1024; 
 
   if (!fileSizeStr || isNaN(fileSizeStr)) {
-    return new Response(JSON.stringify({ success: false, message: "Missing or invalid file size parameter." }), { 
-      status: 400, headers: { 'Content-Type': 'application/json' } 
-    });
+    return new Response(JSON.stringify({ success: false, message: "Missing or invalid file size parameter." }), { status: 400 });
   }
 
   const fileSize = parseInt(fileSizeStr, 10);
-
   if (fileSize > MAX_SIZE) {
-    return new Response(JSON.stringify({ success: false, message: "File exceeds the 500MB limit." }), { 
-      status: 413, headers: { 'Content-Type': 'application/json' } 
-    });
+    return new Response(JSON.stringify({ success: false, message: "File exceeds the 500MB limit." }), { status: 413 });
   }
-  // ----------------------------------------
 
   const videoId = generateVideoId();
-  const fileName = videoId; 
 
   try {
-    // SIMPAN SEMUA DATA KE DATABASE D1 (ad_link dihapus)
+    // INSERT DATA KE D1 TERMASUK USER_ID DAN NAMA FILE UNTUK HISTORY
     await env.DB.prepare(
-      "INSERT INTO videos (id, views, content_type, password) VALUES (?, 0, ?, ?)"
-    ).bind(videoId, contentType, password).run();
+      "INSERT INTO videos (id, views, content_type, password, user_id, file_name) VALUES (?, 0, ?, ?, ?, ?)"
+    ).bind(videoId, contentType, password, userId, fileName).run();
 
     const S3 = new S3Client({
       region: "auto",
@@ -54,23 +50,19 @@ export async function onRequestGet(context) {
 
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
-      Key: fileName,
+      Key: videoId,
       ContentType: contentType,
       ContentLength: fileSize,
     });
 
-    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 }); // 3 hours to upload
+    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 10800 });
 
-    return new Response(JSON.stringify({
-      success: true,
-      uploadUrl: signedUrl,
-      videoId: videoId
-    }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ success: true, uploadUrl: signedUrl, videoId: videoId }), { 
+      headers: { 'Content-Type': 'application/json' } 
+    });
 
   } catch (error) {
     console.error("Upload URL Error:", error);
-    return new Response(JSON.stringify({ success: false, message: "Could not process your upload request. Please try again." }), { 
-      status: 500, headers: { 'Content-Type': 'application/json' } 
-    });
+    return new Response(JSON.stringify({ success: false, message: "Internal server error" }), { status: 500 });
   }
 }
