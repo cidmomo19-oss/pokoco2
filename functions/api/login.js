@@ -1,20 +1,32 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const { email, password } = await request.json();
+  
+  try {
+    const { username, password } = await request.json();
 
-  const user = await env.DB.prepare("SELECT * FROM users WHERE email = ? AND password = ?")
-    .bind(email, password)
-    .first();
+    if (!username || !password) {
+      return new Response(JSON.stringify({ success: false, message: "Missing credentials" }), { status: 400 });
+    }
 
-  if (user) {
-    // Set Cookie sederhana (Nama: pokoco_session, Isi: user_id)
-    return new Response(JSON.stringify({ success: true, user: { email: user.email } }), {
-      headers: {
-        "Content-Type": "application/json",
-        "Set-Cookie": `pokoco_user_id=${user.id}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax`
-      }
+    // Hash Password inputan untuk dicocokkan dengan DB
+    const msgBuffer = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Cari user di DB
+    const user = await env.DB.prepare("SELECT id, username FROM users WHERE username = ? AND password_hash = ?").bind(username, passwordHash).first();
+
+    if (!user) {
+      return new Response(JSON.stringify({ success: false, message: "Invalid username or password" }), { status: 401 });
+    }
+
+    // Jika sukses, kembalikan data user
+    return new Response(JSON.stringify({ success: true, userId: user.id, username: user.username }), {
+      headers: { 'Content-Type': 'application/json' }
     });
-  } else {
-    return new Response(JSON.stringify({ success: false, message: "Wrong email or password" }), { status: 401 });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ success: false, message: "Server Error" }), { status: 500 });
   }
 }
