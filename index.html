@@ -9,12 +9,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 0 0% 3.9%;
+            --primary: 0 0% 9%;
+            --primary-foreground: 0 0% 98%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 0 0% 98%;
+            --border: 0 0% 89.8%;
+            --input: 0 0% 89.8%;
+            --ring: 0 0% 3.9%;
+            --radius: .5rem;
+        }
         html { overflow-y: scroll; min-height: 100vh; background-color: #f9fafb; }
         body {
             margin: 0; min-width: 320px; min-height: 100vh; color: #1a1a1a;
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
+        .bg-primary { background-color: hsl(var(--primary)); }
+        .text-primary-foreground { color: hsl(var(--primary-foreground)); }
+        .bg-destructive { background-color: hsl(var(--destructive)); }
+        .text-destructive-foreground { color: hsl(var(--destructive-foreground)); }
+        .border-input { border-color: hsl(var(--input)); }
     </style>
 </head>
 <body>
@@ -25,30 +42,29 @@
                 <header class="pt-3 pb-3 lg:pt-4 lg:pb-4 z-10">
                     <div class="max-w-6xl mx-auto px-6 lg:px-8">
                         <div class="flex items-center justify-between">
-                            <a href="/" class="flex items-center">
+                            <a href="javascript:void(0)" onclick="renderHome()" class="flex items-center">
                                 <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
                             </a>
                             
-                            <div id="header-menu" class="flex items-center space-x-3">
-                                <!-- Konten menu diisi via JS (Sign Up / Your Uploads) -->
+                            <div id="header-right">
+                                <!-- Konten dinamis diisi via JS -->
                             </div>
                         </div>
                     </div>
                 </header>
 
-                <!-- MAIN CONTENT AREA -->
+                <!-- AREA KONTEN UTAMA -->
                 <main id="main-area" class="flex-grow flex items-center">
-                    <!-- Default: Upload Section -->
                     <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
                         <div id="dynamic-content" class="text-center space-y-8 max-w-4xl mx-auto">
-                            <!-- Konten dinamis (Home / History / Auth) diisi via JS -->
+                            <!-- Diisi oleh JS -->
                         </div>
                     </div>
                 </main>
 
                 <!-- FOOTER -->
-                <footer class="pb-6 z-10">
-                    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <footer class="pb-6">
+                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
                         <div class="flex items-center justify-center space-x-8">
                             <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
                             <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
@@ -59,7 +75,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIC -->
     <script>
         let currentUser = JSON.parse(localStorage.getItem('pokoco_user')) || null;
 
@@ -69,33 +84,43 @@
         }
 
         function renderHeader() {
-            const menu = document.getElementById('header-menu');
+            const container = document.getElementById('header-right');
             if (currentUser) {
-                menu.innerHTML = `
+                // Header Saat LOGIN (Hanya Your Uploads & Icon Settings)
+                container.innerHTML = `
                     <div class="flex items-center space-x-6">
                         <button onclick="renderHistory()" class="text-gray-600 hover:text-gray-900 font-semibold transition-colors text-[15px]">Your Uploads</button>
-                        <button onclick="logout()" class="text-gray-600 hover:text-gray-900 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <button onclick="renderSettings()" class="text-gray-600 hover:text-gray-900 transition-colors" type="button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
                         </button>
                     </div>`;
             } else {
-                menu.innerHTML = `
-                    <button onclick="renderAuth('signup')" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full">Sign Up</button>
-                    <button onclick="renderAuth('login')" class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]">Login</button>`;
+                // Header Saat BELUM LOGIN (Hanya Tombol Upload Hitam)
+                container.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <button onclick="renderAuth()" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full">Sign Up</button>
+                        <a href="javascript:void(0)" onclick="renderHome()" class="flex items-center space-x-2 px-4 py-1.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors text-[15px]">
+                            <span>Upload</span>
+                        </a>
+                    </div>`;
             }
         }
 
         function renderHome() {
             document.getElementById('main-area').className = "flex-grow flex items-center";
             const content = document.getElementById('dynamic-content');
+            content.className = "text-center space-y-8 max-w-4xl mx-auto";
             content.innerHTML = `
                 <div class="space-y-6">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your files<br><span class="text-gray-600">and share</span></h1>
-                    <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple media hosting.</p>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your videos<br><span class="text-gray-600">and share</span></h1>
+                    <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple video hosting.</p>
                     <form>
                         <div class="pt-4">
                             <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
-                                <span id="up-txt">Upload File</span>
+                                <span id="up-txt">Upload Video</span>
                             </button>
                         </div>
                         <input type="file" id="file-input" class="hidden" onchange="handleUpload(this)">
@@ -107,104 +132,102 @@
             document.getElementById('main-area').className = "flex-grow";
             const content = document.getElementById('dynamic-content');
             content.className = "max-w-6xl mx-auto px-6 lg:px-8 py-12 text-left";
-            
-            content.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-8">Your Uploads <span id="count" class="text-2xl text-gray-500">(...)</span></h1>
-                                 <div id="h-list" class="space-y-4 text-center py-12 text-gray-600">Loading...</div>`;
+            content.innerHTML = `
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">Your Uploads <span id="count" class="text-2xl text-gray-500">(0)</span></h1>
+                <div id="h-list" class="text-center py-12 text-gray-600">Loading...</div>`;
 
-            fetch(`/api/get-history?userId=${currentUser.id}`)
-                .then(res => res.json())
-                .then(data => {
-                    const list = document.getElementById('h-list');
-                    const count = document.getElementById('count');
-                    if (data.success && data.history.length > 0) {
-                        count.innerText = `(${data.history.length})`;
-                        list.className = "grid grid-cols-1 gap-4";
-                        list.innerHTML = data.history.map(item => `
-                            <div class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
-                                <div class="truncate pr-4 text-left">
-                                    <a href="/v?id=${item.id}" target="_blank" class="text-sm font-semibold text-gray-900 hover:underline block truncate">${item.name || 'Untitled'}</a>
-                                    <span class="text-xs text-gray-400">${item.date || ''}</span>
-                                </div>
-                                <button onclick="deleteMedia('${item.id}')" class="text-gray-400 hover:text-red-500 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                </button>
-                            </div>
-                        `).join('');
-                    } else {
-                        count.innerText = "(0)";
-                        list.innerHTML = "No uploads yet";
-                    }
-                });
+            fetch(`/api/get-history?userId=${currentUser.id}`).then(res => res.json()).then(data => {
+                const list = document.getElementById('h-list');
+                const count = document.getElementById('count');
+                if (data.success && data.history.length > 0) {
+                    count.innerText = `(${data.history.length})`;
+                    list.className = "grid grid-cols-1 gap-4";
+                    list.innerHTML = data.history.map(item => `
+                        <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                            <a href="/v?id=${item.id}" target="_blank" class="font-medium text-gray-900 truncate hover:underline">${item.name || 'Untitled'}</a>
+                            <button onclick="deleteMedia('${item.id}')" class="text-gray-400 hover:text-red-500 transition-colors">Delete</button>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = "No uploads yet";
+                }
+            });
         }
 
-        function renderAuth(mode) {
+        function renderSettings() {
+            document.getElementById('main-area').className = "flex-grow";
             const content = document.getElementById('dynamic-content');
-            const isLogin = mode === 'login';
+            content.className = "max-w-6xl mx-auto px-6 lg:px-8 py-12 text-left";
+            
+            // 100% COPY PASTE HTML SETTINGS VIDEEY
             content.innerHTML = `
-                <div class="max-w-sm mx-auto bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
-                    <h2 class="text-2xl font-bold mb-6">${isLogin ? 'Login' : 'Sign Up'}</h2>
-                    <input type="text" id="u" placeholder="Username" class="w-full mb-3 p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-gray-300">
-                    <input type="password" id="p" placeholder="Password" class="w-full mb-6 p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-gray-300">
-                    <button onclick="submitAuth('${mode}')" class="w-full bg-gray-900 text-white p-3 rounded-xl font-bold hover:bg-gray-800 transition-all">${isLogin ? 'Login' : 'Create Account'}</button>
-                    <p class="mt-4 text-xs text-gray-500">By continuing, you agree to our terms.</p>
+                <div class="max-w-[800px] mx-auto">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+                    <div class="space-y-12">
+                        <div class="bg-white rounded-lg border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Manage Email</h2>
+                            <form class="space-y-4">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-medium leading-none" for="newEmail">Email Address</label>
+                                    <input type="email" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-w-md" id="newEmail" placeholder="Enter new email">
+                                </div>
+                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2" type="button">Update Email</button>
+                            </form>
+                        </div>
+                        <div class="bg-white rounded-lg border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Change Password</h2>
+                            <form class="space-y-4">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-medium leading-none" for="newPassword">New Password</label>
+                                    <input type="password" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-w-md" id="newPassword" placeholder="Enter new password">
+                                </div>
+                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2" type="button">Update Password</button>
+                            </form>
+                        </div>
+                        <div class="bg-white rounded-lg border border-gray-200 p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Account Actions</h2>
+                            <button onclick="logout()" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-4 py-2">Logout</button>
+                        </div>
+                    </div>
                 </div>`;
         }
 
-        async function submitAuth(mode) {
-            const username = document.getElementById('u').value;
-            const password = document.getElementById('p').value;
-            const res = await fetch(`/api/${mode}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username, password })
-            });
-            const data = await res.json();
-            if (data.success) {
-                currentUser = { id: data.userId, username: data.username };
-                localStorage.setItem('pokoco_user', JSON.stringify(currentUser));
-                renderHeader();
-                renderHome();
-            } else {
-                alert(data.message);
-            }
+        function renderAuth() {
+            const content = document.getElementById('dynamic-content');
+            content.innerHTML = `
+                <div class="max-w-sm mx-auto bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
+                    <h2 class="text-2xl font-bold mb-6">Sign In</h2>
+                    <input type="text" id="u" placeholder="Username" class="w-full mb-3 p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none">
+                    <input type="password" id="p" placeholder="Password" class="w-full mb-6 p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none">
+                    <button onclick="submitAuth()" class="w-full bg-gray-900 text-white p-3 rounded-xl font-bold">Continue</button>
+                </div>`;
         }
 
-        function logout() {
-            localStorage.removeItem('pokoco_user');
-            currentUser = null;
-            location.reload();
+        async function submitAuth() {
+            const username = document.getElementById('u').value;
+            const password = document.getElementById('p').value;
+            const res = await fetch('/api/login', { method: 'POST', body: JSON.stringify({username, password}) });
+            const data = await res.json();
+            if(data.success) {
+                localStorage.setItem('pokoco_user', JSON.stringify({id: data.userId}));
+                location.reload();
+            } else { alert(data.message); }
         }
+
+        function logout() { localStorage.removeItem('pokoco_user'); location.reload(); }
 
         async function handleUpload(input) {
             const file = input.files[0];
-            if (!file) return;
+            if(!file) return;
             const txt = document.getElementById('up-txt');
             txt.innerText = "Uploading...";
-
             let url = `/api/get-upload-url?type=${encodeURIComponent(file.type)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
-            if (currentUser) url += `&userId=${currentUser.id}`;
-
-            const res = await fetch(url);
-            const data = await res.json();
-            
+            if(currentUser) url += `&userId=${currentUser.id}`;
+            const res = await fetch(url).then(r => r.json());
             const xhr = new XMLHttpRequest();
-            xhr.open('PUT', data.uploadUrl);
-            xhr.upload.onprogress = (e) => {
-                const p = Math.round((e.loaded / e.total) * 100);
-                txt.innerText = `Uploading ${p}%`;
-            };
-            xhr.onload = () => { if (xhr.status === 200) window.location.href = `/v?id=${data.videoId}`; };
+            xhr.open('PUT', res.uploadUrl);
+            xhr.onload = () => { window.location.href = `/v?id=${res.videoId}`; };
             xhr.send(file);
-        }
-
-        async function deleteMedia(id) {
-            if (!confirm('Delete file?')) return;
-            const res = await fetch('/api/delete-media', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ videoId: id, userId: currentUser.id })
-            });
-            if ((await res.json()).success) renderHistory();
         }
 
         init();
