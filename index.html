@@ -1,23 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokoco - Free and Simple File Hosting</title>
-    <meta name="description" content="Free and simple media hosting." />
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-image: linear-gradient(to bottom right, #f9fafb, #ffffff, #f9fafb);
-            background-color: #f9fafb;
-            color: #1a1a1a;
-            min-height: 100vh;
-        }
-    </style>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body data-version="v1.0.5">
     <div id="root">
@@ -28,10 +15,10 @@
                         <div class="max-w-6xl mx-auto px-6 lg:px-8">
                             <div class="flex items-center justify-between">
                                 <a href="/" class="flex items-center">
-                                    <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+                                    <span class="font-semibold text-[26px] tracking-[-2px] text-gray-900" style="font-family: 'Poppins', sans-serif;">pokoco</span>
                                 </a>
                                 <div class="flex items-center space-x-3">
-                                    <button class="bg-gray-900 text-white px-5 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]" onclick="document.getElementById('file-input').click()">Upload</button>
+                                    <button id="nav-upload-btn" class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]">Upload</button>
                                 </div>
                             </div>
                         </div>
@@ -41,26 +28,21 @@
                 <div class="flex-grow flex items-center">
                     <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
                         <div class="text-center space-y-8 max-w-4xl mx-auto">
-                            
-                            <!-- MAIN UPLOAD UI -->
+                            <!-- Main Upload Form -->
                             <div id="main-content" class="space-y-6">
-                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">
-                                    Upload your media<br><span class="text-gray-600">and share</span>
-                                </h1>
-                                <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">
-                                    Free and simple media hosting.
-                                </p>
+                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your media<br><span class="text-gray-600">and share</span></h1>
+                                <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple media hosting.</p>
                                 <form>
                                     <div class="pt-4">
-                                        <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
-                                            <span>Upload File</span>
+                                        <button id="upload-btn" type="button" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
+                                            <span>Upload Media</span>
                                         </button>
                                     </div>
-                                    <input type="file" id="file-input" name="file" accept="video/*,image/*,audio/*" class="hidden">
+                                    <input type="file" id="file-input" name="file" accept="*" class="hidden">
                                 </form>
                             </div>
-
-                            <!-- PROGRESS UI (Hidden by default) -->
+                            
+                            <!-- Progress Container -->
                             <div id="progress-container" class="hidden space-y-4 max-w-sm mx-auto mt-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                 <h2 class="text-lg font-bold text-gray-900">Uploading...</h2>
                                 <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
@@ -83,70 +65,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        const fileInput = document.getElementById('file-input');
-        const mainContent = document.getElementById('main-content');
-        const progressContainer = document.getElementById('progress-container');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Maksimal ukuran (500MB contohnya)
-            if (file.size > 500 * 1024 * 1024) {
-                alert('File is too large! Max 500MB.');
-                fileInput.value = '';
-                return;
-            }
-
-            // Ganti tampilan ke mode loading
-            mainContent.classList.add('hidden');
-            progressContainer.classList.remove('hidden');
-
-            try {
-                const safeFileType = file.type || "application/octet-stream";
-                const apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeFileType)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
-
-                const res = await fetch(apiUrl);
-                const data = await res.json();
-                if (!data.success) throw new Error(data.message);
-
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', safeFileType);
-
-                xhr.upload.onprogress = (e) => {
-                    if(e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        progressBar.style.width = percent + '%';
-                        progressText.innerText = percent + '%';
-                    }
-                };
-
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        window.location.href = '/v?id=' + data.videoId;
-                    } else {
-                        throw new Error('Upload failed');
-                    }
-                };
-
-                xhr.onerror = () => {
-                    throw new Error('Network error. Upload failed.');
-                };
-
-                xhr.send(file);
-            } catch (err) {
-                alert(err.message);
-                // Reset UI kalau gagal
-                mainContent.classList.remove('hidden');
-                progressContainer.classList.add('hidden');
-                fileInput.value = ''; 
-            }
-        });
-    </script>
+    <script src="/app.js"></script>
 </body>
 </html>
