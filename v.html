@@ -3,225 +3,138 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="referrer" content="no-referrer" />
-    <title>Pokoco - Free and Simpel Media Hosting</title>
-
-    <meta name="description" content="Watch and share media on Pokoco." />
-    <meta property="og:title" content="Pokoco - Media Preview" />
-    <meta property="og:description" content="Watch and share media securely." />
-    <meta property="og:image" itemprop="image" content="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
+    <title>Pokoco - Media Preview</title>
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co.com/67T0y5Zx/Picsart-26-03-26-17-57-46-544.png" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; }
-        video, img, audio { max-height: 520px; width: 100%; outline: none; object-fit: contain; display: block; border-radius: 0px; }
-        audio { background-color: #1e293b; padding: 10px; border: 1px solid #334155; }
-        .media-container { background-color: transparent; } 
-        .text-gray-pokoco { color: #64748b; }
-
-        /* Style untuk overlay transparan */
-        .transparent-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            cursor: pointer;
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-image: linear-gradient(to bottom right, #f9fafb, #ffffff, #f9fafb);
+            background-color: #f9fafb;
+            color: #1a1a1a;
+            min-height: 100vh;
         }
     </style>
 </head>
-<body>
-
-    <!-- NOTIFIKASI CUSTOM -->
-    <div id="custom-alert" class="hidden fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-lg shadow-xl bg-red-900/50 border border-red-500/50 backdrop-blur-sm transition-all duration-300 opacity-0">
-        <p id="alert-message" class="text-white font-semibold text-sm"></p>
-    </div>
-    
-    <!-- MAIN PLAYER SCREEN -->
-    <div id="root" class="min-h-screen flex flex-col">
-        <header class="pt-4 pb-3 lg:pt-5 lg:pb-4">
-            <div class="max-w-6xl mx-auto px-6 lg:px-8 flex items-center justify-between">
-                <a href="/" class="flex items-center"><span class="font-semibold text-[26px] tracking-[-2px] text-white">pokoco</span></a>
-                <a href="/" class="flex items-center px-5 py-1.5 bg-[#1e293b] hover:bg-[#334155] text-white font-semibold rounded-full transition-colors text-[15px] border border-slate-800">Upload</a>
-            </div>
-        </header>
-
-        <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-4">
-            <div class="w-full flex justify-center">
-                <div class="w-full" id="media-wrapper">
-                    <div id="loading-state" class="flex flex-col items-center justify-center w-full h-[250px]">
-                        <div class="w-8 h-8 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-3"></div>
-                        <span class="text-gray-pokoco text-sm animate-pulse">Loading media...</span>
+<body data-version="v1.0.5">
+    <div id="root">
+        <div class="min-h-screen">
+            <div class="min-h-screen flex flex-col">
+                
+                <header class="pt-3 pb-3 lg:pt-4 lg:pb-4">
+                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                        <div class="flex items-center justify-between">
+                            <a href="/" class="flex items-center">
+                                <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+                            </a>
+                            <a href="/" class="flex items-center space-x-2 px-5 py-1.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors text-[15px]">
+                                <span>Upload</span>
+                            </a>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </header>
 
-            <div class="w-full flex flex-col items-center mt-6 mb-0">
-                <button onclick="shareMedia()" class="inline-flex items-center justify-center text-sm text-white h-10 py-2 rounded-full px-8 gap-2 bg-[#1e293b] hover:bg-[#334155] font-semibold border border-slate-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-                    <span id="share-label">Share link</span>
-                </button>
+                <div class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-3">
+                    
+                    <div class="w-full flex justify-center">
+                        <div class="w-full bg-transparent" id="media-wrapper">
+                            <!-- Loading State -->
+                            <div class="flex items-center justify-center h-[300px]">
+                                <span class="text-gray-400 font-medium animate-pulse">Loading media...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full flex flex-col items-center mt-4 mb-0">
+                        <button id="share-btn" onclick="shareMedia()" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-gray-700 shadow-sm h-9 py-2 rounded-full px-6 gap-2 bg-gray-100 hover:bg-gray-200 font-semibold border border-gray-200/50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                <polyline points="16 6 12 2 8 6"></polyline>
+                                <line x1="12" x2="12" y1="2" y2="15"></line>
+                            </svg>
+                            <span id="share-label">Share link</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <footer class="pb-6 mt-10">
+                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                        <div class="flex items-center justify-center space-x-8">
+                            <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
+                            <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
+                        </div>
+                    </div>
+                </footer>
+
             </div>
-        </main>
+        </div>
     </div>
 
     <script>
-        const mediaWrapper = document.getElementById('media-wrapper');
-        const shareLabel = document.getElementById('share-label');
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        
-        function trackView() {
-            const alreadyViewed = sessionStorage.getItem(`viewed_${id}`);
-            if (id && !alreadyViewed) {
-                setTimeout(() => {
-                    fetch('/api/track-view', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: id }),
-                        keepalive: true 
-                    }).then(() => {
-                        sessionStorage.setItem(`viewed_${id}`, 'true');
-                    }).catch(err => console.error("View track failed"));
-                }, 5000); 
-            }
-        }
+        const mediaWrapper = document.getElementById('media-wrapper');
+        const shareLabel = document.getElementById('share-label');
 
-        function fastRedirect(url) {
-            window.location.replace(url);
-        }
-
-        const rootScreen = document.getElementById('root');
-        let alertTimeout;
-
-        function showCustomAlert(message) { 
-            const alertBox = document.getElementById('custom-alert');
-            const alertMsg = document.getElementById('alert-message');
-            alertMsg.innerText = message;
-            alertBox.classList.remove('hidden', 'opacity-0');
-            clearTimeout(alertTimeout);
-            alertTimeout = setTimeout(() => {
-                alertBox.classList.add('opacity-0');
-                setTimeout(() => alertBox.classList.add('hidden'), 300);
-            }, 3000);
-        }
-
-        const adPool = [
-            "https://conductivebreeds.com/qv7txv4c1u?key=c7d2434d3ed66645d911fc2e3d0e1bcf", 
-            "https://omg10.com/4/10390860"
-        ];
-        
-        window.onload = function() {
-            window.addEventListener("pageshow", function (event) {
-                if (event.persisted) {
-                    window.location.reload(); 
-                }
-            });
-            fetchAndUpdateMedia();
-        };
-
-        function triggerAdAndDuplicateTab() {
-            const adClickCount = parseInt(sessionStorage.getItem(`ad_click_count_${id}`) || '0');
-            
-            if (adClickCount >= 2) return;
-
-            let currentIdx = parseInt(localStorage.getItem('pokoco_global_ad_index') || '0');
-            const adUrl = adPool[currentIdx % adPool.length]; 
-            
-            localStorage.setItem('pokoco_global_ad_index', currentIdx + 1);
-            sessionStorage.setItem(`ad_click_count_${id}`, (adClickCount + 1).toString());
-            
-            // Duplikat tab saat ini. Pengguna akan berada di tab baru.
-            window.open(window.location.href, '_blank'); 
-            // Tab lama (yang ini) akan menjadi halaman iklan.
-            fastRedirect(adUrl);
-        }
-
-        function handleMediaError() {
-            console.error("Media error detected. Requesting a new link...");
-            fetchAndUpdateMedia(); 
-        }
-
-        async function fetchAndUpdateMedia() {
+        async function fetchMedia() {
             if (!id) {
-                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-pokoco">Invalid ID.</div>`;
+                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">Invalid link or media ID.</div>`;
                 return;
             }
             
             try {
-                const apiUrl = `/api/get-video-url?id=${id}`;
-                const response = await fetch(apiUrl);
+                const response = await fetch(`/api/get-video-url?id=${id}`);
                 const data = await response.json();
 
                 if (!data.success) {
-                    throw new Error(data.message || "Media not found or has been deleted.");
+                    throw new Error("Media not found");
                 }
-
-                rootScreen.style.display = 'flex';
 
                 const { playUrl, contentType } = data;
-                const adClickCount = parseInt(sessionStorage.getItem(`ad_click_count_${id}`) || '0');
 
                 if (contentType.startsWith('image/')) {
-                    mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Image content">`;
+                    mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Media content" class="w-full md:rounded-[8px]" style="max-height: 520px; object-fit: contain; background: #000;">`;
                     shareLabel.innerText = 'Share image';
-                    document.title = 'Pokoco - Image';
-                    trackView();
-
-                } else if (contentType.startsWith('video/') || contentType.startsWith('audio/')) {
-                    
-                    const isVideo = contentType.startsWith('video/');
-                    shareLabel.innerText = isVideo ? 'Share video' : 'Share audio';
-                    document.title = isVideo ? 'Pokoco - Video' : 'Pokoco - Audio';
-                    
-                    const playerHTML = isVideo ? `
-                        <div class="relative w-full overflow-hidden media-container"> 
-                            <video id="main-player" class="w-full" playsinline src="${playUrl}"></video>
-                        </div>` :
-                        `<audio id="main-player" class="w-full" controls src="${playUrl}"></audio>`;
-
-                    mediaWrapper.innerHTML = playerHTML;
-                    const player = document.getElementById('main-player');
-                    player.addEventListener('error', handleMediaError);
-
-                    if (adClickCount < 2) {
-                        // Jika iklan belum 2x, pasang overlay transparan
-                        const overlay = document.createElement('div');
-                        overlay.className = 'transparent-overlay';
-                        
-                        // Taruh overlay di dalam container video/audio
-                        player.parentElement.style.position = 'relative';
-                        player.parentElement.appendChild(overlay);
-
-                        overlay.addEventListener('click', triggerAdAndDuplicateTab, { once: true });
-                    } else {
-                        // Iklan sudah selesai, tampilkan kontrol dan langsung putar video & track
-                        player.controls = true;
-                        player.play().catch(e => console.warn("Autoplay was blocked by the browser."));
-                        trackView();
-                    }
+                } else if (contentType.startsWith('video/')) {
+                    mediaWrapper.innerHTML = `<video class="w-full md:rounded-[8px]" controls playsinline autoplay src="${playUrl}" style="max-height: 520px; background: #000;"></video>`;
+                    shareLabel.innerText = 'Share video';
+                } else {
+                    mediaWrapper.innerHTML = `<audio class="w-full md:rounded-[8px] bg-gray-100 p-4 border border-gray-200" controls src="${playUrl}"></audio>`;
+                    shareLabel.innerText = 'Share audio';
                 }
+
+                // Simplified View Tracking
+                setTimeout(() => {
+                    if(!sessionStorage.getItem(`viewed_${id}`)) {
+                        fetch('/api/track-view', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: id }),
+                            keepalive: true
+                        }).then(() => sessionStorage.setItem(`viewed_${id}`, 'true')).catch(() => {});
+                    }
+                }, 5000);
+
             } catch (e) {
-                console.error("Error in fetch:", e);
-                rootScreen.style.display = 'flex';
-                mediaWrapper.innerHTML = `<div class="text-center py-24 text-white font-semibold">Media not found or has been deleted.</div>`;
+                mediaWrapper.innerHTML = `<div class="text-center py-24 text-gray-800 font-semibold">Media not found or has been deleted.</div>`;
             }
         }
 
         function shareMedia() {
-            const label = document.getElementById('share-label').innerText;
             if (navigator.share) {
-                navigator.share({ title: `Pokoco - ${label}`, url: window.location.href });
+                navigator.share({ title: `Pokoco - Media`, url: window.location.href });
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                showCustomAlert("Link copied to clipboard!");
+                const originalText = shareLabel.innerText;
+                shareLabel.innerText = 'Link Copied!';
+                setTimeout(() => { shareLabel.innerText = originalText; }, 2000);
             }
         }
+
+        fetchMedia();
     </script>
 </body>
 </html>
