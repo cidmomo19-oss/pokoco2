@@ -4,229 +4,197 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokoco - Free and Simple File Hosting</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            --background: 0 0% 100%;
-            --foreground: 0 0% 3.9%;
-            --primary: 0 0% 9%;
-            --primary-foreground: 0 0% 98%;
-            --destructive: 0 84.2% 60.2%;
-            --destructive-foreground: 0 0% 98%;
-            --border: 0 0% 89.8%;
-            --input: 0 0% 89.8%;
-            --ring: 0 0% 3.9%;
-            --radius: .5rem;
+            --primary: 0 0% 9%; --primary-foreground: 0 0% 98%;
+            --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%;
+            --border: 0 0% 89.8%; --input: 0 0% 89.8%; --ring: 0 0% 3.9%;
         }
         html { overflow-y: scroll; min-height: 100vh; background-color: #f9fafb; }
-        body {
-            margin: 0; min-width: 320px; min-height: 100vh; color: #1a1a1a;
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
+        body { margin: 0; min-width: 320px; min-height: 100vh; color: #1a1a1a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
         .bg-primary { background-color: hsl(var(--primary)); }
         .text-primary-foreground { color: hsl(var(--primary-foreground)); }
         .bg-destructive { background-color: hsl(var(--destructive)); }
         .text-destructive-foreground { color: hsl(var(--destructive-foreground)); }
-        .border-input { border-color: hsl(var(--input)); }
+        /* Modal Animation */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="min-h-screen">
-            <div class="min-h-screen flex flex-col">
-                <!-- HEADER -->
-                <header class="pt-3 pb-3 lg:pt-4 lg:pb-4 z-10">
-                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
-                        <div class="flex items-center justify-between">
-                            <a href="javascript:void(0)" onclick="renderHome()" class="flex items-center">
-                                <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
-                            </a>
-                            
-                            <div id="header-right">
-                                <!-- Konten dinamis diisi via JS -->
-                            </div>
+        <div class="min-h-screen flex flex-col">
+            <!-- HEADER -->
+            <header id="main-header" class="pt-3 pb-3 lg:pt-4 lg:pb-4 z-10">
+                <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                    <div class="flex items-center justify-between">
+                        <a href="javascript:void(0)" onclick="showView('home')" class="flex items-center">
+                            <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+                        </a>
+                        <div id="header-nav" class="flex items-center space-x-3">
+                            <!-- JS akan isi ini -->
                         </div>
                     </div>
-                </header>
+                </div>
+            </header>
 
-                <!-- AREA KONTEN UTAMA -->
-                <main id="main-area" class="flex-grow flex items-center">
-                    <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
-                        <div id="dynamic-content" class="text-center space-y-8 max-w-4xl mx-auto">
-                            <!-- Diisi oleh JS -->
-                        </div>
-                    </div>
-                </main>
+            <!-- MAIN VIEW -->
+            <main id="main-view" class="flex-grow flex flex-col">
+                <!-- JS akan isi konten Home, History, atau Settings di sini -->
+            </main>
 
-                <!-- FOOTER -->
-                <footer class="pb-6">
-                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
-                        <div class="flex items-center justify-center space-x-8">
-                            <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
-                            <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
-                        </div>
+            <!-- FOOTER -->
+            <footer class="pb-6">
+                <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                    <div class="flex items-center justify-center space-x-8">
+                        <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
+                        <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
                     </div>
-                </footer>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- POPUP LOGIN/DAFTAR -->
+    <div id="auth-popup" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm hidden px-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative">
+            <button onclick="closeAuth()" class="absolute top-4 right-5 text-gray-400 hover:text-gray-900 text-2xl">&times;</button>
+            <h2 id="auth-title" class="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Sign Up</h2>
+            
+            <div class="space-y-4">
+                <input type="text" id="auth-u" placeholder="Username" class="w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:border-gray-400 transition-all">
+                <input type="password" id="auth-p" placeholder="Password" class="w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:border-gray-400 transition-all">
+                <button onclick="handleAuthSubmit()" id="auth-btn" class="w-full h-11 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all">Continue</button>
             </div>
+            
+            <p class="mt-6 text-center text-sm text-gray-500">
+                <span id="auth-footer-text">Already have an account?</span>
+                <button onclick="toggleAuthMode()" id="auth-switch" class="text-gray-900 font-semibold hover:underline ml-1">Login</button>
+            </p>
         </div>
     </div>
 
     <script>
         let currentUser = JSON.parse(localStorage.getItem('pokoco_user')) || null;
+        let authMode = 'signup'; // default
 
         function init() {
             renderHeader();
-            renderHome();
+            showView('home');
         }
 
         function renderHeader() {
-            const container = document.getElementById('header-right');
+            const nav = document.getElementById('header-nav');
             if (currentUser) {
-                // Header Saat LOGIN (Hanya Your Uploads & Icon Settings)
-                container.innerHTML = `
+                // Header LOGGED IN (Tombol Upload Hilang)
+                nav.innerHTML = `
                     <div class="flex items-center space-x-6">
-                        <button onclick="renderHistory()" class="text-gray-600 hover:text-gray-900 font-semibold transition-colors text-[15px]">Your Uploads</button>
-                        <button onclick="renderSettings()" class="text-gray-600 hover:text-gray-900 transition-colors" type="button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
+                        <button onclick="showView('history')" class="text-gray-600 hover:text-gray-900 font-semibold transition-colors">Your Uploads</button>
+                        <button onclick="showView('settings')" class="text-gray-600 hover:text-gray-900 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                     </div>`;
             } else {
-                // Header Saat BELUM LOGIN (Hanya Tombol Upload Hitam)
-                container.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <button onclick="renderAuth()" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full">Sign Up</button>
-                        <a href="javascript:void(0)" onclick="renderHome()" class="flex items-center space-x-2 px-4 py-1.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors text-[15px]">
-                            <span>Upload</span>
-                        </a>
+                // Header LOGGED OUT (Sign Up & Upload Button)
+                nav.innerHTML = `
+                    <button onclick="openAuth('signup')" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full">Sign Up</button>
+                    <button onclick="showView('home')" class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]">Upload</button>`;
+            }
+        }
+
+        function showView(view) {
+            const main = document.getElementById('main-view');
+            const header = document.getElementById('main-header');
+
+            if (view === 'home') {
+                header.className = "absolute top-0 left-0 right-0 z-10 pt-3 pb-3 lg:pt-4 lg:pb-4";
+                main.className = "flex-grow flex items-center";
+                main.innerHTML = `
+                    <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
+                        <div class="text-center space-y-8 max-w-4xl mx-auto">
+                            <div class="space-y-6">
+                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your videos<br><span class="text-gray-600">and share</span></h1>
+                                <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple video hosting.</p>
+                                <form><div class="pt-4"><button type="button" onclick="document.getElementById('f-in').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]"><span>Upload Video</span></button></div><input type="file" id="f-in" class="hidden" onchange="startUpload(this)"></form>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (view === 'history') {
+                header.className = "pt-3 pb-3 lg:pt-4 lg:pb-4";
+                main.className = "flex-grow";
+                main.innerHTML = `
+                    <div class="max-w-6xl mx-auto px-6 lg:px-8"><div class="py-12"><h1 class="text-3xl font-bold text-gray-900 mb-8">Your Uploads <span id="count" class="text-2xl text-gray-500">(0)</span></h1><div id="h-list" class="text-center py-12"><p class="text-gray-600">No uploads yet</p></div></div></div>`;
+                fetchHistory();
+            } else if (view === 'settings') {
+                header.className = "pt-3 pb-3 lg:pt-4 lg:pb-4";
+                main.className = "flex-grow";
+                main.innerHTML = `
+                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                        <div class="py-12 max-w-[800px] mx-auto">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+                            <div class="space-y-12">
+                                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Manage Email</h2>
+                                    <form class="space-y-4"><div class="space-y-2"><label class="text-sm font-medium">Email Address</label><input type="email" class="flex h-9 w-full rounded-md border border-input px-3 py-1 text-sm max-w-md" placeholder="Enter new email"></div><button class="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-md shadow h-9">Update Email</button></form>
+                                </div>
+                                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Change Password</h2>
+                                    <form class="space-y-4"><div class="space-y-2"><label class="text-sm font-medium">New Password</label><input type="password" class="flex h-9 w-full rounded-md border border-input px-3 py-1 text-sm max-w-md" placeholder="Enter new password"></div><button class="bg-primary text-primary-foreground text-sm font-medium px-4 py-2 rounded-md shadow h-9">Update Password</button></form>
+                                </div>
+                                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Delete Account</h2>
+                                    <p class="text-gray-700 mb-6 text-sm">Deleted accounts cannot be recovered.</p>
+                                    <button onclick="logout()" class="bg-destructive text-destructive-foreground text-sm font-medium px-4 py-2 rounded-md shadow h-9">Logout Account</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>`;
             }
         }
 
-        function renderHome() {
-            document.getElementById('main-area').className = "flex-grow flex items-center";
-            const content = document.getElementById('dynamic-content');
-            content.className = "text-center space-y-8 max-w-4xl mx-auto";
-            content.innerHTML = `
-                <div class="space-y-6">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your videos<br><span class="text-gray-600">and share</span></h1>
-                    <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple video hosting.</p>
-                    <form>
-                        <div class="pt-4">
-                            <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
-                                <span id="up-txt">Upload Video</span>
-                            </button>
-                        </div>
-                        <input type="file" id="file-input" class="hidden" onchange="handleUpload(this)">
-                    </form>
-                </div>`;
+        // --- AUTH LOGIC ---
+        function openAuth(mode) {
+            authMode = mode;
+            document.getElementById('auth-popup').classList.remove('hidden');
+            updateAuthUI();
         }
-
-        function renderHistory() {
-            document.getElementById('main-area').className = "flex-grow";
-            const content = document.getElementById('dynamic-content');
-            content.className = "max-w-6xl mx-auto px-6 lg:px-8 py-12 text-left";
-            content.innerHTML = `
-                <h1 class="text-3xl font-bold text-gray-900 mb-8">Your Uploads <span id="count" class="text-2xl text-gray-500">(0)</span></h1>
-                <div id="h-list" class="text-center py-12 text-gray-600">Loading...</div>`;
-
-            fetch(`/api/get-history?userId=${currentUser.id}`).then(res => res.json()).then(data => {
-                const list = document.getElementById('h-list');
-                const count = document.getElementById('count');
-                if (data.success && data.history.length > 0) {
-                    count.innerText = `(${data.history.length})`;
-                    list.className = "grid grid-cols-1 gap-4";
-                    list.innerHTML = data.history.map(item => `
-                        <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
-                            <a href="/v?id=${item.id}" target="_blank" class="font-medium text-gray-900 truncate hover:underline">${item.name || 'Untitled'}</a>
-                            <button onclick="deleteMedia('${item.id}')" class="text-gray-400 hover:text-red-500 transition-colors">Delete</button>
-                        </div>
-                    `).join('');
-                } else {
-                    list.innerHTML = "No uploads yet";
-                }
-            });
+        function closeAuth() { document.getElementById('auth-popup').classList.add('hidden'); }
+        function toggleAuthMode() {
+            authMode = (authMode === 'signup') ? 'login' : 'signup';
+            updateAuthUI();
         }
-
-        function renderSettings() {
-            document.getElementById('main-area').className = "flex-grow";
-            const content = document.getElementById('dynamic-content');
-            content.className = "max-w-6xl mx-auto px-6 lg:px-8 py-12 text-left";
-            
-            // 100% COPY PASTE HTML SETTINGS VIDEEY
-            content.innerHTML = `
-                <div class="max-w-[800px] mx-auto">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
-                    <div class="space-y-12">
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Manage Email</h2>
-                            <form class="space-y-4">
-                                <div class="space-y-2">
-                                    <label class="text-sm font-medium leading-none" for="newEmail">Email Address</label>
-                                    <input type="email" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-w-md" id="newEmail" placeholder="Enter new email">
-                                </div>
-                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2" type="button">Update Email</button>
-                            </form>
-                        </div>
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Change Password</h2>
-                            <form class="space-y-4">
-                                <div class="space-y-2">
-                                    <label class="text-sm font-medium leading-none" for="newPassword">New Password</label>
-                                    <input type="password" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-w-md" id="newPassword" placeholder="Enter new password">
-                                </div>
-                                <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2" type="button">Update Password</button>
-                            </form>
-                        </div>
-                        <div class="bg-white rounded-lg border border-gray-200 p-6">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Account Actions</h2>
-                            <button onclick="logout()" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 h-9 px-4 py-2">Logout</button>
-                        </div>
-                    </div>
-                </div>`;
+        function updateAuthUI() {
+            document.getElementById('auth-title').innerText = (authMode === 'signup') ? 'Sign Up' : 'Login';
+            document.getElementById('auth-btn').innerText = (authMode === 'signup') ? 'Create Account' : 'Login';
+            document.getElementById('auth-footer-text').innerText = (authMode === 'signup') ? "Already have an account?" : "Don't have an account?";
+            document.getElementById('auth-switch').innerText = (authMode === 'signup') ? 'Login' : 'Sign Up';
         }
-
-        function renderAuth() {
-            const content = document.getElementById('dynamic-content');
-            content.innerHTML = `
-                <div class="max-w-sm mx-auto bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
-                    <h2 class="text-2xl font-bold mb-6">Sign In</h2>
-                    <input type="text" id="u" placeholder="Username" class="w-full mb-3 p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none">
-                    <input type="password" id="p" placeholder="Password" class="w-full mb-6 p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none">
-                    <button onclick="submitAuth()" class="w-full bg-gray-900 text-white p-3 rounded-xl font-bold">Continue</button>
-                </div>`;
-        }
-
-        async function submitAuth() {
-            const username = document.getElementById('u').value;
-            const password = document.getElementById('p').value;
-            const res = await fetch('/api/login', { method: 'POST', body: JSON.stringify({username, password}) });
-            const data = await res.json();
-            if(data.success) {
-                localStorage.setItem('pokoco_user', JSON.stringify({id: data.userId}));
-                location.reload();
-            } else { alert(data.message); }
+        async function handleAuthSubmit() {
+            const username = document.getElementById('auth-u').value;
+            const password = document.getElementById('auth-p').value;
+            const endpoint = (authMode === 'signup') ? '/api/register' : '/api/login';
+            try {
+                const res = await fetch(endpoint, { method: 'POST', body: JSON.stringify({username, password}) }).then(r => r.json());
+                if(res.success) {
+                    localStorage.setItem('pokoco_user', JSON.stringify({id: res.userId}));
+                    location.reload();
+                } else { alert(res.message); }
+            } catch(e) { alert("API Error"); }
         }
 
         function logout() { localStorage.removeItem('pokoco_user'); location.reload(); }
 
-        async function handleUpload(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const txt = document.getElementById('up-txt');
-            txt.innerText = "Uploading...";
+        async function startUpload(input) {
+            const file = input.files[0]; if(!file) return;
+            // ... (logika upload sama seperti sebelumnya)
             let url = `/api/get-upload-url?type=${encodeURIComponent(file.type)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
             if(currentUser) url += `&userId=${currentUser.id}`;
-            const res = await fetch(url).then(r => r.json());
+            const data = await fetch(url).then(r => r.json());
             const xhr = new XMLHttpRequest();
-            xhr.open('PUT', res.uploadUrl);
-            xhr.onload = () => { window.location.href = `/v?id=${res.videoId}`; };
+            xhr.open('PUT', data.uploadUrl);
+            xhr.onload = () => { window.location.href = `/v?id=${data.videoId}`; };
             xhr.send(file);
         }
 
