@@ -3,8 +3,28 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>Pokoco - Free and Simple File Hosting</title>
-    <link rel="stylesheet" href="/style.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        html {
+            overflow-y: scroll;
+            min-height: 100vh;
+            background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);
+            background-color: #f9fafb;
+        }
+        body {
+            margin: 0;
+            min-width: 320px;
+            min-height: 100vh;
+            color: #1a1a1a;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
 </head>
 <body data-version="v1.0.5">
     <div id="root">
@@ -15,47 +35,36 @@
                         <div class="max-w-6xl mx-auto px-6 lg:px-8">
                             <div class="flex items-center justify-between">
                                 <a href="/" class="flex items-center">
-                                    <span class="font-semibold text-[26px] tracking-[-2px] text-gray-900" style="font-family: 'Poppins', sans-serif;">pokoco</span>
+                                    <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
                                 </a>
                                 <div class="flex items-center space-x-3">
-                                    <button id="nav-upload-btn" class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]">Upload</button>
+                                    <button class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]" onclick="document.getElementById('file-input').click()">Upload</button>
                                 </div>
                             </div>
                         </div>
                     </header>
                 </div>
-                
                 <div class="flex-grow flex items-center">
                     <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
                         <div class="text-center space-y-8 max-w-4xl mx-auto">
-                            <!-- Main Upload Form -->
-                            <div id="main-content" class="space-y-6">
-                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your media<br><span class="text-gray-600">and share</span></h1>
+                            <div class="space-y-6">
+                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your files<br><span class="text-gray-600">and share</span></h1>
                                 <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple media hosting.</p>
                                 <form>
                                     <div class="pt-4">
-                                        <button id="upload-btn" type="button" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
-                                            <span>Upload Media</span>
+                                        <button type="button" id="upload-btn" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
+                                            <span id="upload-text">Upload File</span>
                                         </button>
                                     </div>
-                                    <input type="file" id="file-input" name="file" accept="*" class="hidden">
+                                    <input type="file" id="file-input" name="file" accept="video/*,image/*,audio/*" class="hidden">
                                 </form>
                             </div>
-                            
-                            <!-- Progress Container -->
-                            <div id="progress-container" class="hidden space-y-4 max-w-sm mx-auto mt-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <h2 class="text-lg font-bold text-gray-900">Uploading...</h2>
-                                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                    <div id="progress-bar" class="bg-gray-900 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                                </div>
-                                <p id="progress-text" class="text-sm font-semibold text-gray-500">0%</p>
-                            </div>
-
+                            <div class="fixed inset-0 z-50 transition-all duration-300 pointer-events-none bg-transparent"></div>
                             <footer class="absolute bottom-0 left-0 right-0 pb-6 z-10">
                                 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                                     <div class="flex items-center justify-center space-x-8">
-                                        <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
-                                        <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
+                                        <a href="/terms-of-service" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
+                                        <a href="/report" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
                                     </div>
                                 </div>
                             </footer>
@@ -65,6 +74,73 @@
             </div>
         </div>
     </div>
-    <script src="/app.js"></script>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        const uploadText = document.getElementById('upload-text');
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Simple size validation
+            if (file.size > 500 * 1024 * 1024) {
+                alert('File is too large! Max 500MB.');
+                fileInput.value = '';
+                return;
+            }
+
+            // UI Changes - matching Videy's simple button progress
+            uploadBtn.classList.remove('hover:scale-105', 'active:scale-95');
+            uploadBtn.classList.add('cursor-not-allowed', 'opacity-80');
+            uploadBtn.disabled = true;
+
+            try {
+                const safeFileType = file.type || "application/octet-stream";
+                const apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeFileType)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
+
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                
+                if (!data.success) throw new Error(data.message);
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', data.uploadUrl, true);
+                xhr.setRequestHeader('Content-Type', safeFileType);
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        uploadText.innerText = `Uploading ${percent}%`;
+                    }
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        uploadText.innerText = `Processing...`;
+                        setTimeout(() => {
+                            window.location.href = '/v?id=' + data.videoId;
+                        }, 500);
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                };
+
+                xhr.onerror = () => {
+                    throw new Error('Network error. Upload failed.');
+                };
+
+                xhr.send(file);
+            } catch (err) {
+                alert(err.message);
+                uploadText.innerText = 'Upload File';
+                uploadBtn.disabled = false;
+                uploadBtn.classList.add('hover:scale-105', 'active:scale-95');
+                uploadBtn.classList.remove('cursor-not-allowed', 'opacity-80');
+                fileInput.value = ''; 
+            }
+        });
+    </script>
 </body>
 </html>
