@@ -4,32 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokoco - Media Preview</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-image: linear-gradient(to bottom right, #f9fafb, #ffffff, #f9fafb);
-            background-color: #f9fafb;
-            color: #1a1a1a;
-            min-height: 100vh;
-        }
-    </style>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body data-version="v1.0.5">
     <div id="root">
         <div class="min-h-screen">
             <div class="min-h-screen flex flex-col">
-                
                 <header class="pt-3 pb-3 lg:pt-4 lg:pb-4">
                     <div class="max-w-6xl mx-auto px-6 lg:px-8">
                         <div class="flex items-center justify-between">
                             <a href="/" class="flex items-center">
-                                <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+                                <span class="font-semibold text-[26px] tracking-[-2px] text-gray-900" style="font-family: 'Poppins', sans-serif;">pokoco</span>
                             </a>
-                            <a href="/" class="flex items-center space-x-2 px-5 py-1.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors text-[15px]">
+                            <a href="/" class="flex items-center space-x-2 px-4 py-1.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors text-[15px]">
                                 <span>Upload</span>
                             </a>
                         </div>
@@ -37,27 +24,21 @@
                 </header>
 
                 <div class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-3">
-                    
                     <div class="w-full flex justify-center">
-                        <div class="w-full bg-transparent" id="media-wrapper">
-                            <!-- Loading State -->
+                        <div class="w-full" id="media-wrapper">
+                            <!-- Loader -->
                             <div class="flex items-center justify-center h-[300px]">
-                                <span class="text-gray-400 font-medium animate-pulse">Loading media...</span>
+                                <span class="text-gray-400 font-medium">Loading media...</span>
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="w-full flex flex-col items-center mt-4 mb-0">
-                        <button id="share-btn" onclick="shareMedia()" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-gray-700 shadow-sm h-9 py-2 rounded-full px-6 gap-2 bg-gray-100 hover:bg-gray-200 font-semibold border border-gray-200/50">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]">
-                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-                                <polyline points="16 6 12 2 8 6"></polyline>
-                                <line x1="12" x2="12" y1="2" y2="15"></line>
-                            </svg>
-                            <span id="share-label">Share link</span>
+                        <button id="share-btn" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-gray-700 shadow-sm h-9 py-2 rounded-full px-6 gap-2 bg-gray-100 hover:bg-gray-200 font-semibold border border-gray-200/50">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share w-[18px] h-[18px]"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" x2="12" y1="2" y2="15"></line></svg>
+                            Share link
                         </button>
                     </div>
-
                 </div>
 
                 <footer class="pb-6 mt-10">
@@ -68,73 +49,9 @@
                         </div>
                     </div>
                 </footer>
-
             </div>
         </div>
     </div>
-
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        const mediaWrapper = document.getElementById('media-wrapper');
-        const shareLabel = document.getElementById('share-label');
-
-        async function fetchMedia() {
-            if (!id) {
-                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">Invalid link or media ID.</div>`;
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/get-video-url?id=${id}`);
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error("Media not found");
-                }
-
-                const { playUrl, contentType } = data;
-
-                if (contentType.startsWith('image/')) {
-                    mediaWrapper.innerHTML = `<img src="${playUrl}" alt="Media content" class="w-full md:rounded-[8px]" style="max-height: 520px; object-fit: contain; background: #000;">`;
-                    shareLabel.innerText = 'Share image';
-                } else if (contentType.startsWith('video/')) {
-                    mediaWrapper.innerHTML = `<video class="w-full md:rounded-[8px]" controls playsinline autoplay src="${playUrl}" style="max-height: 520px; background: #000;"></video>`;
-                    shareLabel.innerText = 'Share video';
-                } else {
-                    mediaWrapper.innerHTML = `<audio class="w-full md:rounded-[8px] bg-gray-100 p-4 border border-gray-200" controls src="${playUrl}"></audio>`;
-                    shareLabel.innerText = 'Share audio';
-                }
-
-                // Simplified View Tracking
-                setTimeout(() => {
-                    if(!sessionStorage.getItem(`viewed_${id}`)) {
-                        fetch('/api/track-view', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id: id }),
-                            keepalive: true
-                        }).then(() => sessionStorage.setItem(`viewed_${id}`, 'true')).catch(() => {});
-                    }
-                }, 5000);
-
-            } catch (e) {
-                mediaWrapper.innerHTML = `<div class="text-center py-24 text-gray-800 font-semibold">Media not found or has been deleted.</div>`;
-            }
-        }
-
-        function shareMedia() {
-            if (navigator.share) {
-                navigator.share({ title: `Pokoco - Media`, url: window.location.href });
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                const originalText = shareLabel.innerText;
-                shareLabel.innerText = 'Link Copied!';
-                setTimeout(() => { shareLabel.innerText = originalText; }, 2000);
-            }
-        }
-
-        fetchMedia();
-    </script>
+    <script src="/app.js"></script>
 </body>
 </html>
