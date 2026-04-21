@@ -1,0 +1,10 @@
+/* Paste semua script CSS lu dari mulai @import"..." sampai selesai di sini */
+
+/* Tambahan untuk warna background biar persis Videy */
+body {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-image: linear-gradient(to bottom right, #f9fafb, #ffffff, #f9fafb);
+    background-color: #f9fafb;
+    color: #1a1a1a;
+    min-height: 100vh;
+}
