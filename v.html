@@ -77,67 +77,86 @@
         </div>
     </div>
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        const mediaWrapper = document.getElementById('media-wrapper');
-        const shareLabel = document.getElementById('share-label');
+    const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+const mediaWrapper = document.getElementById('media-wrapper');
+const shareLabel = document.getElementById('share-label');
 
-        async function fetchMedia() {
-            if (!id) {
-                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">Video not found.</div>`;
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/get-video-url?id=${id}`);
-                const data = await response.json();
+// Fungsi utama untuk ambil link (Pre-signed URL)
+async function fetchMedia() {
+    if (!id) {
+        mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">Video not found.</div>`;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/get-video-url?id=${id}`);
+        const data = await response.json();
 
-                if (!data.success) {
-                    throw new Error("Media not found");
-                }
-
-                const { playUrl, contentType } = data;
-
-                // TIDAK ADA BACKGROUND HITAM, langsung nempel dengan background web aslinya persis Videy
-                if (contentType.startsWith('image/')) {
-                    mediaWrapper.innerHTML = `<img class="w-full md:rounded-[8px]" src="${playUrl}" style="max-height: 520px; object-fit: contain;">`;
-                    shareLabel.innerText = 'Share image';
-                } else if (contentType.startsWith('video/')) {
-                    mediaWrapper.innerHTML = `<video class="w-full md:rounded-[8px]" controls autoplay playsinline src="${playUrl}" style="max-height: 520px;"></video>`;
-                    shareLabel.innerText = 'Share video';
-                } else {
-                    mediaWrapper.innerHTML = `<audio class="w-full md:rounded-[8px] mt-10" controls src="${playUrl}"></audio>`;
-                    shareLabel.innerText = 'Share audio';
-                }
-
-                // Simple View Track
-                setTimeout(() => {
-                    if(!sessionStorage.getItem(`viewed_${id}`)) {
-                        fetch('/api/track-view', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id: id }),
-                            keepalive: true
-                        }).then(() => sessionStorage.setItem(`viewed_${id}`, 'true')).catch(() => {});
-                    }
-                }, 5000);
-
-            } catch (e) {
-                mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">Video not found or has been deleted.</div>`;
-            }
+        if (!data.success) {
+            throw new Error("Media not found");
         }
 
-        function shareMedia() {
-            if (navigator.share) {
-                navigator.share({ title: `Pokoco`, url: window.location.href });
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                const originalText = shareLabel.innerText;
-                shareLabel.innerText = 'Copied!';
-                setTimeout(() => { shareLabel.innerText = originalText; }, 2000);
+        const { playUrl, contentType } = data;
+        renderMedia(playUrl, contentType);
+
+        // Tracking view sederhana (setelah 5 detik)
+        setTimeout(() => {
+            if(!sessionStorage.getItem(`viewed_${id}`)) {
+                fetch('/api/track-view', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id }),
+                    keepalive: true
+                }).then(() => sessionStorage.setItem(`viewed_${id}`, 'true')).catch(() => {});
             }
-        }
+        }, 5000);
+
+    } catch (e) {
+        mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">Video not found or has been deleted.</div>`;
+    }
+}
+
+// Fungsi untuk nampilin media ke layar
+function renderMedia(url, type) {
+    let mediaHtml = '';
+    
+    if (type.startsWith('image/')) {
+        mediaHtml = `<img id="main-media" class="w-full md:rounded-[8px]" src="${url}" style="max-height: 520px; object-fit: contain;">`;
+        shareLabel.innerText = 'Share image';
+    } else if (type.startsWith('video/')) {
+        // Autoplay dan controls tetap ada
+        mediaHtml = `<video id="main-media" class="w-full md:rounded-[8px]" controls autoplay playsinline src="${url}" style="max-height: 520px;"></video>`;
+        shareLabel.innerText = 'Share video';
+    } else {
+        mediaHtml = `<audio id="main-media" class="w-full md:rounded-[8px] mt-10" controls src="${url}"></audio>`;
+        shareLabel.innerText = 'Share audio';
+    }
+
+    mediaWrapper.innerHTML = mediaHtml;
+
+    // --- INI KUNCINYA ---
+    // Pasang pendengar error. Jika link kadaluarsa/error, jalankan fetchMedia lagi untuk minta link baru
+    const element = document.getElementById('main-media');
+    element.onerror = () => {
+        console.warn("Link kadaluarsa atau error. Mengambil link baru...");
+        fetchMedia(); 
+    };
+}
+
+function shareMedia() {
+    if (navigator.share) {
+        navigator.share({ title: `Pokoco`, url: window.location.href });
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        const originalText = shareLabel.innerText;
+        shareLabel.innerText = 'Copied!';
+        setTimeout(() => { shareLabel.innerText = originalText; }, 2000);
+    }
+}
+
+// Jalankan saat pertama kali buka halaman
+fetchMedia();
 
         fetchMedia();
     </script>
