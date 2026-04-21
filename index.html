@@ -3,324 +3,211 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>Pokoco - Free and Simple File Hosting</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
-        html {
-            overflow-y: scroll;
-            min-height: 100vh;
-            background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);
-            background-color: #f9fafb;
-        }
+        html { overflow-y: scroll; min-height: 100vh; background-color: #f9fafb; }
         body {
-            margin: 0;
-            min-width: 320px;
-            min-height: 100vh;
-            color: #1a1a1a;
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            margin: 0; min-width: 320px; min-height: 100vh; color: #1a1a1a;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
-        /* Custom Scrollbar for History Panel */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
     </style>
 </head>
-<body data-version="v1.0.5">
+<body>
     <div id="root">
         <div class="min-h-screen">
             <div class="min-h-screen flex flex-col">
-                <div class="absolute top-0 left-0 right-0 z-10">
-                    <header class="pt-3 pb-3 lg:pt-4 lg:pb-4">
-                        <div class="max-w-6xl mx-auto px-6 lg:px-8">
-                            <div class="flex items-center justify-between">
-                                <a href="/" class="flex items-center">
-                                    <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
-                                </a>
-                                
-                                <!-- DYNAMIC HEADER BUTTONS -->
-                                <div class="flex items-center space-x-2 sm:space-x-3">
-                                    <!-- Jika belum login -->
-                                    <button id="btn-login" onclick="openAuthModal()" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full hidden">Sign In</button>
-                                    
-                                    <!-- Jika sudah login -->
-                                    <button id="btn-history" onclick="openHistoryModal()" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full hidden">History</button>
-                                    <button id="btn-logout" onclick="logout()" class="text-red-500 px-4 py-1.5 font-semibold hover:bg-red-50 transition-colors text-[15px] rounded-full hidden">Logout</button>
-                                    
-                                    <button class="bg-gray-900 text-white px-5 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]" onclick="document.getElementById('file-input').click()">Upload</button>
-                                </div>
+                <!-- HEADER -->
+                <header class="pt-3 pb-3 lg:pt-4 lg:pb-4 z-10">
+                    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                        <div class="flex items-center justify-between">
+                            <a href="/" class="flex items-center">
+                                <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+                            </a>
+                            
+                            <div id="header-menu" class="flex items-center space-x-3">
+                                <!-- Konten menu diisi via JS (Sign Up / Your Uploads) -->
                             </div>
-                        </div>
-                    </header>
-                </div>
-
-                <div class="flex-grow flex items-center">
-                    <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
-                        <div class="text-center space-y-8 max-w-4xl mx-auto">
-                            <div class="space-y-6">
-                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your files<br><span class="text-gray-600">and share</span></h1>
-                                <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple media hosting.</p>
-                                <form>
-                                    <div class="pt-4">
-                                        <button type="button" id="upload-btn" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
-                                            <span id="upload-text">Upload File</span>
-                                        </button>
-                                    </div>
-                                    <input type="file" id="file-input" name="file" accept="video/*,image/*,audio/*" class="hidden">
-                                </form>
-                            </div>
-
-                            <footer class="absolute bottom-0 left-0 right-0 pb-6 z-10">
-                                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                                    <div class="flex items-center justify-center space-x-8">
-                                        <a href="/terms-of-service" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
-                                        <a href="/report" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
-                                    </div>
-                                </div>
-                            </footer>
                         </div>
                     </div>
-                </div>
+                </header>
+
+                <!-- MAIN CONTENT AREA -->
+                <main id="main-area" class="flex-grow flex items-center">
+                    <!-- Default: Upload Section -->
+                    <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
+                        <div id="dynamic-content" class="text-center space-y-8 max-w-4xl mx-auto">
+                            <!-- Konten dinamis (Home / History / Auth) diisi via JS -->
+                        </div>
+                    </div>
+                </main>
+
+                <!-- FOOTER -->
+                <footer class="pb-6 z-10">
+                    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="flex items-center justify-center space-x-8">
+                            <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
+                            <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
+                        </div>
+                    </div>
+                </footer>
             </div>
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
-    <div id="auth-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center px-4 transition-opacity">
-        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 text-xl font-bold">&times;</button>
-            <h2 id="auth-title" class="text-xl font-bold mb-6 text-gray-900 text-center tracking-tight">Sign In to Pokoco</h2>
-            
-            <input type="text" id="auth-username" placeholder="Username" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 mb-3 focus:outline-none focus:border-gray-400 transition-colors text-sm">
-            <input type="password" id="auth-password" placeholder="Password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 mb-4 focus:outline-none focus:border-gray-400 transition-colors text-sm">
-            
-            <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition shadow-sm text-sm mb-4">
-                Sign In
-            </button>
-            
-            <p class="text-center text-xs text-gray-500">
-                <span id="auth-switch-text">Don't have an account?</span> 
-                <button onclick="toggleAuthMode()" id="auth-switch-btn" class="text-gray-900 hover:underline ml-1 font-semibold">Sign Up</button>
-            </p>
-        </div>
-    </div>
-
-    <!-- HISTORY MODAL -->
-    <div id="history-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] hidden flex items-center justify-center px-4 transition-opacity">
-        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 relative shadow-2xl max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-900 tracking-tight">Your Uploads</h2>
-                <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-900 text-2xl leading-none">&times;</button>
-            </div>
-            
-            <div id="history-list" class="overflow-y-auto flex-grow space-y-2 pr-2">
-                <p class="text-gray-400 text-center py-10 text-sm">Loading...</p>
-            </div>
-        </div>
-    </div>
-
+    <!-- SCRIPT LOGIC -->
     <script>
-        // === SISTEM AKUN & UI ===
         let currentUser = JSON.parse(localStorage.getItem('pokoco_user')) || null;
-        let isLoginMode = true;
 
-        function checkAuthState() {
+        function init() {
+            renderHeader();
+            renderHome();
+        }
+
+        function renderHeader() {
+            const menu = document.getElementById('header-menu');
             if (currentUser) {
-                document.getElementById('btn-login').classList.add('hidden');
-                document.getElementById('btn-history').classList.remove('hidden');
-                document.getElementById('btn-logout').classList.remove('hidden');
+                menu.innerHTML = `
+                    <div class="flex items-center space-x-6">
+                        <button onclick="renderHistory()" class="text-gray-600 hover:text-gray-900 font-semibold transition-colors text-[15px]">Your Uploads</button>
+                        <button onclick="logout()" class="text-gray-600 hover:text-gray-900 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        </button>
+                    </div>`;
             } else {
-                document.getElementById('btn-login').classList.remove('hidden');
-                document.getElementById('btn-history').classList.add('hidden');
-                document.getElementById('btn-logout').classList.add('hidden');
+                menu.innerHTML = `
+                    <button onclick="renderAuth('signup')" class="text-gray-900 px-4 py-1.5 font-semibold hover:bg-gray-100 transition-colors text-[15px] rounded-full">Sign Up</button>
+                    <button onclick="renderAuth('login')" class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]">Login</button>`;
             }
         }
-        checkAuthState();
 
-        // --- Auth Modal Functions ---
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
-        
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').innerText = isLoginMode ? "Sign In to Pokoco" : "Create Account";
-            document.getElementById('auth-submit-btn').innerText = isLoginMode ? "Sign In" : "Sign Up";
-            document.getElementById('auth-switch-text').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-            document.getElementById('auth-switch-btn').innerText = isLoginMode ? "Sign Up" : "Sign In";
+        function renderHome() {
+            document.getElementById('main-area').className = "flex-grow flex items-center";
+            const content = document.getElementById('dynamic-content');
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your files<br><span class="text-gray-600">and share</span></h1>
+                    <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple media hosting.</p>
+                    <form>
+                        <div class="pt-4">
+                            <button type="button" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
+                                <span id="up-txt">Upload File</span>
+                            </button>
+                        </div>
+                        <input type="file" id="file-input" class="hidden" onchange="handleUpload(this)">
+                    </form>
+                </div>`;
         }
 
-        async function submitAuth() {
-            const u = document.getElementById('auth-username').value.trim();
-            const p = document.getElementById('auth-password').value.trim();
-            if(!u || !p) return alert("Please fill all fields");
+        function renderHistory() {
+            document.getElementById('main-area').className = "flex-grow";
+            const content = document.getElementById('dynamic-content');
+            content.className = "max-w-6xl mx-auto px-6 lg:px-8 py-12 text-left";
+            
+            content.innerHTML = `<h1 class="text-3xl font-bold text-gray-900 mb-8">Your Uploads <span id="count" class="text-2xl text-gray-500">(...)</span></h1>
+                                 <div id="h-list" class="space-y-4 text-center py-12 text-gray-600">Loading...</div>`;
 
-            const endpoint = isLoginMode ? '/api/login' : '/api/register';
-            const btn = document.getElementById('auth-submit-btn');
-            btn.innerText = "Processing...";
-
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: u, password: p })
+            fetch(`/api/get-history?userId=${currentUser.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('h-list');
+                    const count = document.getElementById('count');
+                    if (data.success && data.history.length > 0) {
+                        count.innerText = `(${data.history.length})`;
+                        list.className = "grid grid-cols-1 gap-4";
+                        list.innerHTML = data.history.map(item => `
+                            <div class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                                <div class="truncate pr-4 text-left">
+                                    <a href="/v?id=${item.id}" target="_blank" class="text-sm font-semibold text-gray-900 hover:underline block truncate">${item.name || 'Untitled'}</a>
+                                    <span class="text-xs text-gray-400">${item.date || ''}</span>
+                                </div>
+                                <button onclick="deleteMedia('${item.id}')" class="text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        `).join('');
+                    } else {
+                        count.innerText = "(0)";
+                        list.innerHTML = "No uploads yet";
+                    }
                 });
-                const data = await res.json();
-                
-                if(data.success) {
-                    currentUser = { id: data.userId, username: data.username };
-                    localStorage.setItem('pokoco_user', JSON.stringify(currentUser));
-                    checkAuthState();
-                    closeAuthModal();
-                } else {
-                    alert(data.message);
-                }
-            } catch (err) {
-                alert("Network error");
+        }
+
+        function renderAuth(mode) {
+            const content = document.getElementById('dynamic-content');
+            const isLogin = mode === 'login';
+            content.innerHTML = `
+                <div class="max-w-sm mx-auto bg-white p-8 rounded-3xl border border-gray-100 shadow-xl">
+                    <h2 class="text-2xl font-bold mb-6">${isLogin ? 'Login' : 'Sign Up'}</h2>
+                    <input type="text" id="u" placeholder="Username" class="w-full mb-3 p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-gray-300">
+                    <input type="password" id="p" placeholder="Password" class="w-full mb-6 p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-gray-300">
+                    <button onclick="submitAuth('${mode}')" class="w-full bg-gray-900 text-white p-3 rounded-xl font-bold hover:bg-gray-800 transition-all">${isLogin ? 'Login' : 'Create Account'}</button>
+                    <p class="mt-4 text-xs text-gray-500">By continuing, you agree to our terms.</p>
+                </div>`;
+        }
+
+        async function submitAuth(mode) {
+            const username = document.getElementById('u').value;
+            const password = document.getElementById('p').value;
+            const res = await fetch(`/api/${mode}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = { id: data.userId, username: data.username };
+                localStorage.setItem('pokoco_user', JSON.stringify(currentUser));
+                renderHeader();
+                renderHome();
+            } else {
+                alert(data.message);
             }
-            btn.innerText = isLoginMode ? "Sign In" : "Sign Up";
         }
 
         function logout() {
             localStorage.removeItem('pokoco_user');
             currentUser = null;
-            checkAuthState();
+            location.reload();
         }
 
-        // --- History Modal Functions ---
-        function openHistoryModal() { 
-            document.getElementById('history-modal').classList.remove('hidden');
-            renderHistory();
-        }
-        function closeHistoryModal() { document.getElementById('history-modal').classList.add('hidden'); }
-
-        async function renderHistory() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '<p class="text-gray-400 text-center py-10 text-sm">Loading...</p>';
-
-            if (!currentUser) return;
-
-            try {
-                const res = await fetch(`/api/get-history?userId=${currentUser.id}`);
-                const data = await res.json();
-
-                if (!data.success || !data.history || data.history.length === 0) {
-                    list.innerHTML = '<p class="text-gray-400 text-center py-10 text-sm">No uploads found.</p>';
-                    return;
-                }
-
-                list.innerHTML = data.history.map(item => `
-                    <div class="p-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-between group" id="hist-${item.id}">
-                        <div class="min-w-0 flex-grow pr-4">
-                            <a href="/v?id=${item.id}" target="_blank" class="text-sm text-gray-900 block truncate font-medium hover:underline">${item.name || 'Media File'}</a>
-                            <span class="text-xs text-gray-500">${item.date || 'Recent'}</span>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button onclick="navigator.clipboard.writeText(window.location.origin + '/v?id=${item.id}'); alert('Link copied!');" class="text-gray-400 hover:text-gray-900 transition-colors p-1" title="Copy Link">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                            <button onclick="deleteMedia('${item.id}')" class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch(e) { 
-                list.innerHTML = '<p class="text-gray-400 text-center py-10 text-sm">Failed to load history.</p>';
-            }
-        }
-
-        async function deleteMedia(videoId) {
-            if(!confirm('Delete this file permanently?')) return;
-            try {
-                const res = await fetch('/api/delete-media', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ videoId, userId: currentUser.id })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    document.getElementById(`hist-${videoId}`).remove();
-                } else {
-                    alert(data.message);
-                }
-            } catch(e) {
-                alert('Error deleting file');
-            }
-        }
-
-        // === SISTEM UPLOAD ===
-        const fileInput = document.getElementById('file-input');
-        const uploadBtn = document.getElementById('upload-btn');
-        const uploadText = document.getElementById('upload-text');
-
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
+        async function handleUpload(input) {
+            const file = input.files[0];
             if (!file) return;
+            const txt = document.getElementById('up-txt');
+            txt.innerText = "Uploading...";
 
-            if (file.size > 500 * 1024 * 1024) {
-                alert('File is too large! Max 500MB.');
-                fileInput.value = '';
-                return;
-            }
+            let url = `/api/get-upload-url?type=${encodeURIComponent(file.type)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
+            if (currentUser) url += `&userId=${currentUser.id}`;
 
-            uploadBtn.classList.remove('hover:scale-105', 'active:scale-95');
-            uploadBtn.classList.add('cursor-not-allowed', 'opacity-80');
-            uploadBtn.disabled = true;
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', data.uploadUrl);
+            xhr.upload.onprogress = (e) => {
+                const p = Math.round((e.loaded / e.total) * 100);
+                txt.innerText = `Uploading ${p}%`;
+            };
+            xhr.onload = () => { if (xhr.status === 200) window.location.href = `/v?id=${data.videoId}`; };
+            xhr.send(file);
+        }
 
-            try {
-                const safeFileType = file.type || "application/octet-stream";
-                // TAMBAHKAN USER ID DAN NAMA FILE JIKA LOGIN
-                let apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeFileType)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
-                if (currentUser) {
-                    apiUrl += `&userId=${encodeURIComponent(currentUser.id)}`;
-                }
+        async function deleteMedia(id) {
+            if (!confirm('Delete file?')) return;
+            const res = await fetch('/api/delete-media', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ videoId: id, userId: currentUser.id })
+            });
+            if ((await res.json()).success) renderHistory();
+        }
 
-                const res = await fetch(apiUrl);
-                const data = await res.json();
-                
-                if (!data.success) throw new Error(data.message);
-
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', safeFileType);
-
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        uploadText.innerText = `Uploading ${percent}%`;
-                    }
-                };
-
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        uploadText.innerText = `Processing...`;
-                        setTimeout(() => {
-                            window.location.href = '/v?id=' + data.videoId;
-                        }, 500);
-                    } else {
-                        throw new Error('Upload failed');
-                    }
-                };
-
-                xhr.onerror = () => {
-                    throw new Error('Network error. Upload failed.');
-                };
-
-                xhr.send(file);
-            } catch (err) {
-                alert(err.message);
-                uploadText.innerText = 'Upload File';
-                uploadBtn.disabled = false;
-                uploadBtn.classList.add('hover:scale-105', 'active:scale-95');
-                uploadBtn.classList.remove('cursor-not-allowed', 'opacity-80');
-                fileInput.value = ''; 
-            }
-        });
+        init();
     </script>
 </body>
 </html>
