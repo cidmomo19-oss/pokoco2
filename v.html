@@ -22,14 +22,16 @@
         }
     </style>
 </head>
-<body data-version="v1.1.1-fix">
+<body data-version="v1.1.2-style">
 
     <!-- ========================================== -->
-    <!-- HALAMAN GIMMICK (SIMPLE & SESUAI REQUEST)  -->
+    <!-- HALAMAN GIMMICK (TOMBOL HITAM)             -->
     <!-- ========================================== -->
     <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-4 text-center">
         <p class="text-gray-600 mb-4">Please complete the check to continue</p>
-        <button onclick="verifyGimmick()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-10 rounded-full transition-colors shadow-lg">
+        
+        <!-- Tombol Kapsul Hitam -->
+        <button onclick="verifyGimmick()" class="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-10 rounded-full transition-colors shadow-lg">
             I am not a robot
         </button>
     </div>
@@ -178,9 +180,7 @@
             }
         }
 
-        // ==========================================
-        // LOGIKA DOWNLOAD (FIXED & BENAR)
-        // ==========================================
+        // LOGIKA DOWNLOAD
         const adUrls =['https://oqo.se/', 'https://buondua.com/'];
         
         async function downloadMedia() {
@@ -194,20 +194,17 @@
             label.innerText = 'Processing...';
 
             try {
-                // Proses download di belakang layar
                 const response = await fetch(currentMediaUrl);
                 const blob = await response.blob();
                 const blobUrl = window.URL.createObjectURL(blob);
                 const ext = currentMediaType.split('/')[1] || 'file';
 
-                // Buat link virtual untuk memancing download
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `Pokoco_${id}.${ext}`;
                 document.body.appendChild(a);
                 a.click();
                 
-                // BERI JEDA sebelum menghapus link sementara
                 setTimeout(() => {
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(blobUrl);
@@ -215,7 +212,6 @@
 
                 label.innerText = 'Success!';
 
-                // IKLAN: Buka di TAB BARU, bukan redirect halaman ini
                 let adIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
                 const targetAd = adUrls[adIndex];
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
@@ -225,7 +221,6 @@
                 console.error("Download failed:", error);
                 label.innerText = 'Failed';
             } finally {
-                // SELALU reset tombol setelah 2 detik agar bisa diklik lagi
                 setTimeout(() => {
                     label.innerText = originalText;
                     btn.disabled = false;
