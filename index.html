@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>Pokoco - Modern File Hosting</title>
+    <title>Pokoco - Free and Simple File Hosting</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,10 +27,14 @@
     <!-- Navbar -->
     <header class="fixed w-full top-0 z-40 glass-panel border-b border-gray-200/50 transition-all">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="#" onclick="showView('home')" class="text-2xl font-bold tracking-tighter hover:opacity-70 transition">pokoco<span class="text-indigo-500">.</span></a>
+            <!-- LOGO VERSI AWAL -->
+            <a href="/" onclick="event.preventDefault(); showView('home')" class="flex items-center hover:opacity-80 transition-opacity">
+                <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+            </a>
+
             <div class="flex items-center gap-4">
                 <button onclick="showView('home')" class="text-sm font-medium text-gray-500 hover:text-black transition hidden sm:block">Upload</button>
-                <button id="auth-btn" onclick="toggleAuth()" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                <button id="auth-btn" onclick="toggleAuth()" class="bg-gray-900 text-white px-5 py-2 rounded-full text-[15px] font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg active:scale-95">
                     Sign In
                 </button>
             </div>
@@ -44,14 +48,14 @@
         <div id="view-home" class="w-full max-w-2xl mx-auto text-center space-y-10 transition-all duration-500">
             <div class="space-y-4">
                 <h1 class="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
-                    Upload & share <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-gray-500 to-gray-900">effortlessly.</span>
+                    Upload your files <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-gray-500 to-gray-900">and share.</span>
                 </h1>
-                <p class="text-lg text-gray-500 max-w-lg mx-auto font-medium">Free, fast, and simple media hosting.</p>
+                <p class="text-lg text-gray-600 max-w-lg mx-auto font-medium">Free, fast, and simple media hosting.</p>
             </div>
 
             <!-- Drag & Drop Zone -->
-            <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="glass-panel border-2 border-dashed border-gray-300 rounded-3xl p-12 hover:border-black hover:shadow-2xl hover:shadow-gray-200 transition-all duration-300 cursor-pointer group relative overflow-hidden">
+            <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="glass-panel border-2 border-dashed border-gray-300 rounded-3xl p-12 hover:border-gray-900 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-300 cursor-pointer group relative overflow-hidden">
                 <div class="flex flex-col items-center justify-center space-y-5">
                     <div class="w-16 h-16 bg-white shadow-sm rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                         <svg class="w-8 h-8 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -70,10 +74,10 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 border-b border-gray-200 pb-4 gap-4">
                 <div>
                     <h2 class="text-3xl font-bold tracking-tight">My Dashboard</h2>
-                    <p class="text-gray-500 text-sm mt-1 font-medium">Welcome back, <span id="display-username" class="text-black font-semibold">User</span>.</p>
+                    <p class="text-gray-500 text-sm mt-1 font-medium">Welcome back, <span id="display-username" class="text-gray-900 font-bold">User</span>.</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="logout()" class="text-gray-600 text-sm font-semibold hover:text-black transition px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200">Sign Out</button>
+                    <button onclick="logout()" class="text-gray-600 text-sm font-semibold hover:text-gray-900 transition px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200">Sign Out</button>
                     <button onclick="deleteAccount()" class="text-red-600 text-sm font-semibold hover:text-red-800 transition px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100">Delete Account</button>
                 </div>
             </div>
@@ -81,10 +85,9 @@
             <div class="glass-panel rounded-3xl shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white/50">
                     <h3 class="font-semibold text-gray-800">Upload History</h3>
-                    <button onclick="loadHistory()" class="text-xs font-semibold text-gray-500 hover:text-black transition px-3 py-1 bg-white rounded-lg shadow-sm border border-gray-100">Refresh</button>
+                    <button onclick="loadHistory()" class="text-xs font-semibold text-gray-500 hover:text-gray-900 transition px-3 py-1 bg-white rounded-lg shadow-sm border border-gray-100">Refresh</button>
                 </div>
                 <div id="history-list" class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto bg-white/30">
-                    <!-- Data will be injected here -->
                     <div class="p-8 text-center text-gray-500 font-medium">Loading your files...</div>
                 </div>
             </div>
@@ -101,21 +104,31 @@
     <div id="auth-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="auth-modal-content">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold tracking-tight">Sign In</h3>
-                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-black bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
+                <h3 class="text-2xl font-bold tracking-tight" id="auth-title">Sign In</h3>
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <p class="text-sm text-gray-500 mb-6 font-medium">Enter a username. If it doesn't exist, we will create a local account for you.</p>
-            <input type="text" id="username-input" placeholder="e.g. jondoe" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all mb-4 font-medium">
-            <button onclick="login()" class="w-full bg-black text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg hover:shadow-xl active:scale-[0.98]">Continue</button>
+            
+            <p id="auth-error" class="text-red-500 text-sm mb-4 font-medium hidden"></p>
+            
+            <input type="text" id="username-input" placeholder="Username" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all mb-3 font-medium">
+            <input type="password" id="password-input" placeholder="Password" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all mb-6 font-medium">
+            
+            <button id="auth-submit-btn" onclick="processAuth()" class="w-full bg-gray-900 text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg hover:shadow-xl active:scale-[0.98] mb-4">Login</button>
+            
+            <p class="text-center text-sm font-medium text-gray-500">
+                <span id="auth-switch-text">Don't have an account?</span> 
+                <button onclick="switchAuthMode()" id="auth-switch-btn" class="text-gray-900 font-bold hover:underline">Register</button>
+            </p>
         </div>
     </div>
 
     <script>
-        // --- 1. STATE & AUTHENTICATION LOGIC ---
+        // --- 1. STATE & AUTHENTICATION LOGIC (FULL ONLINE) ---
         let currentUser = localStorage.getItem('pokoco_user_id') || null;
         let currentUsername = localStorage.getItem('pokoco_username') || null;
+        let isLoginMode = true; // true = Login, false = Register
 
         function updateAuthState() {
             const authBtn = document.getElementById('auth-btn');
@@ -129,21 +142,65 @@
             }
         }
 
-        function login() {
+        function switchAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? 'Sign In' : 'Create Account';
+            document.getElementById('auth-submit-btn').innerText = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('auth-switch-text').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            document.getElementById('auth-switch-btn').innerText = isLoginMode ? "Register" : "Login";
+            document.getElementById('auth-error').classList.add('hidden');
+        }
+
+        async function processAuth() {
             const user = document.getElementById('username-input').value.trim();
-            if (!user) return alert('Please enter a username');
-            
-            // Generate simple unique ID based on username (untuk simulasi backend)
-            const pseudoId = 'usr_' + btoa(user).substring(0, 12); 
-            
-            localStorage.setItem('pokoco_user_id', pseudoId);
-            localStorage.setItem('pokoco_username', user);
-            currentUser = pseudoId;
-            currentUsername = user;
-            
-            closeAuthModal();
-            updateAuthState();
-            showView('dashboard');
+            const pass = document.getElementById('password-input').value.trim();
+            const errorEl = document.getElementById('auth-error');
+            const submitBtn = document.getElementById('auth-submit-btn');
+
+            if (!user || !pass) {
+                errorEl.innerText = 'Username & Password wajib diisi!';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+            submitBtn.innerText = 'Loading...';
+            submitBtn.disabled = true;
+
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('pokoco_user_id', data.userId);
+                    localStorage.setItem('pokoco_username', data.username);
+                    currentUser = data.userId;
+                    currentUsername = data.username;
+                    
+                    document.getElementById('username-input').value = '';
+                    document.getElementById('password-input').value = '';
+                    
+                    closeAuthModal();
+                    updateAuthState();
+                    showView('dashboard');
+                } else {
+                    errorEl.innerText = data.message || 'Gagal masuk.';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorEl.innerText = 'Terjadi kesalahan koneksi ke server.';
+                errorEl.classList.remove('hidden');
+            }
+
+            submitBtn.innerText = isLoginMode ? 'Login' : 'Register';
+            submitBtn.disabled = false;
         }
 
         function logout() {
@@ -158,14 +215,16 @@
         // --- 2. UPLOAD & DRAG DROP LOGIC ---
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
-        const uploadText = document.getElementById('upload-text');['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
+        const uploadText = document.getElementById('upload-text');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
             dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); }, false);
         });
 
-        dropZone.addEventListener('dragover', () => dropZone.classList.add('border-black', 'bg-gray-50/50'));
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-black', 'bg-gray-50/50'));
+        dropZone.addEventListener('dragover', () => dropZone.classList.add('border-gray-900', 'bg-gray-50/50'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-gray-900', 'bg-gray-50/50'));
         dropZone.addEventListener('drop', (e) => {
-            dropZone.classList.remove('border-black', 'bg-gray-50/50');
+            dropZone.classList.remove('border-gray-900', 'bg-gray-50/50');
             if (e.dataTransfer.files.length) handleUpload(e.dataTransfer.files[0]);
         });
 
@@ -183,7 +242,6 @@
 
             try {
                 const safeType = file.type || "application/octet-stream";
-                // URL ini sudah dihubungkan ke get-upload-url.js kamu yang baru
                 const apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeType)}&size=${file.size}&name=${encodeURIComponent(file.name)}&userId=${encodeURIComponent(userId)}`;
 
                 const res = await fetch(apiUrl);
@@ -208,7 +266,7 @@
                         setTimeout(() => window.location.href = '/v?id=' + data.videoId, 500);
                     } else throw new Error('Upload failed');
                 };
-                xhr.onerror = () => { throw new Error('Network error.'); };
+                xhr.onerror = () => { throw new Error('Network error. Upload failed.'); };
                 xhr.send(file);
             } catch (err) {
                 alert(err.message);
@@ -232,11 +290,11 @@
                     list.innerHTML = data.files.map(f => `
                         <div class="p-5 flex items-center justify-between hover:bg-white/80 transition group">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition">
+                                <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-900 transition">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                 </div>
                                 <div>
-                                    <a href="/v?id=${f.id}" target="_blank" class="font-semibold text-gray-900 hover:text-indigo-600 transition">${f.file_name || 'Untitled'}</a>
+                                    <a href="/v?id=${f.id}" target="_blank" class="font-semibold text-gray-900 hover:underline transition">${f.file_name || 'Untitled'}</a>
                                     <p class="text-xs text-gray-500 font-medium mt-0.5">${f.content_type || 'Unknown'} • ID: ${f.id}</p>
                                 </div>
                             </div>
@@ -249,7 +307,7 @@
                     list.innerHTML = '<div class="p-12 text-center flex flex-col items-center"><svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg><p class="text-gray-500 font-medium">No files uploaded yet.</p></div>';
                 }
             } catch (e) {
-                list.innerHTML = '<div class="p-8 text-center text-red-500 font-medium">Failed to load history. Make sure API is deployed.</div>';
+                list.innerHTML = '<div class="p-8 text-center text-red-500 font-medium">Failed to load history.</div>';
             }
         }
 
@@ -311,6 +369,9 @@
             const content = document.getElementById('auth-modal-content');
             modal.classList.add('opacity-0'); content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
+            
+            // reset error state when closed
+            document.getElementById('auth-error').classList.add('hidden');
         }
 
         // Initialize App
