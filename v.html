@@ -55,7 +55,20 @@
                         </div>
                     </div>
                     
-                    <div class="w-full flex flex-col items-center mt-4 mb-0">
+                    <!-- Container Tombol -->
+                    <div class="w-full flex flex-row justify-center gap-3 mt-4 mb-0" id="action-buttons" style="display: none;">
+                        
+                        <!-- Tombol Download Baru -->
+                        <button onclick="downloadMedia()" id="download-btn" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-white shadow-sm h-9 py-2 rounded-full px-6 gap-2 bg-gray-900 hover:bg-gray-800 font-semibold border border-gray-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" x2="12" y1="15" y2="3"></line>
+                            </svg>
+                            <span id="download-label">Download</span>
+                        </button>
+
+                        <!-- Tombol Share Lama -->
                         <button onclick="shareMedia()" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-gray-700 shadow-sm h-9 py-2 rounded-full px-6 gap-2 bg-gray-100 hover:bg-gray-200 font-semibold border border-gray-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share w-[18px] h-[18px]">
                                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
@@ -84,6 +97,11 @@
         const id = params.get('id');
         const mediaWrapper = document.getElementById('media-wrapper');
         const shareLabel = document.getElementById('share-label');
+        const actionButtons = document.getElementById('action-buttons');
+        
+        // Simpan data media secara global untuk fitur download
+        let currentMediaUrl = '';
+        let currentMediaType = '';
 
         async function fetchMedia() {
             if (!id) {
@@ -98,6 +116,11 @@
                 if (!data.success) {
                     throw new Error("Media not found");
                 }
+
+                // Simpan URL dan tampilkan tombol
+                currentMediaUrl = data.playUrl;
+                currentMediaType = data.contentType;
+                actionButtons.style.display = 'flex';
 
                 renderMedia(data.playUrl, data.contentType);
 
@@ -125,22 +148,72 @@
                 mediaHtml = `<img id="main-media" class="w-full md:rounded-[8px]" src="${url}" style="max-height: 520px; object-fit: contain;">`;
                 shareLabel.innerText = 'Share image';
             } else if (type.startsWith('video/')) {
-                mediaHtml = `<video id="main-media" class="w-full md:rounded-[8px]" controls autoplay playsinline src="${url}" style="max-height: 520px;"></video>`;
+                // Menambahkan controlsList="nodownload" untuk menghapus tombol download bawaan player
+                mediaHtml = `<video id="main-media" controlsList="nodownload" class="w-full md:rounded-[8px]" controls autoplay playsinline src="${url}" style="max-height: 520px;"></video>`;
                 shareLabel.innerText = 'Share video';
             } else {
-                mediaHtml = `<audio id="main-media" class="w-full md:rounded-[8px] mt-10" controls src="${url}"></audio>`;
+                mediaHtml = `<audio id="main-media" controlsList="nodownload" class="w-full md:rounded-[8px] mt-10" controls src="${url}"></audio>`;
                 shareLabel.innerText = 'Share audio';
             }
 
             mediaWrapper.innerHTML = mediaHtml;
 
-            // Logika anti-kadaluarsa: kalau error, minta link baru
             const element = document.getElementById('main-media');
             if (element) {
                 element.onerror = () => {
                     console.log("Link expired, fetching new one...");
                     fetchMedia(); 
                 };
+            }
+        }
+
+        // FUNGSI BARU: Download langsung tanpa tab baru
+        async function downloadMedia() {
+            if (!currentMediaUrl) return;
+
+            const btn = document.getElementById('download-btn');
+            const label = document.getElementById('download-label');
+            const originalText = label.innerText;
+
+            try {
+                // Ubah status tombol
+                label.innerText = 'Downloading...';
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+
+                // Fetch data sebagai blob (menghindari tab baru/cross-origin issue)
+                const response = await fetch(currentMediaUrl);
+                const blob = await response.blob();
+                
+                // Buat URL sementara dari blob tersebut
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                // Dapatkan ekstensi file dari contentType (misal: video/mp4 -> mp4)
+                const ext = currentMediaType.split('/')[1] || 'file';
+
+                // Buat elemen <a> virtual untuk men-trigger download
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = `Pokoco_${id}.${ext}`;
+                document.body.appendChild(a);
+                a.click(); // Trigger klik download
+                
+                // Bersihkan blob dari memory
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+
+                label.innerText = 'Downloaded!';
+            } catch (error) {
+                console.error("Gagal mendownload:", error);
+                label.innerText = 'Failed';
+            } finally {
+                // Kembalikan tombol seperti semula setelah 2 detik
+                setTimeout(() => {
+                    label.innerText = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                }, 2000);
             }
         }
 
