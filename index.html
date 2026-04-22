@@ -4,101 +4,187 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>Pokoco - Free and Simple File Hosting</title>
+    <title>Pokoco - Modern File Hosting</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        html {
-            overflow-y: scroll;
-            min-height: 100vh;
-            background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);
-            background-color: #f9fafb;
-        }
-        body {
-            margin: 0;
-            min-width: 320px;
-            min-height: 100vh;
-            color: #1a1a1a;
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            -webkit-font-smoothing: antialiased;
+        body { font-family: 'Poppins', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
     </style>
 </head>
-<body data-version="v1.0.5">
-    <div id="root">
-        <div class="min-h-screen">
-            <div class="min-h-screen flex flex-col">
-                <div class="absolute top-0 left-0 right-0 z-10">
-                    <header class="pt-3 pb-3 lg:pt-4 lg:pb-4">
-                        <div class="max-w-6xl mx-auto px-6 lg:px-8">
-                            <div class="flex items-center justify-between">
-                                <a href="/" class="flex items-center">
-                                    <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
-                                </a>
-                                <div class="flex items-center space-x-3">
-                                    <button class="bg-gray-900 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-gray-800 transition-colors text-[15px]" onclick="document.getElementById('file-input').click()">Upload</button>
-                                </div>
-                            </div>
-                        </div>
-                    </header>
-                </div>
-                <div class="flex-grow flex items-center">
-                    <div class="max-w-6xl w-full mx-auto px-6 lg:px-8">
-                        <div class="text-center space-y-8 max-w-4xl mx-auto">
-                            <div class="space-y-6">
-                                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">Upload your files<br><span class="text-gray-600">and share</span></h1>
-                                <p class="max-w-2xl mx-auto text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">Free and simple media hosting.</p>
-                                <form>
-                                    <div class="pt-4">
-                                        <button type="button" id="upload-btn" onclick="document.getElementById('file-input').click()" class="inline-flex items-center justify-center space-x-3 px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-all duration-200 hover:scale-105 active:scale-95 min-w-[180px]">
-                                            <span id="upload-text">Upload File</span>
-                                        </button>
-                                    </div>
-                                    <input type="file" id="file-input" name="file" accept="video/*,image/*,audio/*" class="hidden">
-                                </form>
-                            </div>
-                            <div class="fixed inset-0 z-50 transition-all duration-300 pointer-events-none bg-transparent"></div>
-                            <footer class="absolute bottom-0 left-0 right-0 pb-6 z-10">
-                                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                                    <div class="flex items-center justify-center space-x-8">
-                                        <a href="/terms-of-service" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Terms of Service</a>
-                                        <a href="/report" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Report Abuse</a>
-                                    </div>
-                                </div>
-                            </footer>
-                        </div>
+<body class="text-gray-900 antialiased min-h-screen flex flex-col relative selection:bg-gray-200">
+    
+    <!-- Modern Background -->
+    <div class="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/60 via-gray-50 to-white"></div>
+
+    <!-- Navbar -->
+    <header class="fixed w-full top-0 z-40 glass-panel border-b border-gray-200/50 transition-all">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" onclick="showView('home')" class="text-2xl font-bold tracking-tighter hover:opacity-70 transition">pokoco<span class="text-indigo-500">.</span></a>
+            <div class="flex items-center gap-4">
+                <button onclick="showView('home')" class="text-sm font-medium text-gray-500 hover:text-black transition hidden sm:block">Upload</button>
+                <button id="auth-btn" onclick="toggleAuth()" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                    Sign In
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Container -->
+    <main class="flex-grow pt-28 pb-12 px-6 flex flex-col items-center justify-center">
+        
+        <!-- ================= HOME VIEW ================= -->
+        <div id="view-home" class="w-full max-w-2xl mx-auto text-center space-y-10 transition-all duration-500">
+            <div class="space-y-4">
+                <h1 class="text-5xl md:text-6xl font-bold tracking-tight text-gray-900">
+                    Upload & share <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-gray-500 to-gray-900">effortlessly.</span>
+                </h1>
+                <p class="text-lg text-gray-500 max-w-lg mx-auto font-medium">Free, fast, and simple media hosting.</p>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="glass-panel border-2 border-dashed border-gray-300 rounded-3xl p-12 hover:border-black hover:shadow-2xl hover:shadow-gray-200 transition-all duration-300 cursor-pointer group relative overflow-hidden">
+                <div class="flex flex-col items-center justify-center space-y-5">
+                    <div class="w-16 h-16 bg-white shadow-sm rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <svg class="w-8 h-8 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-lg font-semibold text-gray-900" id="upload-text">Click to upload or drag & drop</p>
+                        <p class="text-sm text-gray-500 font-medium">Max size: 500MB</p>
                     </div>
                 </div>
             </div>
+            <input type="file" id="file-input" class="hidden" accept="video/*,image/*,audio/*">
+        </div>
+
+        <!-- ================= DASHBOARD VIEW ================= -->
+        <div id="view-dashboard" class="w-full max-w-4xl mx-auto hidden transition-all duration-500">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 border-b border-gray-200 pb-4 gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight">My Dashboard</h2>
+                    <p class="text-gray-500 text-sm mt-1 font-medium">Welcome back, <span id="display-username" class="text-black font-semibold">User</span>.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="logout()" class="text-gray-600 text-sm font-semibold hover:text-black transition px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200">Sign Out</button>
+                    <button onclick="deleteAccount()" class="text-red-600 text-sm font-semibold hover:text-red-800 transition px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100">Delete Account</button>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-3xl shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white/50">
+                    <h3 class="font-semibold text-gray-800">Upload History</h3>
+                    <button onclick="loadHistory()" class="text-xs font-semibold text-gray-500 hover:text-black transition px-3 py-1 bg-white rounded-lg shadow-sm border border-gray-100">Refresh</button>
+                </div>
+                <div id="history-list" class="divide-y divide-gray-100 max-h-[500px] overflow-y-auto bg-white/30">
+                    <!-- Data will be injected here -->
+                    <div class="p-8 text-center text-gray-500 font-medium">Loading your files...</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="py-6 text-center text-sm font-medium text-gray-400 mt-auto">
+        <a href="/terms-of-service" class="hover:text-gray-800 transition-colors px-3">Terms</a>
+        <a href="/report" class="hover:text-gray-800 transition-colors px-3">Report Abuse</a>
+    </footer>
+
+    <!-- ================= AUTHENTICATION MODAL ================= -->
+    <div id="auth-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="auth-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold tracking-tight">Sign In</h3>
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-black bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mb-6 font-medium">Enter a username. If it doesn't exist, we will create a local account for you.</p>
+            <input type="text" id="username-input" placeholder="e.g. jondoe" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all mb-4 font-medium">
+            <button onclick="login()" class="w-full bg-black text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg hover:shadow-xl active:scale-[0.98]">Continue</button>
         </div>
     </div>
 
     <script>
+        // --- 1. STATE & AUTHENTICATION LOGIC ---
+        let currentUser = localStorage.getItem('pokoco_user_id') || null;
+        let currentUsername = localStorage.getItem('pokoco_username') || null;
+
+        function updateAuthState() {
+            const authBtn = document.getElementById('auth-btn');
+            if (currentUser) {
+                authBtn.innerText = 'Dashboard';
+                authBtn.onclick = () => showView('dashboard');
+                document.getElementById('display-username').innerText = currentUsername;
+            } else {
+                authBtn.innerText = 'Sign In';
+                authBtn.onclick = () => toggleAuth();
+            }
+        }
+
+        function login() {
+            const user = document.getElementById('username-input').value.trim();
+            if (!user) return alert('Please enter a username');
+            
+            // Generate simple unique ID based on username (untuk simulasi backend)
+            const pseudoId = 'usr_' + btoa(user).substring(0, 12); 
+            
+            localStorage.setItem('pokoco_user_id', pseudoId);
+            localStorage.setItem('pokoco_username', user);
+            currentUser = pseudoId;
+            currentUsername = user;
+            
+            closeAuthModal();
+            updateAuthState();
+            showView('dashboard');
+        }
+
+        function logout() {
+            localStorage.removeItem('pokoco_user_id');
+            localStorage.removeItem('pokoco_username');
+            currentUser = null;
+            currentUsername = null;
+            updateAuthState();
+            showView('home');
+        }
+
+        // --- 2. UPLOAD & DRAG DROP LOGIC ---
         const fileInput = document.getElementById('file-input');
-        const uploadBtn = document.getElementById('upload-btn');
-        const uploadText = document.getElementById('upload-text');
+        const dropZone = document.getElementById('drop-zone');
+        const uploadText = document.getElementById('upload-text');['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
+            dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
 
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+        dropZone.addEventListener('dragover', () => dropZone.classList.add('border-black', 'bg-gray-50/50'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-black', 'bg-gray-50/50'));
+        dropZone.addEventListener('drop', (e) => {
+            dropZone.classList.remove('border-black', 'bg-gray-50/50');
+            if (e.dataTransfer.files.length) handleUpload(e.dataTransfer.files[0]);
+        });
 
-            // Simple size validation
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleUpload(e.target.files[0]);
+        });
+
+        async function handleUpload(file) {
             if (file.size > 500 * 1024 * 1024) {
-                alert('File is too large! Max 500MB.');
-                fileInput.value = '';
-                return;
+                alert('File is too large! Max 500MB.'); return;
             }
 
-            // UI Changes - matching Videy's simple button progress
-            uploadBtn.classList.remove('hover:scale-105', 'active:scale-95');
-            uploadBtn.classList.add('cursor-not-allowed', 'opacity-80');
-            uploadBtn.disabled = true;
+            dropZone.classList.add('pointer-events-none', 'opacity-70');
+            let userId = currentUser || "anonymous";
 
             try {
-                const safeFileType = file.type || "application/octet-stream";
-                const apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeFileType)}&size=${file.size}&name=${encodeURIComponent(file.name)}`;
+                const safeType = file.type || "application/octet-stream";
+                // URL ini sudah dihubungkan ke get-upload-url.js kamu yang baru
+                const apiUrl = `/api/get-upload-url?type=${encodeURIComponent(safeType)}&size=${file.size}&name=${encodeURIComponent(file.name)}&userId=${encodeURIComponent(userId)}`;
 
                 const res = await fetch(apiUrl);
                 const data = await res.json();
@@ -107,40 +193,128 @@
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', data.uploadUrl, true);
-                xhr.setRequestHeader('Content-Type', safeFileType);
+                xhr.setRequestHeader('Content-Type', safeType);
 
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) {
                         const percent = Math.round((e.loaded / e.total) * 100);
-                        uploadText.innerText = `Uploading ${percent}%`;
+                        uploadText.innerText = `Uploading ${percent}%...`;
                     }
                 };
 
                 xhr.onload = () => {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         uploadText.innerText = `Processing...`;
-                        setTimeout(() => {
-                            window.location.href = '/v?id=' + data.videoId;
-                        }, 500);
-                    } else {
-                        throw new Error('Upload failed');
-                    }
+                        setTimeout(() => window.location.href = '/v?id=' + data.videoId, 500);
+                    } else throw new Error('Upload failed');
                 };
-
-                xhr.onerror = () => {
-                    throw new Error('Network error. Upload failed.');
-                };
-
+                xhr.onerror = () => { throw new Error('Network error.'); };
                 xhr.send(file);
             } catch (err) {
                 alert(err.message);
-                uploadText.innerText = 'Upload File';
-                uploadBtn.disabled = false;
-                uploadBtn.classList.add('hover:scale-105', 'active:scale-95');
-                uploadBtn.classList.remove('cursor-not-allowed', 'opacity-80');
-                fileInput.value = ''; 
+                uploadText.innerText = 'Click to upload or drag & drop';
+                dropZone.classList.remove('pointer-events-none', 'opacity-70');
+                fileInput.value = '';
             }
-        });
+        }
+
+        // --- 3. DASHBOARD / HISTORY LOGIC ---
+        async function loadHistory() {
+            if (!currentUser) return;
+            const list = document.getElementById('history-list');
+            list.innerHTML = '<div class="p-8 text-center text-gray-500">Loading your files...</div>';
+            
+            try {
+                const res = await fetch(`/api/history?userId=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+                
+                if (data.success && data.files.length > 0) {
+                    list.innerHTML = data.files.map(f => `
+                        <div class="p-5 flex items-center justify-between hover:bg-white/80 transition group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <div>
+                                    <a href="/v?id=${f.id}" target="_blank" class="font-semibold text-gray-900 hover:text-indigo-600 transition">${f.file_name || 'Untitled'}</a>
+                                    <p class="text-xs text-gray-500 font-medium mt-0.5">${f.content_type || 'Unknown'} • ID: ${f.id}</p>
+                                </div>
+                            </div>
+                            <button onclick="deleteFile('${f.id}')" class="text-red-500 p-2.5 rounded-xl hover:bg-red-50 hover:scale-110 transition active:scale-95" title="Delete File">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="p-12 text-center flex flex-col items-center"><svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg><p class="text-gray-500 font-medium">No files uploaded yet.</p></div>';
+                }
+            } catch (e) {
+                list.innerHTML = '<div class="p-8 text-center text-red-500 font-medium">Failed to load history. Make sure API is deployed.</div>';
+            }
+        }
+
+        async function deleteFile(id) {
+            if(!confirm('Delete this file permanently?')) return;
+            try {
+                const res = await fetch('/api/delete-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, userId: currentUser })
+                });
+                const data = await res.json();
+                if(data.success) loadHistory();
+                else alert(data.message || 'Failed to delete');
+            } catch(e) { alert('Error deleting file.'); }
+        }
+
+        async function deleteAccount() {
+            if(!confirm('DANGER: This will delete your account and ALL your files permanently! Proceed?')) return;
+            try {
+                const res = await fetch('/api/delete-account', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    logout();
+                    alert('Account & files deleted successfully.');
+                } else alert(data.message || 'Failed to delete account');
+            } catch(e) { alert('Error deleting account.'); }
+        }
+
+        // --- 4. VIEW TOGGLER & MODAL ---
+        function showView(view) {
+            const vHome = document.getElementById('view-home');
+            const vDash = document.getElementById('view-dashboard');
+            
+            if (view === 'home') {
+                vHome.classList.remove('hidden');
+                setTimeout(() => vHome.classList.remove('opacity-0', 'scale-95'), 10);
+                vDash.classList.add('hidden');
+            } else if (view === 'dashboard') {
+                vHome.classList.add('hidden');
+                vDash.classList.remove('hidden');
+                loadHistory();
+            }
+        }
+
+        function toggleAuth() {
+            const modal = document.getElementById('auth-modal');
+            const content = document.getElementById('auth-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('auth-modal');
+            const content = document.getElementById('auth-modal-content');
+            modal.classList.add('opacity-0'); content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // Initialize App
+        updateAuthState();
     </script>
 </body>
 </html>
