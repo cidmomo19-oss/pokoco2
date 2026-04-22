@@ -23,15 +23,14 @@
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             -webkit-font-smoothing: antialiased;
         }
-        /* Menghilangkan background hitam bawaan browser pada video dan memblokir pop-up tekan lama di mobile */
+        /* Menghilangkan background hitam bawaan browser pada video */
         video, img, audio { 
             outline: none; 
             background-color: transparent !important;
-            -webkit-touch-callout: none; /* Mencegah menu pop-up saat ditahan lama di iOS/Mobile */
         }
     </style>
 </head>
-<body data-version="v1.0.5">
+<body data-version="v1.0.6">
     <div id="root">
         <div class="min-h-screen">
             <div class="min-h-screen flex flex-col">
@@ -56,27 +55,17 @@
                         </div>
                     </div>
                     
-                    <!-- Container Tombol -->
-                    <div class="w-full flex flex-row justify-center gap-3 mt-4 mb-0" id="action-buttons" style="display: none;">
+                    <!-- Container Tombol (Hanya ada Tombol Download) -->
+                    <div class="w-full flex flex-row justify-center mt-4 mb-0" id="action-buttons" style="display: none;">
                         
-                        <!-- Tombol Download (Shadow Dihapus) -->
-                        <button onclick="downloadMedia()" id="download-btn" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-white h-9 py-2 rounded-full px-6 gap-2 bg-gray-900 hover:bg-gray-800 font-semibold border border-gray-900">
+                        <!-- Tombol Download -->
+                        <button onclick="downloadMedia()" id="download-btn" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-white shadow-sm h-9 py-2 rounded-full px-8 gap-2 bg-gray-900 hover:bg-gray-800 font-semibold border border-gray-900">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
                                 <line x1="12" x2="12" y1="15" y2="3"></line>
                             </svg>
                             <span id="download-label">Download</span>
-                        </button>
-
-                        <!-- Tombol Share Lama (Shadow Dihapus) -->
-                        <button onclick="shareMedia()" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-gray-700 h-9 py-2 rounded-full px-6 gap-2 bg-gray-100 hover:bg-gray-200 font-semibold border border-gray-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-share w-[18px] h-[18px]">
-                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-                                <polyline points="16 6 12 2 8 6"></polyline>
-                                <line x1="12" x2="12" y1="2" y2="15"></line>
-                            </svg>
-                            <span id="share-label">Share link</span>
                         </button>
                     </div>
                 </div>
@@ -97,7 +86,6 @@
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         const mediaWrapper = document.getElementById('media-wrapper');
-        const shareLabel = document.getElementById('share-label');
         const actionButtons = document.getElementById('action-buttons');
         
         let currentMediaUrl = '';
@@ -142,17 +130,14 @@
         function renderMedia(url, type) {
             let mediaHtml = '';
             
-            // oncontextmenu="return false;" ditambahkan untuk blokir klik kanan "Save As"
+            // oncontextmenu="return false;" mematikan klik kanan (Save as)
+            // controlsList="nodownload" mematikan tombol download di titik tiga
             if (type.startsWith('image/')) {
-                mediaHtml = `<img id="main-media" oncontextmenu="return false;" class="w-full md:rounded-[8px]" src="${url}" style="max-height: 520px; object-fit: contain;">`;
-                shareLabel.innerText = 'Share image';
+                mediaHtml = `<img id="main-media" class="w-full md:rounded-[8px]" src="${url}" style="max-height: 520px; object-fit: contain;" oncontextmenu="return false;" draggable="false">`;
             } else if (type.startsWith('video/')) {
-                // controlsList="nodownload" (sembunyikan di menu) & oncontextmenu="return false;" (blokir klik kanan)
                 mediaHtml = `<video id="main-media" controlsList="nodownload" oncontextmenu="return false;" class="w-full md:rounded-[8px]" controls autoplay playsinline src="${url}" style="max-height: 520px;"></video>`;
-                shareLabel.innerText = 'Share video';
             } else {
                 mediaHtml = `<audio id="main-media" controlsList="nodownload" oncontextmenu="return false;" class="w-full md:rounded-[8px] mt-10" controls src="${url}"></audio>`;
-                shareLabel.innerText = 'Share audio';
             }
 
             mediaWrapper.innerHTML = mediaHtml;
@@ -182,6 +167,7 @@
                 const blob = await response.blob();
                 
                 const blobUrl = window.URL.createObjectURL(blob);
+                
                 const ext = currentMediaType.split('/')[1] || 'file';
 
                 const a = document.createElement('a');
@@ -204,17 +190,6 @@
                     btn.disabled = false;
                     btn.classList.remove('opacity-50');
                 }, 2000);
-            }
-        }
-
-        function shareMedia() {
-            if (navigator.share) {
-                navigator.share({ title: `Pokoco`, url: window.location.href });
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                const originalText = shareLabel.innerText;
-                shareLabel.innerText = 'Copied!';
-                setTimeout(() => { shareLabel.innerText = originalText; }, 2000);
             }
         }
 
