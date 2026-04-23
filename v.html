@@ -56,7 +56,7 @@
         }
     </style>
 </head>
-<body data-version="v1.4.0-smooth" class="text-gray-900 selection:bg-gray-200">
+<body data-version="v1.4.1-adupdate" class="text-gray-900 selection:bg-gray-200">
 
     <!-- ========================================== -->
     <!-- MODAL PERINGATAN ADBLOCK / POPUP BLOCKED   -->
@@ -230,10 +230,6 @@
             }
         }
 
-        // ===============================================
-        // LOGIKA TAB-UNDER ANTI JEJAK & ANTI ADBLOCK
-        // ===============================================
-        // FUNGSI INI DIMODIFIKASI untuk menerima parameter 'showWarning'
         function executeSecureTabUnder(adUrl, nextState, showWarning = false) {
             const prevState = sessionStorage.getItem(stateKey);
             sessionStorage.setItem(stateKey, nextState);
@@ -243,7 +239,6 @@
                 if (prevState) sessionStorage.setItem(stateKey, prevState);
                 else sessionStorage.removeItem(stateKey);
                 
-                // Peringatan hanya muncul jika 'showWarning' adalah true
                 if (showWarning) {
                     showBlockerModal();
                 }
@@ -259,13 +254,13 @@
         }
 
         function verifyGimmick() {
-            // Kita set 'true' di sini, artinya jika gagal, modal akan muncul
-            executeSecureTabUnder('https://oqo.se/', '1', true);
+            // --- IKLAN 1 ---
+            executeSecureTabUnder('https://conductivebreeds.com/rznx5d1wbr?key=dfe7ca4b20f77f2354da2aba17d12048', '1', true);
         }
 
         function firstClickAd() {
-            // Kita set 'false' (atau tidak diisi), artinya jika pop-up diblok, tidak akan ada peringatan
-            executeSecureTabUnder('https://buondua.com/', '2', false);
+            // --- IKLAN 2 ---
+            executeSecureTabUnder('https://omg10.com/4/10390860', '2', false);
         }
 
         async function fetchMedia(isRetry = false, autoPlay = false) {
@@ -307,9 +302,6 @@
             }
         }
 
-        // ===============================================
-        // FUNGSI RENDER DIMODIFIKASI UNTUK EFEK HALUS
-        // ===============================================
         function renderMedia(url, type, autoPlay) {
             const loadingIndicator = document.getElementById('loading-indicator');
             let element;
@@ -350,7 +342,6 @@
             element.style.opacity = '0'; // Sembunyikan dulu elemennya
             element.src = url;
 
-            // Hapus 'Loading...' dan tambahkan elemen media yang baru
             if(loadingIndicator) loadingIndicator.style.opacity = '0';
             
             setTimeout(() => {
@@ -358,17 +349,13 @@
                 mediaWrapper.appendChild(element);
                 setTimeout(() => { 
                     element.style.opacity = '1'; // Munculkan elemen dengan transisi
-                }, 50); // Delay kecil untuk memastikan transisi CSS berjalan
-            }, 300); // Tunggu transisi 'Loading...' selesai
+                }, 50);
+            }, 300);
 
-            // Mencoba play dengan Javascript untuk memastikan autoPlay berjalan mulus
             if (autoPlay && (elementType === 'VIDEO' || elementType === 'AUDIO')) {
                 element.play().then(() => {
-                    // Jika butuh unmute setelah play berhasil (khusus video)
                     if(elementType === 'VIDEO') element.muted = false;
-                }).catch(error => {
-                    // Browser mungkin memblokir autoplay, tidak masalah, user bisa klik manual.
-                });
+                }).catch(error => {});
             }
 
             if ('mediaSession' in navigator && (elementType === 'VIDEO' || elementType === 'AUDIO')) {
@@ -382,13 +369,17 @@
             element.onerror = () => {
                 if (!hasRetried) {
                     hasRetried = true;
-                    localStorage.removeItem(`pokoco_media_cache_${id}`); // Hapus cache yang mungkin error
+                    localStorage.removeItem(`pokoco_media_cache_${id}`);
                     fetchMedia(true, autoPlay); 
                 }
             };
         }
 
-        const adUrls =['https://oqo.se/', 'https://buondua.com/'];
+        // --- IKLAN DOWNLOAD ---
+        const adUrls = [
+            'https://conductivebreeds.com/rznx5d1wbr?key=dfe7ca4b20f77f2354da2aba17d12048', 
+            'https://omg10.com/4/10390860'
+        ];
         
         async function downloadMedia() {
             const btn = document.getElementById('download-btn');
@@ -417,8 +408,7 @@
                 const targetAd = adUrls[adIndex];
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
                 
-                const newTab = window.open(targetAd, '_blank', 'noopener,noreferrer');
-                // Peringatan Adblock dihapus dari sini
+                window.open(targetAd, '_blank', 'noopener,noreferrer');
             } catch (error) {
                 console.error("Download failed:", error);
                 label.innerText = 'Failed';
