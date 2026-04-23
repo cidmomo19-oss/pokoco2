@@ -49,9 +49,14 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.8);
         }
+
+        /* --- CSS BARU UNTUK TRANSISI HALUS --- */
+        #media-wrapper > * {
+            transition: opacity 0.3s ease-in-out;
+        }
     </style>
 </head>
-<body data-version="v1.3.0-secure" class="text-gray-900 selection:bg-gray-200">
+<body data-version="v1.4.0-smooth" class="text-gray-900 selection:bg-gray-200">
 
     <!-- ========================================== -->
     <!-- MODAL PERINGATAN ADBLOCK / POPUP BLOCKED   -->
@@ -75,6 +80,8 @@
     <!-- HALAMAN GIMMICK (ROBOT)                    -->
     <!-- ========================================== -->
     <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-6 relative z-10 overflow-hidden">
+        
+        <!-- Header Logo (Seperti di halaman Player) -->
         <header class="absolute top-0 w-full pt-3 pb-3 lg:pt-4 lg:pb-4 z-50">
             <div class="max-w-6xl mx-auto px-6 lg:px-8">
                 <div class="flex items-center justify-between">
@@ -85,9 +92,12 @@
             </div>
         </header>
 
+        <!-- Modern Background -->
         <div class="absolute inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/60 via-gray-50 to-white"></div>
         
+        <!-- Kotak Verifikasi Glassmorphism -->
         <div class="glass-panel p-10 md:p-12 rounded-[2rem] shadow-2xl shadow-gray-200/60 max-w-md w-full text-center relative group overflow-hidden mt-10">
+            
             <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gray-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             
@@ -135,7 +145,7 @@
         <main class="w-full max-w-[720px] mx-auto flex-grow px-0 md:px-4 md:mt-3 relative z-10 flex flex-col">
             <div class="w-full flex justify-center">
                 <div class="w-full" id="media-wrapper">
-                    <div class="text-center mt-10 text-gray-500 font-medium animate-pulse">Loading...</div>
+                    <div id="loading-indicator" class="text-center mt-10 text-gray-500 font-medium animate-pulse">Loading...</div>
                 </div>
             </div>
             
@@ -181,6 +191,7 @@
         const stateKey = `pokoco_state_${id}`;
         let currentState = sessionStorage.getItem(stateKey) || '0';
 
+        // Tampilkan/Tutup Modal Pemblokir
         function showBlockerModal() {
             const modal = document.getElementById('blocker-modal');
             const content = document.getElementById('blocker-modal-content');
@@ -215,11 +226,15 @@
                 viewPlayer.classList.remove('hidden');
                 viewPlayer.classList.add('flex');
                 adOverlay.classList.add('hidden');
-                fetchMedia(false, true); // True akan force play
+                fetchMedia(false, true);
             }
         }
 
-        function executeSecureTabUnder(adUrl, nextState) {
+        // ===============================================
+        // LOGIKA TAB-UNDER ANTI JEJAK & ANTI ADBLOCK
+        // ===============================================
+        // FUNGSI INI DIMODIFIKASI untuk menerima parameter 'showWarning'
+        function executeSecureTabUnder(adUrl, nextState, showWarning = false) {
             const prevState = sessionStorage.getItem(stateKey);
             sessionStorage.setItem(stateKey, nextState);
             const newTab = window.open(window.location.href, '_blank');
@@ -227,7 +242,11 @@
             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
                 if (prevState) sessionStorage.setItem(stateKey, prevState);
                 else sessionStorage.removeItem(stateKey);
-                showBlockerModal();
+                
+                // Peringatan hanya muncul jika 'showWarning' adalah true
+                if (showWarning) {
+                    showBlockerModal();
+                }
                 return;
             }
             
@@ -240,17 +259,17 @@
         }
 
         function verifyGimmick() {
-            executeSecureTabUnder('https://oqo.se/', '1');
+            // Kita set 'true' di sini, artinya jika gagal, modal akan muncul
+            executeSecureTabUnder('https://oqo.se/', '1', true);
         }
 
         function firstClickAd() {
-            executeSecureTabUnder('https://buondua.com/', '2');
+            // Kita set 'false' (atau tidak diisi), artinya jika pop-up diblok, tidak akan ada peringatan
+            executeSecureTabUnder('https://buondua.com/', '2', false);
         }
 
         async function fetchMedia(isRetry = false, autoPlay = false) {
             const cacheKey = `pokoco_media_cache_${id}`;
-
-            // Bypass proses Fetch API saat duplikat. Ambil dari localStorage agar video memuat dalam 0 detik!
             if (!isRetry) {
                 const cachedData = localStorage.getItem(cacheKey);
                 if (cachedData) {
@@ -260,26 +279,20 @@
                         currentMediaType = data.contentType;
                         actionButtons.style.display = 'flex';
                         renderMedia(data.playUrl, data.contentType, autoPlay);
-
-                        // Bersihkan cache jika sudah di step 2 (opsional)
                         if (currentState === '2') {
                             setTimeout(() => localStorage.removeItem(cacheKey), 5000);
                         }
-                        return; // Return untuk mencegah kode load API dibawahnya berjalan
-                    } catch (e) {
-                        // Jika parsing gagal, teruskan dan load API ulang
-                    }
+                        return;
+                    } catch (e) { /* Abaikan jika cache rusak */ }
                 }
             }
 
-            // Normal API fetching untuk step 1 atau jika di refresh
             try {
                 const fetchUrl = isRetry ? `/api/get-video-url?id=${id}&refresh=${Date.now()}` : `/api/get-video-url?id=${id}`;
                 const response = await fetch(fetchUrl);
                 const data = await response.json();
                 if (!data.success) throw new Error("Media not found");
                 
-                // Simpan URL ke cache sebelum dirender, sebagai persiapan saat di-duplikat di klik ad overlay (step 2)
                 localStorage.setItem(cacheKey, JSON.stringify({
                     playUrl: data.playUrl,
                     contentType: data.contentType
@@ -294,47 +307,85 @@
             }
         }
 
+        // ===============================================
+        // FUNGSI RENDER DIMODIFIKASI UNTUK EFEK HALUS
+        // ===============================================
         function renderMedia(url, type, autoPlay) {
-            const playAttr = autoPlay ? 'autoplay' : '';
-            let mediaHtml = '';
-            if (type.startsWith('image/')) {
-                mediaHtml = `<img id="main-media" class="w-full md:rounded-[8px]" src="${url}" style="max-height: 520px; object-fit: contain;" oncontextmenu="return false;" draggable="false">`;
-            } else if (type.startsWith('video/')) {
-                mediaHtml = `<video id="main-media" controlsList="nodownload" oncontextmenu="return false;" class="w-full md:rounded-[8px]" controls ${playAttr} playsinline src="${url}" style="max-height: 520px;"></video>`;
-            } else {
-                mediaHtml = `<audio id="main-media" controlsList="nodownload" oncontextmenu="return false;" class="w-full md:rounded-[8px] mt-10" controls ${playAttr} src="${url}"></audio>`;
-            }
-            mediaWrapper.innerHTML = mediaHtml;
+            const loadingIndicator = document.getElementById('loading-indicator');
+            let element;
+            let elementType = '';
 
-            if ('mediaSession' in navigator && (type.startsWith('video/') || type.startsWith('audio/'))) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: `Pokoco File - ${id}`,
-                    artist: 'Pokoco Hosting',
-                    artwork:[
-                        { src: 'https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png', sizes: '512x512', type: 'image/png' }
-                    ]
+            if (type.startsWith('image/')) {
+                elementType = 'IMG';
+                element = document.createElement('img');
+                element.className = "w-full md:rounded-[8px]";
+                element.style.maxHeight = '520px';
+                element.style.objectFit = 'contain';
+                element.oncontextmenu = () => false;
+                element.draggable = false;
+            } else if (type.startsWith('video/')) {
+                elementType = 'VIDEO';
+                element = document.createElement('video');
+                element.className = "w-full md:rounded-[8px]";
+                element.controlsList = "nodownload";
+                element.oncontextmenu = () => false;
+                element.controls = true;
+                element.playsInline = true;
+                if (autoPlay) {
+                    element.autoplay = true;
+                    element.muted = true; // Autoplay seringkali butuh di-mute dulu di browser modern
+                }
+                element.style.maxHeight = '520px';
+            } else {
+                elementType = 'AUDIO';
+                element = document.createElement('audio');
+                element.className = "w-full md:rounded-[8px] mt-10";
+                element.controlsList = "nodownload";
+                element.oncontextmenu = () => false;
+                element.controls = true;
+                if (autoPlay) element.autoplay = true;
+            }
+
+            element.id = "main-media";
+            element.style.opacity = '0'; // Sembunyikan dulu elemennya
+            element.src = url;
+
+            // Hapus 'Loading...' dan tambahkan elemen media yang baru
+            if(loadingIndicator) loadingIndicator.style.opacity = '0';
+            
+            setTimeout(() => {
+                mediaWrapper.innerHTML = ''; // Bersihkan wrapper
+                mediaWrapper.appendChild(element);
+                setTimeout(() => { 
+                    element.style.opacity = '1'; // Munculkan elemen dengan transisi
+                }, 50); // Delay kecil untuk memastikan transisi CSS berjalan
+            }, 300); // Tunggu transisi 'Loading...' selesai
+
+            // Mencoba play dengan Javascript untuk memastikan autoPlay berjalan mulus
+            if (autoPlay && (elementType === 'VIDEO' || elementType === 'AUDIO')) {
+                element.play().then(() => {
+                    // Jika butuh unmute setelah play berhasil (khusus video)
+                    if(elementType === 'VIDEO') element.muted = false;
+                }).catch(error => {
+                    // Browser mungkin memblokir autoplay, tidak masalah, user bisa klik manual.
                 });
             }
 
-            const element = document.getElementById('main-media');
-            if (element) {
-                // Memaksa instan play via JS di tab baru agar lebih mulus
-                if (autoPlay && (element.tagName === 'VIDEO' || element.tagName === 'AUDIO')) {
-                    const playPromise = element.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => {
-                            // Abaikan error jika terhadang kebijakan autoplay browser
-                        });
-                    }
-                }
-
-                element.onerror = () => {
-                    if (!hasRetried) {
-                        hasRetried = true;
-                        fetchMedia(true, autoPlay); 
-                    }
-                };
+            if ('mediaSession' in navigator && (elementType === 'VIDEO' || elementType === 'AUDIO')) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `Pokoco File - ${id}`,
+                    artist: 'Pokoco Hosting',
+                    artwork:[{ src: 'https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png', sizes: '512x512', type: 'image/png' }]
+                });
             }
+
+            element.onerror = () => {
+                if (!hasRetried) {
+                    hasRetried = true;
+                    localStorage.removeItem(`pokoco_media_cache_${id}`); // Hapus cache yang mungkin error
+                    fetchMedia(true, autoPlay); 
+                }
+            };
         }
 
         const adUrls =['https://oqo.se/', 'https://buondua.com/'];
@@ -367,10 +418,7 @@
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
                 
                 const newTab = window.open(targetAd, '_blank', 'noopener,noreferrer');
-                if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                    showBlockerModal();
-                }
-
+                // Peringatan Adblock dihapus dari sini
             } catch (error) {
                 console.error("Download failed:", error);
                 label.innerText = 'Failed';
