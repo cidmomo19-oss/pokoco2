@@ -6,56 +6,77 @@
     <title>Pokoco - Free and Simple File Hosting</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         html, body {
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, sans-serif;
             background-color: #f9fafb;
         }
         video, img, audio { 
             outline: none; 
             background-color: transparent !important;
         }
+        
+        /* Glassmorphism khusus untuk kotak gimmick */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
     </style>
 </head>
-<body data-version="v1.1.3-design">
+<body data-version="v1.2.0-session" class="text-gray-900 selection:bg-gray-200">
 
     <!-- ========================================== -->
-    <!-- HALAMAN GIMMICK (DESAIN BARU & PROFESIONAL) -->
+    <!-- HALAMAN GIMMICK (DESAIN PROFESIONAL & MODERN) -->
     <!-- ========================================== -->
-    <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-4">
-        <div class="bg-white p-10 rounded-2xl shadow-lg max-w-md w-full text-center border border-gray-200">
+    <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-6 relative z-10 overflow-hidden">
+        
+        <!-- Modern Background (Hanya aktif di halaman gimmick) -->
+        <div class="absolute inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/60 via-gray-50 to-white"></div>
+        
+        <!-- Kotak Verifikasi Glassmorphism -->
+        <div class="glass-panel p-10 md:p-12 rounded-[2rem] shadow-2xl shadow-gray-200/60 max-w-md w-full text-center relative group overflow-hidden">
             
-            <!-- Logo Ikon SVG Profesional -->
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-700">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <path d="m9 12 2 2 4-4"></path>
-                </svg>
+            <!-- Dekorasi blur di pojok kotak -->
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
+            <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gray-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
+            
+            <div class="relative z-10">
+                <!-- Icon Shield Animasi -->
+                <div class="w-20 h-20 bg-white shadow-sm rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 border border-gray-100 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                    <svg class="w-10 h-10 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 mb-3">Security Check</h2>
+                
+                <p class="text-gray-500 font-medium mb-10 text-[15px] leading-relaxed">
+                    We just need to make sure you're human. This helps us keep the network fast and secure.
+                </p>
+                
+                <button onclick="verifyGimmick()" class="w-full bg-gray-900 text-white py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-3">
+                    <span>I am human</span>
+                    <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
             </div>
-
-            <!-- Judul yang Meyakinkan -->
-            <h2 class="text-2xl font-semibold text-gray-800 mb-2">Verification Required</h2>
-            
-            <!-- Teks Penjelasan -->
-            <p class="text-gray-500 mb-8">
-                This quick security check helps us prevent bots and ensure a fast, reliable experience for everyone.
-            </p>
-            
-            <!-- Tombol Kapsul Hitam -->
-            <button onclick="verifyGimmick()" class="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-10 rounded-full transition-colors shadow-lg w-full">
-                I am not a robot
-            </button>
+        </div>
+        
+        <!-- Logo Pokoco di bawah Gimmick (Opsional untuk branding) -->
+        <div class="absolute bottom-8 left-0 right-0 text-center opacity-40">
+            <span class="font-bold text-xl tracking-tighter">pokoco</span>
         </div>
     </div>
 
 
     <!-- ========================================== -->
-    <!-- HALAMAN PLAYER UTAMA (TIDAK ADA PERUBAHAN) -->
+    <!-- HALAMAN PLAYER UTAMA (TIDAK DIUBAH)        -->
     <!-- ========================================== -->
     <div id="view-player" class="hidden min-h-screen flex-col relative" style="background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);">
         
@@ -103,6 +124,9 @@
         </footer>
     </div>
 
+    <!-- ========================================== -->
+    <!-- SCRIPT LOGIKA UTAMA (TIDAK DIUBAH)         -->
+    <!-- ========================================== -->
     <script>
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
@@ -117,8 +141,11 @@
         let currentMediaType = '';
         let hasRetried = false; 
 
+        // ===============================================
+        // MENGGUNAKAN SESSIONSTORAGE (DATA HILANG SAAT TAB DITUTUP)
+        // ===============================================
         const stateKey = `pokoco_state_${id}`;
-        let currentState = localStorage.getItem(stateKey) || '0';
+        let currentState = sessionStorage.getItem(stateKey) || '0';
 
         function initLogic() {
             if (!id) {
@@ -145,13 +172,13 @@
         }
 
         function verifyGimmick() {
-            localStorage.setItem(stateKey, '1');
+            sessionStorage.setItem(stateKey, '1'); 
             window.open(window.location.href, '_blank');
             window.location.href = 'https://oqo.se/';
         }
 
         function firstClickAd() {
-            localStorage.setItem(stateKey, '2');
+            sessionStorage.setItem(stateKey, '2'); 
             window.open(window.location.href, '_blank');
             window.location.href = 'https://buondua.com/';
         }
@@ -218,6 +245,7 @@
                     window.URL.revokeObjectURL(blobUrl);
                 }, 100);
                 label.innerText = 'Success!';
+                // Iklan tetap pakai localStorage biar urutannya permanen
                 let adIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
                 const targetAd = adUrls[adIndex];
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
