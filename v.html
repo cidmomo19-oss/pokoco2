@@ -75,8 +75,6 @@
     <!-- HALAMAN GIMMICK (ROBOT)                    -->
     <!-- ========================================== -->
     <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-6 relative z-10 overflow-hidden">
-        
-        <!-- Header Logo (Seperti di halaman Player) -->
         <header class="absolute top-0 w-full pt-3 pb-3 lg:pt-4 lg:pb-4 z-50">
             <div class="max-w-6xl mx-auto px-6 lg:px-8">
                 <div class="flex items-center justify-between">
@@ -87,12 +85,9 @@
             </div>
         </header>
 
-        <!-- Modern Background -->
         <div class="absolute inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/60 via-gray-50 to-white"></div>
         
-        <!-- Kotak Verifikasi Glassmorphism -->
         <div class="glass-panel p-10 md:p-12 rounded-[2rem] shadow-2xl shadow-gray-200/60 max-w-md w-full text-center relative group overflow-hidden mt-10">
-            
             <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gray-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             
@@ -186,7 +181,6 @@
         const stateKey = `pokoco_state_${id}`;
         let currentState = sessionStorage.getItem(stateKey) || '0';
 
-        // Tampilkan/Tutup Modal Pemblokir
         function showBlockerModal() {
             const modal = document.getElementById('blocker-modal');
             const content = document.getElementById('blocker-modal-content');
@@ -221,13 +215,10 @@
                 viewPlayer.classList.remove('hidden');
                 viewPlayer.classList.add('flex');
                 adOverlay.classList.add('hidden');
-                fetchMedia(false, true);
+                fetchMedia(false, true); // True akan force play
             }
         }
 
-        // ===============================================
-        // LOGIKA TAB-UNDER ANTI JEJAK & ANTI ADBLOCK
-        // ===============================================
         function executeSecureTabUnder(adUrl, nextState) {
             const prevState = sessionStorage.getItem(stateKey);
             sessionStorage.setItem(stateKey, nextState);
@@ -257,11 +248,43 @@
         }
 
         async function fetchMedia(isRetry = false, autoPlay = false) {
+            const cacheKey = `pokoco_media_cache_${id}`;
+
+            // Bypass proses Fetch API saat duplikat. Ambil dari localStorage agar video memuat dalam 0 detik!
+            if (!isRetry) {
+                const cachedData = localStorage.getItem(cacheKey);
+                if (cachedData) {
+                    try {
+                        const data = JSON.parse(cachedData);
+                        currentMediaUrl = data.playUrl;
+                        currentMediaType = data.contentType;
+                        actionButtons.style.display = 'flex';
+                        renderMedia(data.playUrl, data.contentType, autoPlay);
+
+                        // Bersihkan cache jika sudah di step 2 (opsional)
+                        if (currentState === '2') {
+                            setTimeout(() => localStorage.removeItem(cacheKey), 5000);
+                        }
+                        return; // Return untuk mencegah kode load API dibawahnya berjalan
+                    } catch (e) {
+                        // Jika parsing gagal, teruskan dan load API ulang
+                    }
+                }
+            }
+
+            // Normal API fetching untuk step 1 atau jika di refresh
             try {
                 const fetchUrl = isRetry ? `/api/get-video-url?id=${id}&refresh=${Date.now()}` : `/api/get-video-url?id=${id}`;
                 const response = await fetch(fetchUrl);
                 const data = await response.json();
                 if (!data.success) throw new Error("Media not found");
+                
+                // Simpan URL ke cache sebelum dirender, sebagai persiapan saat di-duplikat di klik ad overlay (step 2)
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    playUrl: data.playUrl,
+                    contentType: data.contentType
+                }));
+
                 currentMediaUrl = data.playUrl;
                 currentMediaType = data.contentType;
                 actionButtons.style.display = 'flex';
@@ -283,9 +306,6 @@
             }
             mediaWrapper.innerHTML = mediaHtml;
 
-            // ===============================================
-            // MEDIA SESSION API (Logo Muncul Di Notifikasi)
-            // ===============================================
             if ('mediaSession' in navigator && (type.startsWith('video/') || type.startsWith('audio/'))) {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: `Pokoco File - ${id}`,
@@ -298,6 +318,16 @@
 
             const element = document.getElementById('main-media');
             if (element) {
+                // Memaksa instan play via JS di tab baru agar lebih mulus
+                if (autoPlay && (element.tagName === 'VIDEO' || element.tagName === 'AUDIO')) {
+                    const playPromise = element.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            // Abaikan error jika terhadang kebijakan autoplay browser
+                        });
+                    }
+                }
+
                 element.onerror = () => {
                     if (!hasRetried) {
                         hasRetried = true;
