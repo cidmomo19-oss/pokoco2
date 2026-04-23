@@ -3,8 +3,35 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>Pokoco - Free and Simple File Hosting</title>
+    
+    <!-- Primary Meta Tags (Google SEO) -->
+    <title>Pokoco - Free, Fast & Simple File Hosting</title>
+    <meta name="title" content="Pokoco - Free, Fast & Simple File Hosting">
+    <meta name="description" content="Upload, share, and manage your files effortlessly with Pokoco. Enjoy free, fast, and secure media hosting for images, videos, and audio. No limits on sharing!">
+    <meta name="keywords" content="file hosting, free file sharing, image upload, video hosting, audio hosting, cloud storage, share files online, pokoco">
+    <meta name="author" content="Pokoco">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <link rel="canonical" href="https://pokoco.co/">
+
+    <!-- Favicon & PWA Theme -->
+    <link rel="icon" type="image/png" href="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
+    <link rel="apple-touch-icon" href="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
+    <meta name="theme-color" content="#111827">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pokoco.co/">
+    <meta property="og:title" content="Pokoco - Free, Fast & Simple File Hosting">
+    <meta property="og:description" content="Upload, share, and manage your files effortlessly with Pokoco. Enjoy free, fast, and secure media hosting.">
+    <meta property="og:image" content="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://pokoco.co/">
+    <meta property="twitter:title" content="Pokoco - Free, Fast & Simple File Hosting">
+    <meta property="twitter:description" content="Upload, share, and manage your files effortlessly with Pokoco. Enjoy free, fast, and secure media hosting.">
+    <meta property="twitter:image" content="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,7 +59,7 @@
     <header class="fixed w-full top-0 z-40 glass-panel border-b border-gray-200/50 transition-all">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <!-- LOGO VERSI AWAL -->
-            <a href="/" onclick="event.preventDefault(); showView('home')" class="flex items-center hover:opacity-80 transition-opacity">
+            <a href="/" onclick="event.preventDefault(); showView('home')" class="flex items-center hover:opacity-80 transition-opacity" aria-label="Pokoco Home">
                 <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
             </a>
 
@@ -75,7 +102,7 @@
                     </div>
                 </div>
             </div>
-            <input type="file" id="file-input" class="hidden" accept="video/*,image/*,audio/*">
+            <input type="file" id="file-input" class="hidden" accept="video/*,image/*,audio/*" aria-label="Upload File">
         </div>
 
         <!-- ================= DASHBOARD VIEW ================= -->
@@ -115,7 +142,7 @@
         <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="auth-modal-content">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold tracking-tight" id="auth-title">Sign In</h3>
-                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition" aria-label="Close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -139,7 +166,7 @@
         <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="pwd-modal-content">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold tracking-tight">Change Password</h3>
-                <button onclick="toggleChangePwd(false)" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
+                <button onclick="toggleChangePwd(false)" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition" aria-label="Close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
