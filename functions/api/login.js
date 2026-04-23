@@ -17,8 +17,8 @@ export async function onRequestPost(context) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Cari user di DB
-    const user = await env.DB.prepare("SELECT id, username FROM users WHERE username = ? AND password_hash = ?")
+    // PERBAIKAN: Ubah password_hash menjadi password agar sesuai dengan D1 saat registrasi
+    const user = await env.DB.prepare("SELECT id, username FROM users WHERE username = ? AND password = ?")
                              .bind(username, passwordHash)
                              .first();
 
@@ -36,9 +36,7 @@ export async function onRequestPost(context) {
     });
 
   } catch (error) {
-    // Catat error di console Cloudflare Pages untuk mempermudah perbaikan
     console.error("Login Error:", error); 
-    
     return new Response(JSON.stringify({ success: false, message: "Server Error", details: error.message }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
