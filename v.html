@@ -21,7 +21,6 @@
             background-color: transparent !important;
         }
         
-        /* Glassmorphism khusus untuk kotak gimmick */
         .glass-panel {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(16px);
@@ -30,25 +29,52 @@
         }
     </style>
 </head>
-<body data-version="v1.2.0-session" class="text-gray-900 selection:bg-gray-200">
+<body data-version="v1.3.0-secure" class="text-gray-900 selection:bg-gray-200">
 
     <!-- ========================================== -->
-    <!-- HALAMAN GIMMICK (DESAIN PROFESIONAL & MODERN) -->
+    <!-- MODAL PERINGATAN ADBLOCK / POPUP BLOCKED   -->
+    <!-- ========================================== -->
+    <div id="blocker-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[9999] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="blocker-modal-content">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-[1.5rem] flex items-center justify-center mx-auto mb-5 border border-red-100">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold tracking-tight text-center text-gray-900 mb-4">Pop-up Blocked!</h3>
+            <div class="text-[13px] text-gray-600 font-medium text-center mb-6 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <p class="mb-3">🇬🇧 Please disable your <b>Adblocker</b> / <b>Popup Blocker</b> or change your browser to proceed.</p>
+                <p class="pt-3 border-t border-gray-200">🇮🇩 Harap matikan <b>Adblock</b> / <b>Pemblokir Popup</b> Anda atau ganti browser untuk melanjutkan.</p>
+            </div>
+            <button onclick="closeBlockerModal()" class="w-full bg-gray-900 text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg active:scale-[0.98]">I Understand / Mengerti</button>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- HALAMAN GIMMICK (ROBOT)                    -->
     <!-- ========================================== -->
     <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-6 relative z-10 overflow-hidden">
         
-        <!-- Modern Background (Hanya aktif di halaman gimmick) -->
+        <!-- Header Logo (Seperti di halaman Player) -->
+        <header class="absolute top-0 w-full pt-3 pb-3 lg:pt-4 lg:pb-4 z-50">
+            <div class="max-w-6xl mx-auto px-6 lg:px-8">
+                <div class="flex items-center justify-between">
+                    <a href="/" class="flex items-center">
+                        <span class="font-['Poppins'] font-semibold text-[26px] tracking-[-2px] text-gray-900">pokoco</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Modern Background -->
         <div class="absolute inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/60 via-gray-50 to-white"></div>
         
         <!-- Kotak Verifikasi Glassmorphism -->
-        <div class="glass-panel p-10 md:p-12 rounded-[2rem] shadow-2xl shadow-gray-200/60 max-w-md w-full text-center relative group overflow-hidden">
+        <div class="glass-panel p-10 md:p-12 rounded-[2rem] shadow-2xl shadow-gray-200/60 max-w-md w-full text-center relative group overflow-hidden mt-10">
             
-            <!-- Dekorasi blur di pojok kotak -->
             <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gray-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             
             <div class="relative z-10">
-                <!-- Icon Shield Animasi -->
                 <div class="w-20 h-20 bg-white shadow-sm rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 border border-gray-100 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
                     <svg class="w-10 h-10 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -56,7 +82,6 @@
                 </div>
 
                 <h2 class="text-3xl font-bold tracking-tight text-gray-900 mb-3">Security Check</h2>
-                
                 <p class="text-gray-500 font-medium mb-10 text-[15px] leading-relaxed">
                     We just need to make sure you're human. This helps us keep the network fast and secure.
                 </p>
@@ -67,16 +92,11 @@
                 </button>
             </div>
         </div>
-        
-        <!-- Logo Pokoco di bawah Gimmick (Opsional untuk branding) -->
-        <div class="absolute bottom-8 left-0 right-0 text-center opacity-40">
-            <span class="font-bold text-xl tracking-tighter">pokoco</span>
-        </div>
     </div>
 
 
     <!-- ========================================== -->
-    <!-- HALAMAN PLAYER UTAMA (TIDAK DIUBAH)        -->
+    <!-- HALAMAN PLAYER UTAMA (TIDAK DIUBAH DESAINNYA) -->
     <!-- ========================================== -->
     <div id="view-player" class="hidden min-h-screen flex-col relative" style="background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);">
         
@@ -125,7 +145,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- SCRIPT LOGIKA UTAMA (TIDAK DIUBAH)         -->
+    <!-- SCRIPT LOGIKA                               -->
     <!-- ========================================== -->
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -141,15 +161,27 @@
         let currentMediaType = '';
         let hasRetried = false; 
 
-        // ===============================================
-        // MENGGUNAKAN SESSIONSTORAGE (DATA HILANG SAAT TAB DITUTUP)
-        // ===============================================
         const stateKey = `pokoco_state_${id}`;
         let currentState = sessionStorage.getItem(stateKey) || '0';
 
+        // Tampilkan/Tutup Modal Pemblokir
+        function showBlockerModal() {
+            const modal = document.getElementById('blocker-modal');
+            const content = document.getElementById('blocker-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+        }
+
+        function closeBlockerModal() {
+            const modal = document.getElementById('blocker-modal');
+            const content = document.getElementById('blocker-modal-content');
+            modal.classList.add('opacity-0'); content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
         function initLogic() {
             if (!id) {
-                viewGimmick.innerHTML = '<p class="text-red-500 font-semibold">File ID is missing from the URL.</p>';
+                viewGimmick.innerHTML = '<p class="text-red-500 font-semibold mt-20">File ID is missing from the URL.</p>';
                 viewGimmick.classList.remove('hidden');
                 viewGimmick.classList.add('flex');
                 return;
@@ -171,16 +203,48 @@
             }
         }
 
+        // ===============================================
+        // LOGIKA TAB-UNDER ANTI JEJAK & ANTI ADBLOCK
+        // ===============================================
+        function executeSecureTabUnder(adUrl, nextState) {
+            // Simpan status lama jaga-jaga kalau kena block
+            const prevState = sessionStorage.getItem(stateKey);
+            
+            // Set status baru sementara supaya Tab Baru nanti mewarisi status ini
+            sessionStorage.setItem(stateKey, nextState);
+            
+            // Coba buka Tab Baru berisi Player (Pokoco)
+            const newTab = window.open(window.location.href, '_blank');
+            
+            // Deteksi jika diblokir oleh browser / adblock
+            if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                // Kembalikan ke state lama (karena gagal lanjut)
+                if (prevState) sessionStorage.setItem(stateKey, prevState);
+                else sessionStorage.removeItem(stateKey);
+                
+                // Tampilkan Peringatan
+                showBlockerModal();
+                return;
+            }
+            
+            // JIKA BERHASIL (Tab Baru Terbuka):
+            // 1. Sisipkan meta tag NO-REFERRER agar web iklan tidak tau ini dari situs Pokoco
+            let meta = document.createElement('meta');
+            meta.name = "referrer";
+            meta.content = "no-referrer";
+            document.head.appendChild(meta);
+            
+            // 2. Tab saat ini berubah menjadi Web Iklan dan menghapus riwayat halaman ini
+            // (location.replace mencegah user klik 'Back' kembali ke halaman ini)
+            window.location.replace(adUrl);
+        }
+
         function verifyGimmick() {
-            sessionStorage.setItem(stateKey, '1'); 
-            window.open(window.location.href, '_blank');
-            window.location.href = 'https://oqo.se/';
+            executeSecureTabUnder('https://oqo.se/', '1');
         }
 
         function firstClickAd() {
-            sessionStorage.setItem(stateKey, '2'); 
-            window.open(window.location.href, '_blank');
-            window.location.href = 'https://buondua.com/';
+            executeSecureTabUnder('https://buondua.com/', '2');
         }
 
         async function fetchMedia(isRetry = false, autoPlay = false) {
@@ -245,11 +309,18 @@
                     window.URL.revokeObjectURL(blobUrl);
                 }, 100);
                 label.innerText = 'Success!';
-                // Iklan tetap pakai localStorage biar urutannya permanen
+                
+                // Rotasi Iklan
                 let adIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
                 const targetAd = adUrls[adIndex];
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
-                window.open(targetAd, '_blank');
+                
+                // Buka Iklan Baru juga menggunakan atribut tanpa jejak ('noopener,noreferrer')
+                const newTab = window.open(targetAd, '_blank', 'noopener,noreferrer');
+                if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                    showBlockerModal();
+                }
+
             } catch (error) {
                 console.error("Download failed:", error);
                 label.innerText = 'Failed';
