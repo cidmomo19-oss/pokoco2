@@ -3,7 +3,29 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
     <title>Pokoco - Free and Simple File Hosting</title>
+    <meta name="title" content="Pokoco - Free and Simple File Hosting">
+    <meta name="description" content="Free and simple file hosting. Upload, share, and play your media effortlessly.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
+    <link rel="apple-touch-icon" href="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
+
+    <!-- Open Graph / Facebook / WhatsApp (Muncul saat dishare) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pokoco.co/">
+    <meta property="og:title" content="Pokoco - Free and Simple File Hosting">
+    <meta property="og:description" content="Free and simple file hosting. Upload, share, and play your media effortlessly.">
+    <meta property="og:image" content="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://pokoco.co/">
+    <meta property="twitter:title" content="Pokoco - Free and Simple File Hosting">
+    <meta property="twitter:description" content="Free and simple file hosting. Upload, share, and play your media effortlessly.">
+    <meta property="twitter:image" content="https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -96,7 +118,7 @@
 
 
     <!-- ========================================== -->
-    <!-- HALAMAN PLAYER UTAMA (TIDAK DIUBAH DESAINNYA) -->
+    <!-- HALAMAN PLAYER UTAMA                       -->
     <!-- ========================================== -->
     <div id="view-player" class="hidden min-h-screen flex-col relative" style="background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);">
         
@@ -145,7 +167,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- SCRIPT LOGIKA                               -->
+    <!-- SCRIPT LOGIKA                              -->
     <!-- ========================================== -->
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -207,35 +229,22 @@
         // LOGIKA TAB-UNDER ANTI JEJAK & ANTI ADBLOCK
         // ===============================================
         function executeSecureTabUnder(adUrl, nextState) {
-            // Simpan status lama jaga-jaga kalau kena block
             const prevState = sessionStorage.getItem(stateKey);
-            
-            // Set status baru sementara supaya Tab Baru nanti mewarisi status ini
             sessionStorage.setItem(stateKey, nextState);
-            
-            // Coba buka Tab Baru berisi Player (Pokoco)
             const newTab = window.open(window.location.href, '_blank');
             
-            // Deteksi jika diblokir oleh browser / adblock
             if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-                // Kembalikan ke state lama (karena gagal lanjut)
                 if (prevState) sessionStorage.setItem(stateKey, prevState);
                 else sessionStorage.removeItem(stateKey);
-                
-                // Tampilkan Peringatan
                 showBlockerModal();
                 return;
             }
             
-            // JIKA BERHASIL (Tab Baru Terbuka):
-            // 1. Sisipkan meta tag NO-REFERRER agar web iklan tidak tau ini dari situs Pokoco
             let meta = document.createElement('meta');
             meta.name = "referrer";
             meta.content = "no-referrer";
             document.head.appendChild(meta);
             
-            // 2. Tab saat ini berubah menjadi Web Iklan dan menghapus riwayat halaman ini
-            // (location.replace mencegah user klik 'Back' kembali ke halaman ini)
             window.location.replace(adUrl);
         }
 
@@ -274,6 +283,19 @@
             }
             mediaWrapper.innerHTML = mediaHtml;
 
+            // ===============================================
+            // MEDIA SESSION API (Logo Muncul Di Notifikasi)
+            // ===============================================
+            if ('mediaSession' in navigator && (type.startsWith('video/') || type.startsWith('audio/'))) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `Pokoco File - ${id}`,
+                    artist: 'Pokoco Hosting',
+                    artwork:[
+                        { src: 'https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+            }
+
             const element = document.getElementById('main-media');
             if (element) {
                 element.onerror = () => {
@@ -310,12 +332,10 @@
                 }, 100);
                 label.innerText = 'Success!';
                 
-                // Rotasi Iklan
                 let adIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
                 const targetAd = adUrls[adIndex];
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
                 
-                // Buka Iklan Baru juga menggunakan atribut tanpa jejak ('noopener,noreferrer')
                 const newTab = window.open(targetAd, '_blank', 'noopener,noreferrer');
                 if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
                     showBlockerModal();
