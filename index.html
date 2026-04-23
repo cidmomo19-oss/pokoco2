@@ -17,6 +17,10 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.8);
         }
+        /* Transisi smooth khusus untuk progress bar */
+        #upload-progress-bar {
+            transition: width 0.3s ease-out;
+        }
     </style>
 </head>
 <body class="text-gray-900 antialiased min-h-screen flex flex-col relative selection:bg-gray-200">
@@ -55,10 +59,15 @@
             </div>
 
             <!-- Drag & Drop Zone -->
-            <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="glass-panel border-2 border-dashed border-gray-300 rounded-3xl p-12 hover:border-gray-900 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-300 cursor-pointer group relative overflow-hidden">
-                <div class="flex flex-col items-center justify-center space-y-5">
-                    <div class="w-16 h-16 bg-white shadow-sm rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <svg class="w-8 h-8 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="glass-panel border-2 border-dashed border-gray-300 rounded-3xl overflow-hidden hover:border-gray-900 hover:shadow-2xl hover:shadow-gray-200 transition-all duration-300 cursor-pointer group relative">
+                
+                <!-- PROGRESS BAR BACKGROUND (KIRI KE KANAN) -->
+                <div id="upload-progress-bar" class="absolute top-0 left-0 bottom-0 bg-gray-900/10 w-0 z-0"></div>
+
+                <!-- CONTENT -->
+                <div class="relative z-10 flex flex-col items-center justify-center space-y-5 p-12">
+                    <div id="upload-icon-container" class="w-16 h-16 bg-white shadow-sm rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <svg id="upload-icon" class="w-8 h-8 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     </div>
                     <div class="space-y-1">
                         <p class="text-lg font-semibold text-gray-900" id="upload-text">Click to upload or drag & drop</p>
@@ -76,7 +85,8 @@
                     <h2 class="text-3xl font-bold tracking-tight">My Dashboard</h2>
                     <p class="text-gray-500 text-sm mt-1 font-medium">Welcome back, <span id="display-username" class="text-gray-900 font-bold">User</span>.</p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="toggleChangePwd()" class="text-gray-600 text-sm font-semibold hover:text-gray-900 transition px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200">Change Password</button>
                     <button onclick="logout()" class="text-gray-600 text-sm font-semibold hover:text-gray-900 transition px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200">Sign Out</button>
                     <button onclick="deleteAccount()" class="text-red-600 text-sm font-semibold hover:text-red-800 transition px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100">Delete Account</button>
                 </div>
@@ -124,11 +134,31 @@
         </div>
     </div>
 
+    <!-- ================= CHANGE PASSWORD MODAL ================= -->
+    <div id="pwd-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="pwd-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold tracking-tight">Change Password</h3>
+                <button onclick="toggleChangePwd(false)" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <p id="pwd-error" class="text-red-500 text-sm mb-4 font-medium hidden"></p>
+            <p id="pwd-success" class="text-green-600 text-sm mb-4 font-medium hidden">Password updated successfully!</p>
+            
+            <input type="password" id="old-pwd-input" placeholder="Current Password" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all mb-3 font-medium">
+            <input type="password" id="new-pwd-input" placeholder="New Password" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all mb-6 font-medium">
+            
+            <button id="pwd-submit-btn" onclick="submitChangePwd()" class="w-full bg-gray-900 text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition shadow-lg hover:shadow-xl active:scale-[0.98]">Save Password</button>
+        </div>
+    </div>
+
     <script>
-        // --- 1. STATE & AUTHENTICATION LOGIC (FULL ONLINE) ---
+        // --- 1. STATE & AUTHENTICATION LOGIC ---
         let currentUser = localStorage.getItem('pokoco_user_id') || null;
         let currentUsername = localStorage.getItem('pokoco_username') || null;
-        let isLoginMode = true; // true = Login, false = Register
+        let isLoginMode = true; 
 
         function updateAuthState() {
             const authBtn = document.getElementById('auth-btn');
@@ -212,12 +242,67 @@
             showView('home');
         }
 
-        // --- 2. UPLOAD & DRAG DROP LOGIC ---
+        // --- 2. CHANGE PASSWORD LOGIC ---
+        function toggleChangePwd(show = true) {
+            const modal = document.getElementById('pwd-modal');
+            const content = document.getElementById('pwd-modal-content');
+            if(show) {
+                document.getElementById('old-pwd-input').value = '';
+                document.getElementById('new-pwd-input').value = '';
+                document.getElementById('pwd-error').classList.add('hidden');
+                document.getElementById('pwd-success').classList.add('hidden');
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
+            } else {
+                modal.classList.add('opacity-0'); content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        }
+
+        async function submitChangePwd() {
+            const oldPass = document.getElementById('old-pwd-input').value.trim();
+            const newPass = document.getElementById('new-pwd-input').value.trim();
+            const errorEl = document.getElementById('pwd-error');
+            const successEl = document.getElementById('pwd-success');
+            const btn = document.getElementById('pwd-submit-btn');
+
+            if(!oldPass || !newPass) {
+                errorEl.innerText = 'All fields are required!';
+                errorEl.classList.remove('hidden'); return;
+            }
+
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+            btn.innerText = 'Updating...'; btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUser, oldPassword: oldPass, newPassword: newPass })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    successEl.classList.remove('hidden');
+                    setTimeout(() => toggleChangePwd(false), 1500);
+                } else {
+                    errorEl.innerText = data.message || 'Update failed.';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch(e) {
+                errorEl.innerText = 'Connection error.';
+                errorEl.classList.remove('hidden');
+            }
+            btn.innerText = 'Save Password'; btn.disabled = false;
+        }
+
+        // --- 3. UPLOAD & DRAG DROP LOGIC ---
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
         const uploadText = document.getElementById('upload-text');
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
+        const progressBar = document.getElementById('upload-progress-bar');
+        const iconContainer = document.getElementById('upload-icon-container');['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
             dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); }, false);
         });
 
@@ -232,12 +317,25 @@
             if (e.target.files.length) handleUpload(e.target.files[0]);
         });
 
+        function resetUploadUI() {
+            uploadText.innerText = 'Click to upload or drag & drop';
+            progressBar.style.width = '0%';
+            dropZone.classList.remove('pointer-events-none', 'border-gray-900');
+            iconContainer.classList.remove('animate-bounce');
+            fileInput.value = '';
+        }
+
         async function handleUpload(file) {
             if (file.size > 500 * 1024 * 1024) {
                 alert('File is too large! Max 500MB.'); return;
             }
 
-            dropZone.classList.add('pointer-events-none', 'opacity-70');
+            // Mulai UI state saat loading
+            dropZone.classList.add('pointer-events-none', 'border-gray-900');
+            iconContainer.classList.add('animate-bounce');
+            uploadText.innerText = 'Preparing...';
+            progressBar.style.width = '2%'; 
+
             let userId = currentUser || "anonymous";
 
             try {
@@ -253,16 +351,20 @@
                 xhr.open('PUT', data.uploadUrl, true);
                 xhr.setRequestHeader('Content-Type', safeType);
 
+                // --- ANIMASI PROGRESS BAR BERJALAN DISINI ---
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
+                        const percent = Math.max(2, Math.round((e.loaded / e.total) * 100)); // Minimal 2% supaya UI kelihatan jalan
                         uploadText.innerText = `Uploading ${percent}%...`;
+                        progressBar.style.width = `${percent}%`; // Lebarkan fill bar dari kiri ke kanan
                     }
                 };
 
                 xhr.onload = () => {
                     if (xhr.status >= 200 && xhr.status < 300) {
+                        progressBar.style.width = '100%';
                         uploadText.innerText = `Processing...`;
+                        iconContainer.classList.remove('animate-bounce');
                         setTimeout(() => window.location.href = '/v?id=' + data.videoId, 500);
                     } else throw new Error('Upload failed');
                 };
@@ -270,13 +372,11 @@
                 xhr.send(file);
             } catch (err) {
                 alert(err.message);
-                uploadText.innerText = 'Click to upload or drag & drop';
-                dropZone.classList.remove('pointer-events-none', 'opacity-70');
-                fileInput.value = '';
+                resetUploadUI();
             }
         }
 
-        // --- 3. DASHBOARD / HISTORY LOGIC ---
+        // --- 4. DASHBOARD / HISTORY LOGIC ---
         async function loadHistory() {
             if (!currentUser) return;
             const list = document.getElementById('history-list');
@@ -288,17 +388,21 @@
                 
                 if (data.success && data.files.length > 0) {
                     list.innerHTML = data.files.map(f => `
-                        <div class="p-5 flex items-center justify-between hover:bg-white/80 transition group">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-900 transition">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                </div>
-                                <div>
-                                    <a href="/v?id=${f.id}" target="_blank" class="font-semibold text-gray-900 hover:underline transition">${f.file_name || 'Untitled'}</a>
-                                    <p class="text-xs text-gray-500 font-medium mt-0.5">${f.content_type || 'Unknown'} • ID: ${f.id}</p>
-                                </div>
+                        <div class="p-5 flex items-center gap-4 hover:bg-white/80 transition group">
+                            
+                            <!-- Icon (Mencegah icon mengecil dengan flex-shrink-0) -->
+                            <div class="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-900 transition">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             </div>
-                            <button onclick="deleteFile('${f.id}')" class="text-red-500 p-2.5 rounded-xl hover:bg-red-50 hover:scale-110 transition active:scale-95" title="Delete File">
+
+                            <!-- Area Text (flex-1 dan min-w-0 akan memotong teks yang kepanjangan jadi titik-titik) -->
+                            <div class="flex-1 min-w-0">
+                                <a href="/v?id=${f.id}" target="_blank" class="font-semibold text-gray-900 hover:underline transition truncate block">${f.file_name || 'Untitled'}</a>
+                                <p class="text-xs text-gray-500 font-medium mt-0.5 truncate">${f.content_type || 'Unknown'} • ID: ${f.id}</p>
+                            </div>
+
+                            <!-- Tombol Delete (flex-shrink-0 memastikan tombol ini tidak terdorong atau mengecil) -->
+                            <button onclick="deleteFile('${f.id}')" class="flex-shrink-0 text-red-500 p-2.5 rounded-xl hover:bg-red-50 hover:scale-110 transition active:scale-95" title="Delete File">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </div>
@@ -341,7 +445,7 @@
             } catch(e) { alert('Error deleting account.'); }
         }
 
-        // --- 4. VIEW TOGGLER & MODAL ---
+        // --- 5. VIEW TOGGLER ---
         function showView(view) {
             const vHome = document.getElementById('view-home');
             const vDash = document.getElementById('view-dashboard');
@@ -369,8 +473,6 @@
             const content = document.getElementById('auth-modal-content');
             modal.classList.add('opacity-0'); content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
-            
-            // reset error state when closed
             document.getElementById('auth-error').classList.add('hidden');
         }
 
