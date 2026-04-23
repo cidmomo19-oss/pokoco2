@@ -5,7 +5,10 @@ export async function onRequestPost(context) {
     const { username, password } = await request.json();
 
     if (!username || !password) {
-      return new Response(JSON.stringify({ success: false, message: "Missing credentials" }), { status: 400 });
+      return new Response(JSON.stringify({ success: false, message: "Missing credentials" }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // Hash Password inputan untuk dicocokkan dengan DB
@@ -15,18 +18,30 @@ export async function onRequestPost(context) {
     const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
     // Cari user di DB
-    const user = await env.DB.prepare("SELECT id, username FROM users WHERE username = ? AND password_hash = ?").bind(username, passwordHash).first();
+    const user = await env.DB.prepare("SELECT id, username FROM users WHERE username = ? AND password_hash = ?")
+                             .bind(username, passwordHash)
+                             .first();
 
     if (!user) {
-      return new Response(JSON.stringify({ success: false, message: "Invalid username or password" }), { status: 401 });
+      return new Response(JSON.stringify({ success: false, message: "Invalid username or password" }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // Jika sukses, kembalikan data user
     return new Response(JSON.stringify({ success: true, userId: user.id, username: user.username }), {
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ success: false, message: "Server Error" }), { status: 500 });
+    // Catat error di console Cloudflare Pages untuk mempermudah perbaikan
+    console.error("Login Error:", error); 
+    
+    return new Response(JSON.stringify({ success: false, message: "Server Error", details: error.message }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
