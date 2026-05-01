@@ -50,7 +50,6 @@
             border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
-        /* --- CSS BARU UNTUK TRANSISI HALUS --- */
         #media-wrapper > * {
             transition: opacity 0.3s ease-in-out;
         }
@@ -58,9 +57,7 @@
 </head>
 <body data-version="v1.4.1-adupdate" class="text-gray-900 selection:bg-gray-200">
 
-    <!-- ========================================== -->
     <!-- MODAL PERINGATAN ADBLOCK / POPUP BLOCKED   -->
-    <!-- ========================================== -->
     <div id="blocker-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[9999] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300 m-4" id="blocker-modal-content">
             <div class="w-16 h-16 bg-red-50 text-red-500 rounded-[1.5rem] flex items-center justify-center mx-auto mb-5 border border-red-100">
@@ -76,12 +73,8 @@
     </div>
 
 
-    <!-- ========================================== -->
-    <!-- HALAMAN GIMMICK (ROBOT)                    -->
-    <!-- ========================================== -->
+    <!-- HALAMAN GIMMICK (ROBOT) -->
     <div id="view-gimmick" class="hidden flex-col items-center justify-center min-h-screen p-6 relative z-10 overflow-hidden">
-        
-        <!-- Header Logo (Seperti di halaman Player) -->
         <header class="absolute top-0 w-full pt-3 pb-3 lg:pt-4 lg:pb-4 z-50">
             <div class="max-w-6xl mx-auto px-6 lg:px-8">
                 <div class="flex items-center justify-between">
@@ -92,12 +85,9 @@
             </div>
         </header>
 
-        <!-- Modern Background -->
         <div class="absolute inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/60 via-gray-50 to-white"></div>
         
-        <!-- Kotak Verifikasi Glassmorphism -->
         <div class="glass-panel p-10 md:p-12 rounded-[2rem] shadow-2xl shadow-gray-200/60 max-w-md w-full text-center relative group overflow-hidden mt-10">
-            
             <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gray-100 rounded-full mix-blend-multiply filter blur-2xl opacity-70"></div>
             
@@ -122,9 +112,7 @@
     </div>
 
 
-    <!-- ========================================== -->
-    <!-- HALAMAN PLAYER UTAMA                       -->
-    <!-- ========================================== -->
+    <!-- HALAMAN PLAYER UTAMA -->
     <div id="view-player" class="hidden min-h-screen flex-col relative" style="background-image: linear-gradient(to bottom right, #f9fafb, #fff, #f9fafb);">
         
         <div id="ad-overlay" onclick="firstClickAd()" class="fixed inset-0 z-[9999] bg-transparent cursor-pointer hidden"></div>
@@ -171,9 +159,7 @@
         </footer>
     </div>
 
-    <!-- ========================================== -->
-    <!-- SCRIPT LOGIKA                              -->
-    <!-- ========================================== -->
+    <!-- SCRIPT LOGIKA -->
     <script>
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
@@ -191,7 +177,6 @@
         const stateKey = `pokoco_state_${id}`;
         let currentState = sessionStorage.getItem(stateKey) || '0';
 
-        // Tampilkan/Tutup Modal Pemblokir
         function showBlockerModal() {
             const modal = document.getElementById('blocker-modal');
             const content = document.getElementById('blocker-modal-content');
@@ -239,9 +224,7 @@
                 if (prevState) sessionStorage.setItem(stateKey, prevState);
                 else sessionStorage.removeItem(stateKey);
                 
-                if (showWarning) {
-                    showBlockerModal();
-                }
+                if (showWarning) showBlockerModal();
                 return;
             }
             
@@ -254,12 +237,10 @@
         }
 
         function verifyGimmick() {
-            // --- IKLAN 1 ---
             executeSecureTabUnder('https://conductivebreeds.com/rznx5d1wbr?key=dfe7ca4b20f77f2354da2aba17d12048', '1', true);
         }
 
         function firstClickAd() {
-            // --- IKLAN 2 ---
             executeSecureTabUnder('https://omg10.com/4/10390860', '2', false);
         }
 
@@ -278,7 +259,7 @@
                             setTimeout(() => localStorage.removeItem(cacheKey), 5000);
                         }
                         return;
-                    } catch (e) { /* Abaikan jika cache rusak */ }
+                    } catch (e) {}
                 }
             }
 
@@ -325,7 +306,7 @@
                 element.playsInline = true;
                 if (autoPlay) {
                     element.autoplay = true;
-                    element.muted = true; // Autoplay seringkali butuh di-mute dulu di browser modern
+                    element.muted = true; 
                 }
                 element.style.maxHeight = '520px';
             } else {
@@ -339,31 +320,21 @@
             }
 
             element.id = "main-media";
-            element.style.opacity = '0'; // Sembunyikan dulu elemennya
+            element.style.opacity = '0';
             element.src = url;
 
             if(loadingIndicator) loadingIndicator.style.opacity = '0';
             
             setTimeout(() => {
-                mediaWrapper.innerHTML = ''; // Bersihkan wrapper
+                mediaWrapper.innerHTML = ''; 
                 mediaWrapper.appendChild(element);
-                setTimeout(() => { 
-                    element.style.opacity = '1'; // Munculkan elemen dengan transisi
-                }, 50);
+                setTimeout(() => element.style.opacity = '1', 50);
             }, 300);
 
             if (autoPlay && (elementType === 'VIDEO' || elementType === 'AUDIO')) {
                 element.play().then(() => {
                     if(elementType === 'VIDEO') element.muted = false;
                 }).catch(error => {});
-            }
-
-            if ('mediaSession' in navigator && (elementType === 'VIDEO' || elementType === 'AUDIO')) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: `Pokoco File - ${id}`,
-                    artist: 'Pokoco Hosting',
-                    artwork:[{ src: 'https://r2.pokoco.co/Picsart_26-04-23_07-44-22-643.png', sizes: '512x512', type: 'image/png' }]
-                });
             }
 
             element.onerror = () => {
@@ -375,8 +346,8 @@
             };
         }
 
-        // --- IKLAN DOWNLOAD ---
-        const adUrls = [
+        // --- IKLAN DOWNLOAD TETAP SAMA ---
+        const adUrls =[
             'https://conductivebreeds.com/rznx5d1wbr?key=dfe7ca4b20f77f2354da2aba17d12048', 
             'https://omg10.com/4/10390860'
         ];
@@ -386,29 +357,31 @@
             if (btn.disabled || !currentMediaUrl) return;
             const label = document.getElementById('download-label');
             const originalText = 'Download';
+            
             btn.disabled = true;
-            label.innerText = 'Processing...';
+            label.innerText = 'Starting...'; // Ganti tulisan sementara
+
             try {
-                const response = await fetch(currentMediaUrl);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
+                // METODE DIPERCEPAT: Skip download RAM (Fetch Blob), langsung lempar ke Browser Downloader bawaan.
                 const ext = currentMediaType.split('/')[1] || 'file';
                 const a = document.createElement('a');
-                a.href = blobUrl;
+                a.href = currentMediaUrl;
                 a.download = `Pokoco_${id}.${ext}`;
+                a.target = '_blank'; // Memastikan file cross-origin tetap di-handle dan muncul prompt download
                 document.body.appendChild(a);
                 a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(blobUrl);
-                }, 100);
-                label.innerText = 'Success!';
+                document.body.removeChild(a);
                 
+                label.innerText = 'Downloading!';
+                
+                // LOGIKA IKLAN TETAP DIJALANKAN (Tidak Dihapus)
                 let adIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
                 const targetAd = adUrls[adIndex];
                 localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
                 
+                // Trigger Iklannya
                 window.open(targetAd, '_blank', 'noopener,noreferrer');
+                
             } catch (error) {
                 console.error("Download failed:", error);
                 label.innerText = 'Failed';
