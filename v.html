@@ -136,17 +136,6 @@
                     <div id="loading-indicator" class="text-center mt-10 text-gray-500 font-medium animate-pulse">Loading...</div>
                 </div>
             </div>
-            
-            <div class="w-full flex flex-row justify-center mt-4 mb-0" id="action-buttons" style="display: none;">
-                <button onclick="downloadMedia()" id="download-btn" class="inline-flex items-center justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 disabled:pointer-events-none disabled:opacity-50 text-white shadow-sm h-9 py-2 rounded-full px-8 gap-2 bg-gray-900 hover:bg-gray-800 font-semibold border border-gray-900">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-[18px] h-[18px]">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" x2="12" y1="15" y2="3"></line>
-                    </svg>
-                    <span id="download-label">Download</span>
-                </button>
-            </div>
         </main>
 
         <footer class="pb-6 relative z-10 mt-auto pt-8">
@@ -168,7 +157,6 @@
         const viewPlayer = document.getElementById('view-player');
         const adOverlay = document.getElementById('ad-overlay');
         const mediaWrapper = document.getElementById('media-wrapper');
-        const actionButtons = document.getElementById('action-buttons');
         
         let currentMediaUrl = '';
         let currentMediaType = '';
@@ -253,7 +241,6 @@
                         const data = JSON.parse(cachedData);
                         currentMediaUrl = data.playUrl;
                         currentMediaType = data.contentType;
-                        actionButtons.style.display = 'flex';
                         renderMedia(data.playUrl, data.contentType, autoPlay);
                         if (currentState === '2') {
                             setTimeout(() => localStorage.removeItem(cacheKey), 5000);
@@ -276,7 +263,6 @@
 
                 currentMediaUrl = data.playUrl;
                 currentMediaType = data.contentType;
-                actionButtons.style.display = 'flex';
                 renderMedia(data.playUrl, data.contentType, autoPlay);
             } catch (e) {
                 mediaWrapper.innerHTML = `<div class="text-center py-20 text-gray-500">File not found or has been deleted.</div>`;
@@ -288,20 +274,17 @@
             let element;
             let elementType = '';
 
+            // DISINI TOMBOL DOWNLOAD TITIK 3 DIBUKA & KLIK KANAN DIIZINKAN
             if (type.startsWith('image/')) {
                 elementType = 'IMG';
                 element = document.createElement('img');
                 element.className = "w-full md:rounded-[8px]";
                 element.style.maxHeight = '520px';
                 element.style.objectFit = 'contain';
-                element.oncontextmenu = () => false;
-                element.draggable = false;
             } else if (type.startsWith('video/')) {
                 elementType = 'VIDEO';
                 element = document.createElement('video');
                 element.className = "w-full md:rounded-[8px]";
-                element.controlsList = "nodownload";
-                element.oncontextmenu = () => false;
                 element.controls = true;
                 element.playsInline = true;
                 if (autoPlay) {
@@ -313,8 +296,6 @@
                 elementType = 'AUDIO';
                 element = document.createElement('audio');
                 element.className = "w-full md:rounded-[8px] mt-10";
-                element.controlsList = "nodownload";
-                element.oncontextmenu = () => false;
                 element.controls = true;
                 if (autoPlay) element.autoplay = true;
             }
@@ -344,53 +325,6 @@
                     fetchMedia(true, autoPlay); 
                 }
             };
-        }
-
-        // --- IKLAN DOWNLOAD TETAP SAMA ---
-        const adUrls =[
-            'https://conductivebreeds.com/rznx5d1wbr?key=dfe7ca4b20f77f2354da2aba17d12048', 
-            'https://omg10.com/4/10390860'
-        ];
-        
-        async function downloadMedia() {
-            const btn = document.getElementById('download-btn');
-            if (btn.disabled || !currentMediaUrl) return;
-            const label = document.getElementById('download-label');
-            const originalText = 'Download';
-            
-            btn.disabled = true;
-            label.innerText = 'Starting...'; // Ganti tulisan sementara
-
-            try {
-                // METODE DIPERCEPAT: Skip download RAM (Fetch Blob), langsung lempar ke Browser Downloader bawaan.
-                const ext = currentMediaType.split('/')[1] || 'file';
-                const a = document.createElement('a');
-                a.href = currentMediaUrl;
-                a.download = `Pokoco_${id}.${ext}`;
-                a.target = '_blank'; // Memastikan file cross-origin tetap di-handle dan muncul prompt download
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                label.innerText = 'Downloading!';
-                
-                // LOGIKA IKLAN TETAP DIJALANKAN (Tidak Dihapus)
-                let adIndex = parseInt(localStorage.getItem('pokoco_ad_index') || '0');
-                const targetAd = adUrls[adIndex];
-                localStorage.setItem('pokoco_ad_index', (adIndex + 1) % adUrls.length);
-                
-                // Trigger Iklannya
-                window.open(targetAd, '_blank', 'noopener,noreferrer');
-                
-            } catch (error) {
-                console.error("Download failed:", error);
-                label.innerText = 'Failed';
-            } finally {
-                setTimeout(() => {
-                    label.innerText = originalText;
-                    btn.disabled = false;
-                }, 2000);
-            }
         }
 
         initLogic();
